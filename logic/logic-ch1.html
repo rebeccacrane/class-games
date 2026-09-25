@@ -181,8 +181,8 @@ header.top p{margin:6px 0 0;color:var(--muted);max-width:52ch}
   <!-- FINISH -->
   <section id="part3" class="hidden">
     <div class="finish">
-      <h2>You finished the review</h2>
-      <p class="note">Type your name, then send your score. A form will open with your score filled in. Press Submit on that form to turn it in.</p>
+      <h2 id="finishTitle">You finished the review</h2>
+      <p class="note" id="finishIntro"></p>
       <label for="name">Your name</label>
       <input id="name" autocomplete="name" placeholder="First and last name">
       <div class="scorebox">
@@ -361,6 +361,8 @@ $("sortNext").onclick=()=>{
 $("toPart2").onclick=()=>{ si=0; sortScore=0; sortTotal=0; setStep(2); startSortSet(); };
 
 // Microsoft Form (pre-filled link) that collects results
+// Set to true to show the "Send my score" button (sends results to the Microsoft Form)
+const USE_FORM=false;
 const FORM_BASE="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=vcRQu_0urkuAIZ4D1JaqGWaqXu5htlJGjGifn6xX5BFUMk9XOEUwQlpaRzZRTEFXS0tNS1BPM1RFOS4u";
 const FORM_FIELDS={
   name:"rd1ef1adfba4548918fbed0ed95e8647f",
@@ -385,6 +387,16 @@ function finish(){
   $("total").textContent=total+" / "+max;
   $("breakdown").textContent="Matching: "+m+" of "+mt+" on the first try. Sorting: "+sortScore+" of "+sortTotal+" correct.";
   $("when").textContent="Completed "+when;
+  const perfect = total===max;
+  $("finishTitle").textContent = perfect ? "Perfect score!" : "Almost there";
+  $("finishIntro").textContent = USE_FORM
+    ? "Type your name, then send your score. A form will open with your score filled in. Press Submit on that form to turn it in."
+    : perfect
+      ? "Type your name, then take a screenshot of this box and post it in the Teams assignment."
+      : "You need a perfect score to finish. Press Play again and keep going until you get every one right.";
+  $("name").parentElement.querySelectorAll("label[for=name], #name, .scorebox .who").forEach(el=>el.classList.toggle("hidden", !perfect && !USE_FORM));
+  $("send").classList.toggle("hidden", !USE_FORM);
+  $("sendNote").classList.toggle("hidden", !USE_FORM);
   updateName();
 }
 function updateName(){
