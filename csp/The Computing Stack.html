@@ -1,0 +1,448 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Computing Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FFFFFF; --ground:#F2F4F7; --ink:#1B1F27; --ink-soft:#5A6170;
+  --rule:#E2E4E9; --rule-strong:#C6CAD3;
+  --accent:#2F3A8C; --accent-soft:#E6E9F8;
+  --copper:#A4552A; --copper-soft:#F7E8DE;
+  --code-bg:#F0F2F6;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#15171C; --ground:#1B1E25; --ink:#E8EAEE; --ink-soft:#A3A9B6;
+    --rule:#2B2F38; --rule-strong:#3D4350;
+    --accent:#A8B2F0; --accent-soft:#232A4E;
+    --copper:#E2A077; --copper-soft:#3A2719;
+    --code-bg:#20242D;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#15171C; --ground:#1B1E25; --ink:#E8EAEE; --ink-soft:#A3A9B6;
+  --rule:#2B2F38; --rule-strong:#3D4350;
+  --accent:#A8B2F0; --accent-soft:#232A4E;
+  --copper:#E2A077; --copper-soft:#3A2719;
+  --code-bg:#20242D;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.sheet{max-width:46rem;margin:0 auto;padding-block:2.75rem 4rem;padding-inline:1.25rem}
+h1,h2,h3{line-height:1.2;text-wrap:balance;margin:0}
+h2{font-size:1.45rem;font-weight:600;letter-spacing:-.01em;margin:0 0 .75rem}
+h3{font-size:1.08rem;font-weight:600;margin:1.5rem 0 .4rem}
+p{margin:0 0 1rem}
+a{color:var(--accent);text-underline-offset:3px}
+strong{font-weight:600}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-size:.9em}
+p code,li code,td code{background:var(--code-bg);padding:.05em .35em;border-radius:3px}
+section{padding-top:2.25rem;margin-top:2.25rem;border-top:1px solid var(--rule-strong)}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--copper);margin:0 0 .5rem}
+.secnum{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 .35rem}
+
+/* Header */
+header{border-bottom:2px solid var(--ink);padding-bottom:1.25rem}
+header h1{font-size:clamp(2.1rem,6vw,3rem);font-weight:600;letter-spacing:-.025em;margin-bottom:.5rem}
+.dek{color:var(--ink-soft);font-size:1.08rem;margin:0}
+.sofar{list-style:none;margin:1.25rem 0 0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem}
+.sofar li{border-top:2px solid var(--rule-strong);padding-top:.45rem;font-size:.86rem;line-height:1.35;color:var(--ink-soft)}
+.sofar li b{display:block;color:var(--ink);font-weight:600}
+.meta{margin:1rem 0 0;font-size:.9rem;color:var(--ink-soft)}
+
+/* Callouts */
+.callout{border-radius:6px;padding:.9rem 1.1rem;margin:1.25rem 0;font-size:.97rem}
+.callout p:last-child,.callout ol:last-child{margin-bottom:0}
+.callout .lbl{display:block;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:.3rem}
+.tryit{background:var(--ground);border:1px solid var(--rule-strong)}
+.tryit .lbl{color:var(--ink-soft)}
+.conn{background:var(--copper-soft);border-left:4px solid var(--copper)}
+.conn .lbl{color:var(--copper)}
+.callout ol{margin:.3rem 0 0;padding-left:1.2rem}
+
+/* Stack diagram */
+.stack{display:grid;grid-template-columns:1fr 12.5rem;gap:6px 14px;margin:1.5rem 0 .5rem}
+.layer{grid-column:1;display:grid;grid-template-columns:9.5rem 1fr;gap:.75rem;align-items:center;
+  padding:.65rem .9rem;border-radius:5px;
+  --c:color-mix(in oklab, var(--copper) calc(var(--i) * 16.66%), var(--accent));
+  background:color-mix(in oklab, var(--c) 13%, var(--paper));
+  border-left:5px solid var(--c)}
+.layer .nm{font-weight:600;font-size:.98rem;line-height:1.25}
+.layer .ex{font-size:.88rem;color:var(--ink-soft);line-height:1.35}
+.rail{grid-column:2;grid-row:2 / 5;border:1.5px dashed var(--rule-strong);border-radius:6px;padding:.75rem .85rem;
+  font-size:.86rem;line-height:1.4;color:var(--ink-soft);align-self:stretch;display:flex;flex-direction:column;justify-content:center}
+.rail b{color:var(--ink);font-weight:600;display:block;margin-bottom:.25rem;font-size:.92rem}
+.stack-axis{display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;margin:0}
+
+/* Figures */
+figure{margin:1.5rem 0}
+figcaption{font-size:.85rem;color:var(--ink-soft);margin-top:.5rem}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.vn{display:block;width:100%;min-width:540px;height:auto}
+.vn .box{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+.vn .cpu{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2}
+.vn .inner{fill:var(--paper);stroke:var(--accent);stroke-width:1.25}
+.vn .mem{fill:var(--copper-soft);stroke:var(--copper);stroke-width:2}
+.vn text{fill:var(--ink);font-family:"IBM Plex Sans",Arial,sans-serif;font-size:14px}
+.vn .t-b{font-weight:600}
+.vn .t-s{font-size:12px;fill:var(--ink-soft)}
+.vn .arrow{stroke:var(--ink);stroke-width:1.75;fill:none}
+.vn .head{fill:var(--ink)}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+th{text-align:left;font-weight:600;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-soft);
+  padding:0 .75rem .45rem 0;border-bottom:1px solid var(--rule-strong)}
+td{padding:.6rem .75rem .6rem 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td.code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.86rem;white-space:nowrap}
+.tabnum{font-variant-numeric:tabular-nums}
+
+/* Language ladder */
+.ladder{list-style:none;margin:1.25rem 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.ladder li{display:grid;grid-template-columns:9.5rem 1fr;gap:.9rem;padding:.7rem .9rem;border-radius:5px;align-items:start;
+  --c:color-mix(in oklab, var(--copper) calc(var(--i) * 25%), var(--accent));
+  background:color-mix(in oklab, var(--c) 10%, var(--paper));border-left:5px solid var(--c)}
+.ladder .nm{font-weight:600;font-size:.95rem;line-height:1.3}
+.ladder .nm small{display:block;font-weight:400;color:var(--ink-soft);font-size:.8rem}
+.ladder pre{margin:0;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.86rem;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}
+.ladder .plain{font-style:italic}
+.mtable{font-size:.85rem}
+.mtable th{font-size:.68rem;padding-bottom:.35rem;line-height:1.3}
+.mtable td{padding:.45rem .7rem .45rem 0;border-bottom:1px solid color-mix(in oklab, var(--rule-strong) 60%, transparent)}
+.mtable .bits{display:block;font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;white-space:nowrap}
+.mtable .blbl{display:block;font-size:.72rem;color:var(--ink-soft);line-height:1.3}
+.mtable .mean{font-family:"IBM Plex Mono",ui-monospace,monospace;vertical-align:top}
+.mnote{margin:.5rem 0 0;font-size:.8rem;line-height:1.45;color:var(--ink-soft)}
+.mnote code{font-size:.95em;background:none;padding:0;color:var(--ink)}
+.langs{display:grid;gap:.4rem}
+.lang{background:var(--paper);border:1px solid var(--rule-strong);border-radius:5px;padding:.45rem .7rem;display:grid;grid-template-columns:6rem 1fr;align-items:center;gap:.5rem;min-width:0}
+.lang pre{white-space:pre;overflow-x:auto}
+.lname{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+/* Scratch-style block (colors fixed in both themes, like the real editor) */
+.sb{font-family:"IBM Plex Sans",Arial,sans-serif;font-size:.8rem;line-height:1}
+.sb-set{display:inline-flex;flex-wrap:wrap;align-items:center;gap:.3rem;background:#FF8C1A;color:#FFFFFF;font-weight:500;
+  padding:.4rem .5rem;border-radius:4px;border:1px solid #DB6E00}
+.sb-drop{background:#E67B00;border:1px solid #C96A00;border-radius:3px;padding:.2rem .35rem}
+.sb-op{display:inline-flex;align-items:center;gap:.25rem;background:#59C059;border:1px solid #389438;border-radius:1rem;padding:.2rem .3rem}
+.sb-var{background:#FF8C1A;border:1px solid #DB6E00;border-radius:1rem;padding:.15rem .45rem}
+
+/* Translators */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin:1rem 0}
+.trio div{border-top:3px solid var(--accent);padding-top:.5rem;font-size:.92rem;line-height:1.45}
+.trio b{display:block;font-size:1rem;margin-bottom:.2rem}
+
+/* Run sequence */
+.run{list-style:none;counter-reset:s;margin:1.25rem 0;padding:0;display:flex;flex-direction:column;gap:.85rem}
+.run li{counter-increment:s;display:grid;grid-template-columns:2.2rem 1fr;gap:.6rem}
+.run li::before{content:counter(s);font-family:"IBM Plex Mono",ui-monospace,monospace;font-weight:600;font-size:.9rem;
+  width:1.8rem;height:1.8rem;border-radius:50%;display:grid;place-items:center;background:var(--accent-soft);color:var(--accent);margin-top:.1rem}
+.run .lay{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--copper);display:block}
+
+.gatetable{max-width:18rem}
+.gatetable td,.gatetable th{text-align:center;padding-right:.5rem}
+
+/* CTA */
+.cta{margin-top:2.5rem;padding:1.4rem 1.4rem 1.5rem;border:2px solid var(--ink);border-radius:8px}
+.cta h2{margin-bottom:.4rem}
+.btn{display:inline-block;margin-top:.4rem;padding:.7rem 1.2rem;border-radius:6px;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:600}
+.btn:hover{filter:brightness(1.15)}
+.btn:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+@media (max-width:640px){
+  body{font-size:16px}
+  .sofar{grid-template-columns:1fr 1fr}
+  .stack{grid-template-columns:1fr}
+  .rail{grid-column:1;grid-row:auto}
+  .layer,.ladder li{grid-template-columns:1fr;gap:.2rem}
+  .trio{grid-template-columns:1fr}
+}
+</style>
+
+<div class="sheet">
+
+<header>
+  <p class="eyebrow">CSP · Unit 0 · Week 3 · At-home reading</p>
+  <h1>The Computing Stack</h1>
+  <p class="dek">How a computer gets from electricity to the Python program you wrote. This page connects Weeks 2a and 2b into one picture and sets up our next topic: programming languages.</p>
+  <ul class="sofar" aria-label="Where this page fits in Unit 0">
+    <li><b>Week 2a</b>Introduction to CS</li>
+    <li><b>Week 2b</b>How computers work</li>
+    <li><b>Week 3</b>The big picture (this page)</li>
+    <li><b>Next in class</b>Types of languages</li>
+  </ul>
+  <p class="meta">About 25 minutes to read, plus the review game at the end.</p>
+</header>
+
+<!-- 1 -->
+<section style="border-top:0;margin-top:0">
+  <p class="secnum">Start here</p>
+  <h2>One idea holds it all together</h2>
+  <p>In Week 2a we said computer science is not really the study of computers, the same way chemistry is not the study of beakers. It is the study of <strong>computation</strong>: how problems get solved step by step, and how we build machines to do the steps for us.</p>
+  <p>Those machines are complicated. A laptop chip has billions of parts. Nobody, not even the engineers who design it, keeps all of that in their head at once. Instead, computers are built in <strong>layers</strong>. Each layer uses the one below it without needing to know how it works inside.</p>
+  <p>Hiding the details of a lower layer so you can work with a simpler idea on top is called <strong>abstraction</strong>. You already do this every day. You steer a car without thinking about fuel injection. You text a friend without thinking about cell towers.</p>
+  <div class="callout conn">
+    <span class="lbl">★ Connection</span>
+    <p>Abstraction comes up all year in CSP. When you write <code>Circle(200, 200, 50)</code> in CMU CS Academy, you get a circle without writing any of the code that figures out which pixels to color. Someone else built that layer so you could stand on it.</p>
+  </div>
+</section>
+
+<!-- 2 -->
+<section>
+  <p class="secnum">The big picture</p>
+  <h2>The stack, top to bottom</h2>
+  <p>Here is the whole computer as a stack of layers. The top is where you live: ideas and problems in plain language. The bottom is pure physics: electricity flowing or not flowing. Everything else is built in between.</p>
+
+  <p class="stack-axis"><span>More human-friendly ↑</span></p>
+  <div class="stack" role="list" aria-label="The computing stack">
+    <div class="layer" role="listitem" style="--i:0"><span class="nm">You</span><span class="ex">Problems and ideas, in natural language</span></div>
+    <div class="layer" role="listitem" style="--i:1"><span class="nm">Applications</span><span class="ex">Web browsers, games, Scratch, CMU CS Academy</span></div>
+    <div class="layer" role="listitem" style="--i:2"><span class="nm">Operating system</span><span class="ex">Windows, macOS, Linux. Runs and manages everything above it</span></div>
+    <div class="layer" role="listitem" style="--i:3"><span class="nm">Machine language</span><span class="ex">The binary instructions a CPU can carry out</span></div>
+    <div class="layer" role="listitem" style="--i:4"><span class="nm">Hardware</span><span class="ex">CPU, memory, storage, GPU, input and output devices</span></div>
+    <div class="layer" role="listitem" style="--i:5"><span class="nm">Logic gates</span><span class="ex">AND, OR, NOT, wired together by the millions</span></div>
+    <div class="layer" role="listitem" style="--i:6"><span class="nm">Transistors</span><span class="ex">Billions of tiny switches. On means 1, off means 0</span></div>
+    <aside class="rail"><b>Programming languages</b>How people write the software in these layers. A compiler or interpreter translates it down to machine language.</aside>
+  </div>
+  <p class="stack-axis"><span>Closer to the electricity ↓</span></p>
+
+  <p style="margin-top:1.25rem">The rest of this page walks up the stack from the bottom, then follows one program all the way down and back.</p>
+</section>
+
+<!-- 3 -->
+<section>
+  <p class="secnum">Bottom layers</p>
+  <h2>Switches and gates</h2>
+  <p>At the very bottom, a computer is made of <strong>transistors</strong>: microscopic switches that either let electricity through or block it. On or off. That is why computers use <strong>binary</strong>, a number system with only two digits: 1 for on and 0 for off.</p>
+  <p>One switch cannot do much. But wire a few transistors together and you get a <strong>logic gate</strong>, a tiny circuit that takes in 1s and 0s and puts out a 1 or 0 based on a rule. The three basic gates are AND, OR, and NOT. Here is the rule for AND: the output is 1 only when both inputs are 1.</p>
+  <figure>
+    <table class="gatetable tabnum" aria-label="AND gate truth table">
+      <thead><tr><th>A</th><th>B</th><th>A AND B</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td>0</td><td>0</td></tr>
+        <tr><td>0</td><td>1</td><td>0</td></tr>
+        <tr><td>1</td><td>0</td><td>0</td></tr>
+        <tr><td>1</td><td>1</td><td><strong>1</strong></td></tr>
+      </tbody>
+    </table>
+  </figure>
+  <p>Here is the surprising part: combine enough of these simple gates and you can build circuits that add numbers, compare them, and store them. Stack millions of those circuits together and you have a processor.</p>
+  <div class="callout conn">
+    <span class="lbl">★ Connection</span>
+    <p>Python has the same three words: <code>and</code>, <code>or</code>, and <code>not</code>. Later this year you will use them to write conditions like <code>if x &gt; 0 and y &gt; 0:</code>. They follow the exact same rules as the gates.</p>
+  </div>
+</section>
+
+<!-- 4 -->
+<section>
+  <p class="secnum">Hardware layer</p>
+  <h2>The Von Neumann architecture</h2>
+  <p>In Week 2b we met the design that nearly every modern computer follows, named for mathematician John von Neumann. Its big idea is that <strong>one memory holds both the program's instructions and its data</strong>. To run a different program, you do not rewire the machine. You just load different instructions into memory.</p>
+
+  <figure>
+    <div class="scroll">
+      <svg class="vn" viewBox="0 0 640 320" role="img" aria-labelledby="vnTitle">
+        <title id="vnTitle">Von Neumann architecture: input flows into the CPU, the CPU sends results to output, and the CPU trades instructions and data back and forth with memory. Storage loads programs and files into memory.</title>
+        <defs>
+          <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="head" d="M0,0 L10,5 L0,10 z"/>
+          </marker>
+        </defs>
+        <!-- Input -->
+        <rect class="box" x="10" y="92" width="120" height="76" rx="6"/>
+        <text class="t-b" x="70" y="124" text-anchor="middle">Input</text>
+        <text class="t-s" x="70" y="146" text-anchor="middle">keyboard, mouse</text>
+        <!-- CPU -->
+        <rect class="cpu" x="175" y="20" width="290" height="170" rx="8"/>
+        <text class="t-b" x="320" y="46" text-anchor="middle">CPU</text>
+        <rect class="inner" x="192" y="62" width="126" height="92" rx="5"/>
+        <text class="t-b" x="255" y="98" text-anchor="middle">Control unit</text>
+        <text class="t-s" x="255" y="118" text-anchor="middle">directs each step</text>
+        <rect class="inner" x="322" y="62" width="126" height="92" rx="5"/>
+        <text class="t-b" x="385" y="98" text-anchor="middle">ALU</text>
+        <text class="t-s" x="385" y="118" text-anchor="middle">math and logic</text>
+        <text class="t-s" x="320" y="176" text-anchor="middle">plus registers: tiny, super-fast slots</text>
+        <!-- Output -->
+        <rect class="box" x="510" y="92" width="120" height="76" rx="6"/>
+        <text class="t-b" x="570" y="124" text-anchor="middle">Output</text>
+        <text class="t-s" x="570" y="146" text-anchor="middle">screen, speakers</text>
+        <!-- Memory -->
+        <rect class="mem" x="175" y="236" width="290" height="70" rx="8"/>
+        <text class="t-b" x="320" y="264" text-anchor="middle">Memory (RAM)</text>
+        <text class="t-s" x="320" y="286" text-anchor="middle">instructions and data, side by side</text>
+        <!-- Storage -->
+        <rect class="box" x="10" y="236" width="120" height="70" rx="6"/>
+        <text class="t-b" x="70" y="264" text-anchor="middle">Storage</text>
+        <text class="t-s" x="70" y="286" text-anchor="middle">SSD or hard drive</text>
+        <!-- Arrows -->
+        <line class="arrow" x1="132" y1="130" x2="171" y2="130" marker-end="url(#ah)"/>
+        <line class="arrow" x1="467" y1="130" x2="506" y2="130" marker-end="url(#ah)"/>
+        <line class="arrow" x1="320" y1="194" x2="320" y2="232" marker-start="url(#ah)" marker-end="url(#ah)"/>
+        <line class="arrow" x1="134" y1="271" x2="171" y2="271" marker-start="url(#ah)" marker-end="url(#ah)"/>
+      </svg>
+    </div>
+    <figcaption>Every arrow is data moving. The CPU and memory trade information constantly, billions of times a second.</figcaption>
+  </figure>
+
+  <h3>A kitchen, if it helps</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Part</th><th>Kitchen version</th><th>What it really does</th></tr></thead>
+      <tbody>
+        <tr><td><strong>CPU</strong></td><td>The cook</td><td>Carries out instructions one at a time, very fast</td></tr>
+        <tr><td><strong>RAM</strong></td><td>The countertop</td><td>Holds what is in use right now. Fast, but cleared when the power goes off</td></tr>
+        <tr><td><strong>Storage</strong></td><td>The pantry</td><td>Keeps programs and files long-term, even with the power off. Slower to reach</td></tr>
+        <tr><td><strong>Program</strong></td><td>The recipe</td><td>The list of instructions, loaded onto the counter before cooking</td></tr>
+        <tr><td><strong>GPU</strong></td><td>A crew of helpers who each do one simple step at the same time</td><td>Colors millions of pixels in parallel, so the CPU does not have to</td></tr>
+        <tr><td><strong>Motherboard</strong></td><td>The kitchen itself</td><td>The circuit board that connects every part so they can communicate</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>The fetch-decode-execute cycle</h3>
+  <p>The CPU does one thing over and over: <strong>fetch</strong> the next instruction from memory, <strong>decode</strong> it to work out what it means, and <strong>execute</strong> it. Here is the short assembly program from Week 2b, traced step by step. Memory starts with <code>ABC</code> = 2 and <code>XYZ</code> = 3.</p>
+  <div class="scroll">
+    <table class="tabnum">
+      <thead><tr><th>Instruction fetched</th><th>Decoded as</th><th>Executed</th></tr></thead>
+      <tbody>
+        <tr><td class="code">LOAD REGD, ABC</td><td>Copy a value from memory into a register</td><td>Register D = 2</td></tr>
+        <tr><td class="code">LOAD REGE, XYZ</td><td>Copy a value from memory into a register</td><td>Register E = 3</td></tr>
+        <tr><td class="code">ADD REGF, REGD, REGE</td><td>Ask the ALU to add two registers</td><td>Register F = 5</td></tr>
+        <tr><td class="code">STORE REGF, TOTAL</td><td>Copy a register back into memory</td><td>TOTAL = 5</td></tr>
+        <tr><td class="code">HALT</td><td>Stop</td><td>Done</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:1rem">Five trips around the cycle just to add 2 + 3. A modern CPU runs billions of cycles per second, which is what a speed like 3&nbsp;GHz means.</p>
+
+  <div class="callout tryit">
+    <span class="lbl">Try it</span>
+    <p>Look up your own computer's hardware. On a Mac, open the Apple menu and choose <strong>About This Mac</strong>. On Windows, go to <strong>Settings → System → About</strong>. Find the name of the processor (the CPU) and how much memory (RAM) it has.</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section>
+  <p class="secnum">Operating system and applications</p>
+  <h2>Software: system and application</h2>
+  <p><strong>Hardware</strong> is the physical stuff you can touch. <strong>Software</strong> is the programs and data that tell the hardware what to do. Week 2b split software into two kinds.</p>
+  <p><strong>System software</strong> runs the computer itself. The biggest piece is the <strong>operating system</strong> (OS). It starts when you turn the computer on and runs until you shut it down. It decides which program gets the CPU next, hands out memory, keeps track of files, and talks to devices through small programs called drivers. Because the OS handles all of that, an app never has to deal with the raw hardware.</p>
+  <p><strong>Application software</strong> is everything you open to get something done: a browser, a word processor, a game, Scratch. Applications ask the OS for what they need, and the OS asks the hardware.</p>
+  <div class="callout tryit">
+    <span class="lbl">Try it</span>
+    <p>Watch the operating system at work. On a Mac, press <strong>⌘ Space</strong> and type <strong>Activity Monitor</strong>. On Windows, press <strong>Ctrl + Shift + Esc</strong> to open Task Manager. Count roughly how many processes are running. The OS is sharing one CPU and one memory among all of them, right now.</p>
+  </div>
+</section>
+
+<!-- 6 -->
+<section>
+  <p class="secnum">Crossing the gap</p>
+  <h2>The language ladder</h2>
+  <p>The CPU only understands machine language. People think in English, Spanish, Japanese. Human language is full of ambiguity that a computer cannot handle, so we cannot just type English and have it turned into binary. We climb down a ladder instead. Here is the same small job at each rung: add two numbers and save the total.</p>
+  <ol class="ladder">
+    <li style="--i:0"><span class="nm">Natural language<small>for people</small></span><pre class="plain">ABC is 2 and XYZ is 3. Add them and save the total.</pre></li>
+    <li style="--i:1"><span class="nm">Pseudocode<small>two styles; no computer runs either</small></span><div>
+      <div class="langs">
+        <div class="lang"><span class="lname">Plain</span><pre>Set total to ABC plus XYZ</pre></div>
+        <div class="lang"><span class="lname">AP CSP</span><pre>total ← abc + xyz</pre></div>
+      </div><p class="mnote">Plain pseudocode is written however makes sense to you. AP CSP pseudocode follows set rules, like the style on the AP exam reference sheet. Its arrow means “store the value on the right in the variable on the left.”</p></div></li>
+    <li style="--i:2"><span class="nm">High-level language<small>same idea, seven languages</small></span>
+      <div class="langs">
+        <div class="lang"><span class="lname">Python</span><pre>total = abc + xyz</pre></div>
+        <div class="lang"><span class="lname">Ruby</span><pre>total = abc + xyz</pre></div>
+        <div class="lang"><span class="lname">Java</span><pre>int total = abc + xyz;</pre></div>
+        <div class="lang"><span class="lname">C++</span><pre>int total = abc + xyz;</pre></div>
+        <div class="lang"><span class="lname">JavaScript</span><pre>let total = abc + xyz;</pre></div>
+        <div class="lang"><span class="lname">Go</span><pre>total := abc + xyz</pre></div>
+        <div class="lang"><span class="lname">Scratch</span>
+          <div class="sb" role="img" aria-label="Scratch block: set total to abc plus xyz">
+            <span class="sb-set">set <span class="sb-drop">total ▾</span> to
+              <span class="sb-op"><span class="sb-var">abc</span> + <span class="sb-var">xyz</span></span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </li>
+    <li style="--i:3"><span class="nm">Assembly language<small>one line per machine instruction</small></span><pre>LOAD  REGD, ABC
+LOAD  REGE, XYZ
+ADD   REGF, REGD, REGE
+STORE REGF, TOTAL</pre></li>
+    <li style="--i:4"><span class="nm">Machine language<small>binary the CPU runs</small></span><div style="min-width:0"><div class="scroll"><table class="mtable">
+        <thead><tr><th>Operation<br>4 bits</th><th>Register<br>4 bits</th><th>Last<br>8 bits</th><th>Result</th></tr></thead>
+        <tbody>
+<tr><td><span class="bits">0001</span><span class="blbl">LOAD</span></td><td><span class="bits">1101</span><span class="blbl">register D</span></td><td><span class="bits">0000 0001</span><span class="blbl">address 1 (ABC)</span></td><td class="mean">D ← 2</td></tr>
+<tr><td><span class="bits">0001</span><span class="blbl">LOAD</span></td><td><span class="bits">1110</span><span class="blbl">register E</span></td><td><span class="bits">0000 0010</span><span class="blbl">address 2 (XYZ)</span></td><td class="mean">E ← 3</td></tr>
+<tr><td><span class="bits">0101</span><span class="blbl">ADD</span></td><td><span class="bits">1111</span><span class="blbl">into register F</span></td><td><span class="bits">1101 1110</span><span class="blbl">registers D and E</span></td><td class="mean">F ← D + E = 5</td></tr>
+<tr><td><span class="bits">0010</span><span class="blbl">STORE</span></td><td><span class="bits">1111</span><span class="blbl">register F</span></td><td><span class="bits">0000 0000</span><span class="blbl">address 0 (TOTAL)</span></td><td class="mean">TOTAL ← 5</td></tr>
+        </tbody>
+      </table></div>
+      <p class="mnote">From a made-up teaching computer. For LOAD and STORE, the last 8 bits are one memory address. For ADD, they are two 4-bit register numbers, because adding happens inside the CPU. Real CPUs use longer, more complicated codes, but the idea is the same.</p></div></li>
+  </ol>
+  <p>Every high-level version says the same thing, but look for the family resemblances. Python and Ruby look identical here: no type, no semicolon. Java and C++ also match each other: both make you declare that <code>total</code> holds an integer (<code>int</code>) and end the line with a semicolon. JavaScript uses <code>let</code> to create a new variable, and Go uses its own <code>:=</code> symbol for the same job. Scratch replaces typing with blocks that snap together.</p>
+  <p>Notice how one line of Python turned into four lines of assembly. That is abstraction at work: <strong>high-level</strong> languages hide the hardware so you can write less, while <strong>low-level</strong> languages (assembly and machine language) give exact control but make you spell out every step. Low-level code is also written for one specific kind of CPU. High-level code can run on many.</p>
+
+  <h3>The translators</h3>
+  <p>Something has to carry your code down the ladder. There are three main kinds of translator programs.</p>
+  <div class="trio">
+    <div><b>Assembler</b>Turns assembly language into machine language, one instruction at a time.</div>
+    <div><b>Compiler</b>Translates a whole program ahead of time and produces a file you can run later. C and C++ work this way.</div>
+    <div><b>Interpreter</b>Reads your program and carries it out as it goes, without producing a separate file first. Python works this way.</div>
+  </div>
+  <p>Some languages mix the two. Java is compiled into an in-between code called bytecode, which then runs on the Java Virtual Machine. That is how Java earned its slogan “write once, run anywhere”: any computer with the virtual machine can run the same bytecode.</p>
+
+  <h3>Blocks or text?</h3>
+  <p>Most of you have used Scratch, and you have been writing Python in CMU CS Academy. Both are high-level languages, and both end up as the same kind of machine instructions. The difference is in how you write them. Scratch blocks only snap together in ways that make sense, so you cannot make a typo or a syntax error, and you can focus on the logic. Python's text takes more care to type correctly, but gives you more precise control and scales up to much bigger programs.</p>
+</section>
+
+<!-- 7 -->
+<section>
+  <p class="secnum">All together</p>
+  <h2>What happens when you press Run</h2>
+  <p>Let's follow one line of your Unit 3 code, <code>Circle(200, 200, 50)</code>, through the whole stack.</p>
+  <ol class="run">
+    <li><div><span class="lay">You</span>You decide you want a circle in the middle of the canvas and type the line.</div></li>
+    <li><div><span class="lay">Hardware → OS → application</span>Each keypress travels from the keyboard (an input device) to the operating system, which passes it to your web browser, which passes it to CMU CS Academy.</div></li>
+    <li><div><span class="lay">Programming language</span>You press Run. Your Python is translated, piece by piece, into instructions the machine can carry out. In CMU CS Academy this happens inside your browser, which adds a translation layer of its own.</div></li>
+    <li><div><span class="lay">Hardware: memory</span>Those instructions, plus your program's data (the numbers 200, 200, and 50), are placed in RAM, side by side.</div></li>
+    <li><div><span class="lay">Hardware: CPU</span>The CPU runs its fetch-decode-execute cycle millions of times, running the interpreter, CMU’s graphics code, and the browser. The result is a drawing command: a circle, at this spot, this size, this color.</div></li>
+    <li><div><span class="lay">Hardware: GPU and output</span>The GPU works out which pixels fall inside the circle and colors them all at once. The operating system sends the finished image to your screen.</div></li>
+    <li><div><span class="lay">Gates and transistors</span>Underneath every one of those steps, logic gates are combining 1s and 0s, and transistors are switching on and off.</div></li>
+  </ol>
+  <p>You wrote one line. Every layer below you did its job without you ever seeing it. That is the computing stack.</p>
+</section>
+
+<!-- 8 -->
+<section>
+  <p class="secnum">Looking ahead</p>
+  <h2>Why are there so many languages?</h2>
+  <p>By some counts, around 9,000 programming languages have been created, and 50 to 100 are in wide use today. If they all end up as machine instructions for the same kind of hardware, why not just use one? Because each language is built around a different set of <strong>trade-offs</strong>, and no language wins at everything.</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Trade-off</th><th>One end</th><th>The other end</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Level</strong></td><td>Close to the hardware: fast and precise, more work (C, assembly)</td><td>Far from the hardware: less code, the language handles the details (Python)</td></tr>
+        <tr><td><strong>Translation</strong></td><td>Compiled ahead of time (C, C++)</td><td>Interpreted as it runs (Python)</td></tr>
+        <tr><td><strong>Purpose</strong></td><td>General-purpose: good at many things (Python, Java)</td><td>Built for one job: statistics in R, databases in SQL</td></tr>
+        <tr><td><strong>Form</strong></td><td>Text-based (Python, Java)</td><td>Visual blocks (Scratch)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:1rem">Languages also differ in <strong>style</strong>, or paradigm. Some spell out instructions step by step (imperative). Some bundle data and actions together into objects (object-oriented). Some build programs out of functions that avoid changing shared data (functional). And some things people call languages are not programming languages at all: HTML describes the structure of a web page and CSS describes its look, but neither one runs instructions.</p>
+  <div class="callout conn">
+    <span class="lbl">★ Connection</span>
+    <p>Next in class we sort programming languages into types. Every row of the table above is one way to sort them, so keep it in mind.</p>
+  </div>
+</section>
+
+<div class="cta">
+  <h2>Check yourself</h2>
+  <p>Play the Unit 0 review game: match the terms, sort the cards, and build the stack. Keep playing until you get a perfect score, then screenshot it and post it in the Teams assignment.</p>
+  <a class="btn" href="https://claude.ai/artifact/TimzexBEarpRhUu9hRf9gb">Open the review game</a>
+</div>
+
+</div>
+
+</body></html>

@@ -1,0 +1,488 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Unit 0 Review Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F4F7; --card:#FFFFFF; --ink:#1B1F27; --muted:#5A6170; --line:#CDD2DB;
+  --accent:#2F3A8C; --accent-soft:#E1E5F7;
+  --copper:#A4552A; --copper-soft:#F6E4D8;
+  --good:#2B7453; --good-soft:#DAEEE3;
+  --bad:#AD3F37; --bad-soft:#F6DDDA;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#13161C; --card:#1C2029; --ink:#E8EAEE; --muted:#A3A9B6; --line:#343A47;
+    --accent:#A8B2F0; --accent-soft:#252C52;
+    --copper:#E2A077; --copper-soft:#3C2819;
+    --good:#5DC190; --good-soft:#1B3A2B;
+    --bad:#E27D74; --bad-soft:#442321;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#13161C; --card:#1C2029; --ink:#E8EAEE; --muted:#A3A9B6; --line:#343A47;
+  --accent:#A8B2F0; --accent-soft:#252C52;
+  --copper:#E2A077; --copper-soft:#3C2819;
+  --good:#5DC190; --good-soft:#1B3A2B;
+  --bad:#E27D74; --bad-soft:#442321;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;font-size:1.02rem;line-height:1.5;-webkit-font-smoothing:antialiased}
+main{max-width:980px;margin:0 auto;padding-block:28px 64px;padding-inline:20px}
+h1,h2,h3{line-height:1.15;margin:0;text-wrap:balance}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;
+  padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:22px}
+.eyebrow{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--copper);margin:0 0 6px}
+header.top h1{font-size:clamp(1.9rem,5vw,2.7rem);font-weight:600;letter-spacing:-.02em}
+header.top p.dek{margin:6px 0 0;color:var(--muted);max-width:54ch}
+.steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.steps li{padding:5px 12px;border:1.5px solid var(--line);border-radius:4px;font-size:.88rem;color:var(--muted);white-space:nowrap}
+.steps li.on{border-color:var(--accent);background:var(--accent-soft);color:var(--ink);font-weight:600}
+.steps li.done{color:var(--good);border-color:var(--good)}
+
+.intro{margin:0 0 18px;max-width:70ch}
+.intro h2{font-size:1.55rem;font-weight:600;margin-bottom:6px}
+.intro p{margin:0;color:var(--muted)}
+
+/* Matching */
+.match{display:grid;grid-template-columns:minmax(190px,1fr) 2.2fr;gap:18px;align-items:start}
+.col h3{font-size:.8rem;margin-bottom:8px;color:var(--muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.col .list{display:flex;flex-direction:column;gap:8px}
+.tile{display:block;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);
+  border-radius:6px;padding:10px 14px;cursor:pointer;transition:border-color .15s,background .15s}
+.tile:hover{border-color:var(--accent)}
+.tile.term{font-weight:600;font-size:1.05rem}
+.tile.sel{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 4px 0 0 var(--accent)}
+.tile.ok{border-color:var(--good);background:var(--good-soft);cursor:default}
+.tile.ok .tag{display:inline-block;margin-bottom:4px;font-weight:600;color:var(--good);font-size:.88rem}
+.tile.no{border-color:var(--bad);background:var(--bad-soft)}
+@media (prefers-reduced-motion:no-preference){
+  .tile.no,.chip.no{animation:shake .35s}
+  @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+}
+.status{min-height:1.6em;margin:14px 0;font-weight:600}
+.status.good{color:var(--good)} .status.bad{color:var(--bad)}
+
+/* Sorting */
+.sortwrap{display:grid;gap:18px}
+.cardstage{background:var(--card);border:2px solid var(--ink);border-radius:8px;padding:22px;display:grid;gap:16px}
+.cardstage .count{color:var(--muted);font-size:.92rem}
+.cardstage .stmt{font-size:clamp(1.2rem,3vw,1.55rem);font-weight:600;line-height:1.3;overflow-wrap:anywhere}
+.cardstage .stmt code{font-weight:600;background:var(--accent-soft);padding:1px 6px;border-radius:4px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice{padding:14px;border-radius:6px;border:2px solid var(--accent);background:var(--accent-soft);font-weight:600;cursor:pointer;font-size:1.05rem}
+.choice:hover:not(:disabled){filter:brightness(.97)}
+.choice:disabled{opacity:.55;cursor:default}
+.feedback{border-radius:6px;padding:12px 14px}
+.feedback.good{background:var(--good-soft);border:1.5px solid var(--good)}
+.feedback.bad{background:var(--bad-soft);border:1.5px solid var(--bad)}
+.feedback strong{display:block}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bin{border:1.5px dashed var(--line);border-radius:8px;padding:12px;min-height:90px}
+.bin h3{font-size:1rem;font-weight:600;margin-bottom:8px}
+.bin ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.bin li{background:var(--card);border:1px solid var(--line);border-radius:5px;padding:6px 10px;font-size:.92rem;overflow-wrap:anywhere}
+.bin li.missed{border-left:4px solid var(--bad)}
+
+/* Stack */
+.stackgame{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.pool{display:flex;flex-direction:column;gap:8px}
+.chip{text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:6px;padding:10px 14px;cursor:pointer;font-weight:500}
+.chip:hover{border-color:var(--accent)}
+.chip.no{border-color:var(--bad);background:var(--bad-soft)}
+.slots{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.slots li{display:grid;grid-template-columns:2rem 1fr;align-items:center;gap:8px;min-height:46px;
+  border-radius:6px;padding:8px 12px;border:1.5px dashed var(--line);color:var(--muted)}
+.slots li .n{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.85rem}
+.slots li.filled{border-style:solid;color:var(--ink);font-weight:500;
+  background:color-mix(in oklab, var(--lay) 16%, var(--card));border-color:color-mix(in oklab, var(--lay) 55%, var(--card))}
+.slots li.filled.miss{box-shadow:inset 4px 0 0 var(--bad)}
+.axis{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:0 0 6px}
+
+.primary{display:inline-block;padding:12px 20px;border-radius:6px;border:none;background:var(--ink);color:var(--bg);font-weight:600;cursor:pointer;font-size:1.02rem}
+.primary:hover{filter:brightness(1.15)}
+
+/* Finish */
+.finish{background:var(--card);border:2px solid var(--ink);border-radius:8px;padding:26px;max-width:640px}
+.finish h2{font-size:1.8rem;font-weight:600;margin-bottom:8px}
+.finish label{display:block;font-weight:600;margin:16px 0 6px}
+.finish input{width:100%;padding:10px 12px;border-radius:6px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.scorebox{margin:18px 0;padding:16px;border-radius:6px;background:var(--accent-soft);border:1.5px solid var(--accent)}
+.scorebox .big{font-size:2.6rem;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+.scorebox .who{font-weight:600;font-size:1.15rem;min-height:1.4em}
+.scorebox p{margin:6px 0 0}
+.note{color:var(--muted)}
+.scorebox.miss{background:var(--bad-soft);border-color:var(--bad)}
+.rhead{font-size:1.05rem;font-weight:600;margin:0 0 8px}
+.review{margin:0 0 18px;padding-left:1.2rem;display:flex;flex-direction:column;gap:8px}
+.review li{overflow-wrap:anywhere}
+.review .ans{display:block;color:var(--muted);font-size:.93rem}
+
+@media (max-width:680px){
+  .match,.stackgame{grid-template-columns:1fr}
+  .col.terms .list{flex-direction:row;flex-wrap:wrap}
+  .col.terms .tile{width:auto}
+  .choices,.bins{grid-template-columns:1fr}
+}
+</style>
+
+<main>
+  <header class="top">
+    <div>
+      <p class="eyebrow">CSP · Unit 0 · Week 3 · Check yourself</p>
+      <h1>Unit 0 Review</h1>
+      <p class="dek">Hardware, software, and the languages in between. Work through all three parts. Get a perfect score, then screenshot your certificate.</p>
+    </div>
+    <ol class="steps" aria-label="Progress">
+      <li id="st1" class="on">1. Match</li>
+      <li id="st2">2. Sort</li>
+      <li id="st3">3. Stack</li>
+      <li id="st4">4. Finish</li>
+    </ol>
+  </header>
+
+  <!-- PART 1 -->
+  <section id="part1">
+    <div class="intro">
+      <h2>Match each term to its definition</h2>
+      <p>Tap a term, then tap the definition that goes with it. You can also start with the definition.</p>
+    </div>
+    <div class="match">
+      <div class="col terms"><h3>Terms</h3><div class="list" id="terms"></div></div>
+      <div class="col"><h3>Definitions</h3><div class="list" id="defs"></div></div>
+    </div>
+    <div class="status" id="mstatus" aria-live="polite"></div>
+    <button class="primary" id="toPart2" hidden>Go to part 2: Sort</button>
+  </section>
+
+  <!-- PART 2 -->
+  <section id="part2" hidden>
+    <div class="intro">
+      <h2 id="sortTitle"></h2>
+      <p>Read each card and choose where it belongs. Read the explanation, then go to the next card.</p>
+    </div>
+    <div class="sortwrap">
+      <div class="cardstage">
+        <div class="count" id="sortCount"></div>
+        <div class="stmt" id="sortStmt"></div>
+        <div class="choices">
+          <button class="choice" id="choiceA"></button>
+          <button class="choice" id="choiceB"></button>
+        </div>
+        <div class="feedback" id="sortFb" aria-live="polite" hidden></div>
+        <div><button class="primary" id="sortNext" hidden>Next card</button></div>
+      </div>
+      <div class="bins">
+        <div class="bin"><h3 id="binAName"></h3><ul id="binA"></ul></div>
+        <div class="bin"><h3 id="binBName"></h3><ul id="binB"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PART 3 -->
+  <section id="part3" hidden>
+    <div class="intro">
+      <h2>Build the stack</h2>
+      <p>Put these in order by level of abstraction. Start with the most human-friendly layer at the top and finish with the one closest to the electricity.</p>
+    </div>
+    <div class="stackgame">
+      <div>
+        <p class="axis"><span>Tap the next layer</span></p>
+        <div class="pool" id="pool"></div>
+      </div>
+      <div>
+        <p class="axis"><span>Most human-friendly</span></p>
+        <ol class="slots" id="slots"></ol>
+        <p class="axis" style="margin-top:6px"><span>Closest to the electricity</span></p>
+      </div>
+    </div>
+    <div class="status" id="kstatus" aria-live="polite"></div>
+    <button class="primary" id="toFinish" hidden>See my score</button>
+  </section>
+
+  <!-- FINISH -->
+  <section id="part4" hidden>
+    <div class="finish" id="retryBox" hidden>
+      <h2>Almost there</h2>
+      <p class="note">You need a perfect score before you can screenshot. Review what you missed, then start over. The cards will come in a new order.</p>
+      <div class="scorebox miss">
+        <div class="big" id="rtotal"></div>
+        <p id="rbreakdown"></p>
+      </div>
+      <h3 class="rhead">Review these</h3>
+      <ul class="review" id="review"></ul>
+      <button class="primary" id="retry">Start over</button>
+    </div>
+    <div class="finish" id="perfectBox" hidden>
+      <h2>Perfect score</h2>
+      <p class="note">Type your name, then take a screenshot of this box and post it in the Teams assignment.</p>
+      <label for="name">Your name</label>
+      <input id="name" autocomplete="name" placeholder="First and last name">
+      <div class="scorebox">
+        <div class="note">CSP Unit 0 · Week 3 review</div>
+        <div class="who" id="who"></div>
+        <div class="big" id="total"></div>
+        <p id="breakdown"></p>
+        <p class="note" id="when"></p>
+      </div>
+      <button class="primary" id="again">Play again</button>
+    </div>
+  </section>
+</main>
+
+<script>
+const PAIRS = [
+  {t:"Computer science", d:"The study of computers and computational systems: their design, development, and uses. Programming is one of its tools, not the whole field."},
+  {t:"CPU", d:"The part that carries out instructions. Its control unit directs the work, and its arithmetic logic unit (ALU) does the math and comparisons."},
+  {t:"RAM (memory)", d:"Fast, temporary workspace that holds the instructions and data being used right now. Its contents disappear when the power goes off."},
+  {t:"Storage", d:"The long-term home for files, programs, and the operating system, such as an SSD or hard drive. It keeps everything when the power is off."},
+  {t:"Von Neumann architecture", d:"The design behind nearly every modern computer: a CPU, one memory that holds both instructions and data, and input and output devices."},
+  {t:"Fetch-decode-execute cycle", d:"The loop the CPU repeats billions of times a second: get the next instruction, work out what it means, carry it out."},
+  {t:"Operating system", d:"System software that manages the hardware and runs every other program. Windows, macOS, and Linux are examples."},
+  {t:"Abstraction", d:"Hiding the details of a lower layer so you can work with a simpler idea on top of it."},
+  {t:"Pseudocode", d:"An outline of an algorithm, written in plain language or a simplified code like the AP exam's. People can follow it, but no computer can run it."},
+  {t:"Assembly language", d:"Short word codes such as LOAD and ADD, where each line stands for one machine instruction."}
+];
+
+const SORTS = [
+  {title:"Hardware or software?", a:"Hardware", b:"Software", cards:[
+    {x:"The CPU", k:"a", why:"The CPU is a physical chip on the motherboard."},
+    {x:"The operating system", k:"b", why:"The OS is a program. It is system software that manages the hardware."},
+    {x:"A stick of RAM", k:"a", why:"RAM is a physical part you could hold in your hand."},
+    {x:"The Python interpreter", k:"b", why:"An interpreter is a program that runs other programs."},
+    {x:"A keyboard and mouse", k:"a", why:"These are physical input devices."},
+    {x:"A web browser", k:"b", why:"A browser is application software."},
+    {x:"The GPU (graphics card)", k:"a", why:"The GPU is a physical processor built for drawing images."},
+    {x:"The driver that lets your computer talk to a printer", k:"b", why:"A device driver is a small piece of system software."}
+  ]},
+  {title:"Low-level or high-level language?", a:"Low-level", b:"High-level", cards:[
+    {x:"<code>LOAD REGD, ABC</code>", k:"a", why:"This is assembly language. Each line is one machine instruction."},
+    {x:"<code>0001 1101 0000 0001</code>", k:"a", why:"This is machine language: binary the CPU runs directly."},
+    {x:"<code>print(average)</code>", k:"b", why:"This is Python. One line like this can become many machine instructions."},
+    {x:"A Scratch “repeat 10” block", k:"b", why:"Scratch is a visual language, but it is still high-level. The blocks hide the hardware."},
+    {x:"Written for one specific kind of CPU", k:"a", why:"Machine and assembly language are tied to one processor design."},
+    {x:"The same program can run on many kinds of computers", k:"b", why:"Portability is a big advantage of high-level languages."},
+    {x:"Gives exact control over the hardware", k:"a", why:"Low-level code tells the CPU precisely which register and memory spot to use."},
+    {x:"Easier for people to read and write, but hides what the hardware is doing", k:"b", why:"That trade-off is the whole point of a high-level language."}
+  ]},
+  {title:"Compiler or interpreter?", a:"Compiler", b:"Interpreter", cards:[
+    {x:"Translates the whole program into machine code before it runs", k:"a", why:"A compiler does all the translating ahead of time."},
+    {x:"Reads and carries out the program as it goes", k:"b", why:"An interpreter works through your code while it runs."},
+    {x:"Produces a separate program file you can run later without the source code", k:"a", why:"The compiler's output, an executable, runs on its own."},
+    {x:"Lets you type one line and see the result right away", k:"b", why:"Python's interactive shell works this way."},
+    {x:"The usual way C and C++ programs are run", k:"a", why:"C and C++ are compiled languages."},
+    {x:"The usual way Python programs are run", k:"b", why:"Python is an interpreted language."},
+    {x:"A misspelled variable name on line 50 is caught before the program starts", k:"a", why:"The compiler checks the whole program while translating it."},
+    {x:"A misspelled variable name on line 50 is not noticed until the program reaches line 50", k:"b", why:"The interpreter only finds that problem when it tries to run that line."}
+  ]}
+];
+
+const STACK = [
+  "Your idea in plain English",
+  "Pseudocode",
+  "High-level code (Python, Scratch)",
+  "Assembly language",
+  "Machine language (binary)",
+  "Logic gates (AND, OR, NOT)",
+  "Transistors switching on and off"
+];
+
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+let selT=null, selD=null, matched=0, missed=new Set();
+let sortScore=0, sortTotal=0, si=0, ci=0, queue=[], sortMissed=[];
+let attempts=1;
+let nextSlot=0, stackMissed=new Set();
+
+/* ---------- Part 1: Match ---------- */
+function startMatch(){
+  selT=null; selD=null; matched=0; missed=new Set();
+  const terms=$("terms"), defs=$("defs");
+  terms.innerHTML=""; defs.innerHTML="";
+  shuffle(PAIRS.map((p,i)=>i)).forEach(i=>{
+    const b=document.createElement("button");
+    b.className="tile term"; b.textContent=PAIRS[i].t;
+    b.onclick=()=>pick("t",i,b); terms.appendChild(b);
+  });
+  shuffle(PAIRS.map((p,i)=>i)).forEach(i=>{
+    const b=document.createElement("button");
+    b.className="tile def";
+    b.innerHTML='<span class="tag" hidden></span><span class="txt"></span>';
+    b.querySelector(".txt").textContent=PAIRS[i].d;
+    b.onclick=()=>pick("d",i,b); defs.appendChild(b);
+  });
+  $("mstatus").textContent=""; $("mstatus").className="status";
+  $("toPart2").hidden=true;
+}
+function pick(kind,i,el){
+  if(el.classList.contains("ok")) return;
+  const listSel = kind==="t" ? "#terms .tile" : "#defs .tile";
+  document.querySelectorAll(listSel).forEach(x=>x.classList.remove("sel","no"));
+  el.classList.add("sel");
+  if(kind==="t") selT={i,el}; else selD={i,el};
+  if(selT && selD) check();
+}
+function check(){
+  const st=$("mstatus");
+  if(selT.i===selD.i){
+    selT.el.classList.remove("sel"); selD.el.classList.remove("sel");
+    selT.el.classList.add("ok"); selD.el.classList.add("ok");
+    const tag=selD.el.querySelector(".tag"); tag.textContent=PAIRS[selT.i].t; tag.hidden=false;
+    selT.el.disabled=true; selD.el.disabled=true;
+    matched++;
+    st.className="status good";
+    st.textContent = matched===PAIRS.length ? "All matched. Nice work." : "Match! "+(PAIRS.length-matched)+" to go.";
+    if(matched===PAIRS.length) $("toPart2").hidden=false;
+  } else {
+    missed.add(selT.i);
+    const d=selD.el; d.classList.remove("sel"); void d.offsetWidth; d.classList.add("no");
+    st.className="status bad";
+    st.textContent="Not a match. \""+PAIRS[selT.i].t+"\" is still selected, so try another definition.";
+    selD=null; return;
+  }
+  selT=null; selD=null;
+}
+
+function setStep(n){
+  ["st1","st2","st3","st4"].forEach((id,k)=>{
+    const li=$(id); li.classList.remove("on","done");
+    if(k+1<n) li.classList.add("done"); if(k+1===n) li.classList.add("on");
+  });
+  [1,2,3,4].forEach(k=>{ $("part"+k).hidden = k!==n; });
+  window.scrollTo({top:0});
+}
+
+/* ---------- Part 2: Sort ---------- */
+function startSortSet(){
+  const s=SORTS[si];
+  queue=shuffle(s.cards); ci=0;
+  $("sortTitle").textContent="Set "+(si+1)+" of "+SORTS.length+": "+s.title;
+  $("choiceA").textContent=s.a; $("choiceB").textContent=s.b;
+  $("binAName").textContent=s.a; $("binBName").textContent=s.b;
+  $("binA").innerHTML=""; $("binB").innerHTML="";
+  showCard();
+}
+function showCard(){
+  const c=queue[ci];
+  $("sortCount").textContent="Card "+(ci+1)+" of "+queue.length;
+  $("sortStmt").innerHTML=c.x;
+  $("choiceA").disabled=false; $("choiceB").disabled=false;
+  $("sortFb").hidden=true; $("sortFb").innerHTML="";
+  $("sortNext").hidden=true;
+}
+function answer(k){
+  const s=SORTS[si], c=queue[ci], right=k===c.k;
+  sortTotal++; if(right) sortScore++; else sortMissed.push({x:c.x, bin:(c.k==="a"?s.a:s.b), why:c.why});
+  $("choiceA").disabled=true; $("choiceB").disabled=true;
+  const fb=$("sortFb");
+  fb.className="feedback "+(right?"good":"bad"); fb.hidden=false;
+  const head=document.createElement("strong");
+  head.textContent = right ? "Correct." : "Not quite. This one belongs in "+(c.k==="a"?s.a:s.b)+".";
+  const why=document.createElement("span"); why.textContent=c.why;
+  fb.innerHTML=""; fb.append(head,why);
+  const li=document.createElement("li"); li.innerHTML=c.x; if(!right) li.classList.add("missed");
+  $(c.k==="a"?"binA":"binB").appendChild(li);
+  const btn=$("sortNext");
+  const lastCard = ci===queue.length-1, lastSet = si===SORTS.length-1;
+  btn.textContent = !lastCard ? "Next card" : (lastSet ? "Go to part 3: Stack" : "Next set");
+  btn.hidden=false; btn.focus();
+}
+$("choiceA").onclick=()=>answer("a");
+$("choiceB").onclick=()=>answer("b");
+$("sortNext").onclick=()=>{
+  if(ci<queue.length-1){ ci++; showCard(); }
+  else if(si<SORTS.length-1){ si++; startSortSet(); window.scrollTo({top:0}); }
+  else { setStep(3); startStack(); }
+};
+$("toPart2").onclick=()=>{ si=0; sortScore=0; sortTotal=0; sortMissed=[]; setStep(2); startSortSet(); };
+
+/* ---------- Part 3: Stack ---------- */
+function layerColor(i){
+  const p = Math.round(i/(STACK.length-1)*100);
+  return "color-mix(in oklab, var(--copper) "+p+"%, var(--accent))";
+}
+function startStack(){
+  nextSlot=0; stackMissed=new Set();
+  const slots=$("slots"), pool=$("pool");
+  slots.innerHTML=""; pool.innerHTML="";
+  STACK.forEach((_,i)=>{
+    const li=document.createElement("li");
+    li.innerHTML='<span class="n">'+(i+1)+'</span><span class="lbl">&nbsp;</span>';
+    slots.appendChild(li);
+  });
+  shuffle(STACK.map((s,i)=>i)).forEach(i=>{
+    const b=document.createElement("button");
+    b.className="chip"; b.textContent=STACK[i];
+    b.onclick=()=>place(i,b); pool.appendChild(b);
+  });
+  $("kstatus").textContent=""; $("kstatus").className="status";
+  $("toFinish").hidden=true;
+}
+function place(i,b){
+  const st=$("kstatus");
+  if(i===nextSlot){
+    const li=$("slots").children[nextSlot];
+    li.classList.add("filled"); if(stackMissed.has(nextSlot)) li.classList.add("miss");
+    li.style.setProperty("--lay", layerColor(nextSlot));
+    li.querySelector(".lbl").textContent=STACK[i];
+    b.remove(); nextSlot++;
+    st.className="status good";
+    if(nextSlot===STACK.length){
+      st.textContent="Stack complete. Each layer is built on the one below it.";
+      $("toFinish").hidden=false; $("toFinish").focus();
+    } else st.textContent="Yes. "+(STACK.length-nextSlot)+" to go.";
+  } else {
+    stackMissed.add(nextSlot);
+    b.classList.remove("no"); void b.offsetWidth; b.classList.add("no");
+    st.className="status bad";
+    st.textContent = i<nextSlot ? "" : "Not yet. Look for the layer that is a little more human-friendly than that one.";
+  }
+}
+$("toFinish").onclick=finish;
+
+/* ---------- Finish ---------- */
+function finish(){
+  setStep(4);
+  const m=PAIRS.length-missed.size, mt=PAIRS.length;
+  const k=STACK.length-stackMissed.size, kt=STACK.length;
+  const total=m+sortScore+k, max=mt+sortTotal+kt;
+  const summary="Matching: "+m+" of "+mt+" on the first try. Sorting: "+sortScore+" of "+sortTotal+" correct. Stack: "+k+" of "+kt+" on the first try.";
+  const perfect = total===max;
+  $("perfectBox").hidden=!perfect; $("retryBox").hidden=perfect;
+  if(perfect){
+    $("total").textContent=total+" / "+max;
+    $("breakdown").textContent=summary+" Attempt "+attempts+".";
+    $("when").textContent="Completed "+new Date().toLocaleString([], {dateStyle:"medium", timeStyle:"short"});
+    updateName();
+  } else {
+    $("rtotal").textContent=total+" / "+max;
+    $("rbreakdown").textContent=summary;
+    const ul=$("review"); ul.innerHTML="";
+    const add=(main,ans)=>{ const li=document.createElement("li"); li.innerHTML=main;
+      const a=document.createElement("span"); a.className="ans"; a.textContent=ans; li.appendChild(a); ul.appendChild(li); };
+    [...missed].forEach(i=>add("<strong></strong>",PAIRS[i].d));
+    ul.querySelectorAll("strong").forEach((el,j)=>{ el.textContent=PAIRS[[...missed][j]].t; });
+    sortMissed.forEach(c=>add(c.x+" <strong>→ "+c.bin+"</strong>",c.why));
+    if(stackMissed.size){
+      add("<strong>The stack, most human-friendly to closest to the electricity</strong>",STACK.join(" → "));
+    }
+  }
+}
+function updateName(){ $("who").textContent=$("name").value.trim() || "Type your name above"; }
+$("name").addEventListener("input",updateName);
+$("retry").onclick=()=>{ attempts++; startMatch(); setStep(1); };
+$("again").onclick=()=>{ attempts++; startMatch(); setStep(1); };
+
+startMatch();
+</script>
+
+</body></html>
