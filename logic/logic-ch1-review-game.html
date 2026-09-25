@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Formal Logic Chapter 1 Review Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#E8EDF1; --card:#FFFFFF; --ink:#1D2833; --muted:#566473; --line:#C6D0DA;
+  --brass:#8E621A; --brass-soft:#F2E4C8;
+  --good:#2B7453; --good-soft:#DAEEE3;
+  --bad:#AD3F37; --bad-soft:#F6DDDA;
+  --sel:#2C5A87; --sel-soft:#D9E5F1;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12181F; --card:#1B242E; --ink:#E3E8ED; --muted:#9BA9B7; --line:#34424F;
+    --brass:#D8A64F; --brass-soft:#3A2F1B;
+    --good:#5DC190; --good-soft:#1B3A2B;
+    --bad:#E27D74; --bad-soft:#442321;
+    --sel:#86B5E3; --sel-soft:#1E3348;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12181F; --card:#1B242E; --ink:#E3E8ED; --muted:#9BA9B7; --line:#34424F;
+  --brass:#D8A64F; --brass-soft:#3A2F1B;
+  --good:#5DC190; --good-soft:#1B3A2B;
+  --bad:#E27D74; --bad-soft:#442321;
+  --sel:#86B5E3; --sel-soft:#1E3348;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:1.05rem;line-height:1.5}
+main{max-width:980px;margin:0 auto;padding:28px 20px 64px}
+h1,h2,h3{font-family:Alegreya,Georgia,"Times New Roman",serif;line-height:1.15;margin:0}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;
+  padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:22px}
+header.top h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.01em}
+header.top p{margin:6px 0 0;color:var(--muted);max-width:52ch}
+.steps{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.steps li{padding:6px 12px;border:1.5px solid var(--line);border-radius:999px;font-size:.9rem;color:var(--muted);white-space:nowrap}
+.steps li.on{border-color:var(--brass);background:var(--brass-soft);color:var(--ink);font-weight:700}
+.steps li.done{color:var(--good);border-color:var(--good)}
+
+.intro{margin:0 0 18px;max-width:70ch}
+.intro h2{font-size:1.7rem;margin-bottom:6px}
+.intro p{margin:0;color:var(--muted)}
+
+/* Matching */
+.match{display:grid;grid-template-columns:minmax(180px,1fr) 2.2fr;gap:18px;align-items:start}
+.col h3{font-size:1.15rem;margin-bottom:8px;color:var(--muted);font-weight:700}
+.col .list{display:flex;flex-direction:column;gap:8px}
+.tile{display:block;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);
+  border-radius:10px;padding:10px 14px;cursor:pointer;transition:border-color .15s,background .15s}
+.tile:hover{border-color:var(--sel)}
+.tile.term{font-weight:700;font-family:Alegreya,Georgia,serif;font-size:1.15rem}
+.tile.sel{border-color:var(--sel);background:var(--sel-soft);box-shadow:inset 4px 0 0 var(--sel)}
+.tile.ok{border-color:var(--good);background:var(--good-soft);cursor:default}
+.tile.ok .tag{display:inline-block;margin-bottom:4px;font-weight:700;color:var(--good);font-size:.9rem}
+.tile.no{border-color:var(--bad);background:var(--bad-soft)}
+@media (prefers-reduced-motion:no-preference){
+  .tile.no{animation:shake .35s}
+  @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+}
+.status{min-height:1.6em;margin:14px 0;font-weight:700}
+.status.good{color:var(--good)} .status.bad{color:var(--bad)}
+
+/* Sorting */
+.sortwrap{display:grid;gap:18px}
+.cardstage{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:22px 22px 20px;
+  display:grid;gap:16px}
+.cardstage .count{color:var(--muted);font-size:.95rem}
+.cardstage .stmt{font-family:Alegreya,Georgia,serif;font-size:clamp(1.3rem,3vw,1.7rem);font-weight:700;line-height:1.3}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice{padding:14px;border-radius:10px;border:2px solid var(--brass);background:var(--brass-soft);
+  font-weight:700;cursor:pointer;font-size:1.05rem}
+.choice:hover:not(:disabled){filter:brightness(.97)}
+.choice:disabled{opacity:.55;cursor:default}
+.feedback{border-radius:10px;padding:12px 14px;display:none}
+.feedback.show{display:block}
+.feedback.good{background:var(--good-soft);border:1.5px solid var(--good)}
+.feedback.bad{background:var(--bad-soft);border:1.5px solid var(--bad)}
+.feedback strong{display:block}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bin{border:1.5px dashed var(--line);border-radius:12px;padding:12px;min-height:90px}
+.bin h3{font-size:1.1rem;margin-bottom:8px}
+.bin ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.bin li{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:.93rem}
+.bin li.missed{border-left:4px solid var(--bad)}
+
+.primary{display:inline-block;padding:12px 20px;border-radius:10px;border:none;background:var(--ink);color:var(--bg);
+  font-weight:700;cursor:pointer;font-size:1.05rem}
+.primary:hover{filter:brightness(1.15)}
+.primary:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.secondary{padding:12px 20px;border-radius:10px;border:1.5px solid var(--ink);background:transparent;font-weight:700;cursor:pointer;font-size:1.05rem}
+.actions{display:flex;flex-wrap:wrap;gap:10px}
+.hidden{display:none !important}
+
+/* Finish */
+.finish{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:26px;max-width:640px}
+.finish h2{font-size:2rem;margin-bottom:8px}
+.finish label{display:block;font-weight:700;margin:16px 0 6px}
+.finish input{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.scorebox{margin:18px 0;padding:16px;border-radius:10px;background:var(--brass-soft);border:1.5px solid var(--brass)}
+.scorebox .big{font-family:Alegreya,Georgia,serif;font-size:2.6rem;font-weight:800;line-height:1}
+.scorebox .who{font-weight:700;font-size:1.2rem;min-height:1.4em}
+.scorebox p{margin:6px 0 0}
+.note{color:var(--muted)}
+
+@media (max-width:680px){
+  .match{grid-template-columns:1fr}
+  .col.terms .list{flex-direction:row;flex-wrap:wrap}
+  .col.terms .tile{width:auto}
+  .choices,.bins{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div>
+      <h1>Chapter 1 Review</h1>
+      <p>Formal vs. informal, deductive vs. inductive, categorical vs. propositional. Work through both parts, then screenshot your score.</p>
+    </div>
+    <ol class="steps" aria-label="Progress">
+      <li id="st1" class="on">1. Match</li>
+      <li id="st2">2. Sort</li>
+      <li id="st3">3. Finish</li>
+    </ol>
+  </header>
+
+  <!-- PART 1 -->
+  <section id="part1">
+    <div class="intro">
+      <h2>Match each term to its definition</h2>
+      <p>Tap a term, then tap the definition that goes with it. You can also start with the definition.</p>
+    </div>
+    <div class="match">
+      <div class="col terms"><h3>Terms</h3><div class="list" id="terms"></div></div>
+      <div class="col"><h3>Definitions</h3><div class="list" id="defs"></div></div>
+    </div>
+    <div class="status" id="mstatus" aria-live="polite"></div>
+    <button class="primary hidden" id="toPart2">Go to part 2: Sort</button>
+  </section>
+
+  <!-- PART 2 -->
+  <section id="part2" class="hidden">
+    <div class="intro">
+      <h2 id="sortTitle"></h2>
+      <p>Read each card and choose where it belongs. Read the explanation, then go to the next card.</p>
+    </div>
+    <div class="sortwrap">
+      <div class="cardstage">
+        <div class="count" id="sortCount"></div>
+        <div class="stmt" id="sortStmt"></div>
+        <div class="choices">
+          <button class="choice" id="choiceA"></button>
+          <button class="choice" id="choiceB"></button>
+        </div>
+        <div class="feedback" id="sortFb" aria-live="polite"></div>
+        <div><button class="primary hidden" id="sortNext">Next card</button></div>
+      </div>
+      <div class="bins">
+        <div class="bin"><h3 id="binAName"></h3><ul id="binA"></ul></div>
+        <div class="bin"><h3 id="binBName"></h3><ul id="binB"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINISH -->
+  <section id="part3" class="hidden">
+    <div class="finish">
+      <h2>You finished the review</h2>
+      <p class="note">Type your name, then send your score. A form will open with your score filled in. Press Submit on that form to turn it in.</p>
+      <label for="name">Your name</label>
+      <input id="name" autocomplete="name" placeholder="First and last name">
+      <div class="scorebox">
+        <div class="who" id="who"></div>
+        <div class="big" id="total"></div>
+        <p id="breakdown"></p>
+        <p class="note" id="when"></p>
+      </div>
+      <div class="actions">
+        <button class="primary" id="send" disabled>Send my score</button>
+        <button class="secondary" id="again">Play again</button>
+      </div>
+      <p class="note" id="sendNote">Type your name to send your score.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+const PAIRS = [
+  {t:"Logic", d:"The art and science of reasoning."},
+  {t:"Formal logic", d:"Studies reasoning in the abstract, focusing on the form or structure of an argument rather than its content. It is mostly deductive and can be analyzed with symbols."},
+  {t:"Informal logic", d:"Evaluates the content of ordinary-language arguments by weighing the relevance and strength of the evidence. It is mostly inductive."},
+  {t:"Dialectical logic", d:"Another name for informal logic: the language of debate and the back-and-forth exchange of ideas between people."},
+  {t:"Inductive reasoning", d:"Starts with evidence we observe and compile, and works toward generalizations that are more or less probable. Judged as strong or weak."},
+  {t:"Deductive reasoning", d:"Starts with propositions accepted as givens. If the premises are true, the conclusion must be true. Judged as valid or invalid."},
+  {t:"Evidence", d:"Observations gathered and compiled to serve as the basis for an inductive argument."},
+  {t:"Categorical logic", d:"Its basic building block is the term, a category of things, connected by the verb \"to be.\" Like a microscope's high magnification setting."},
+  {t:"Propositional logic", d:"Its basic building block is a whole sentence, a proposition, connected by logical operators. Like a microscope's low magnification setting."}
+];
+
+const SORTS = [
+  {title:"Formal logic or informal logic?", a:"Formal logic", b:"Informal logic", cards:[
+    {x:"Focuses on the form, or structure, of an argument", k:"a", why:"Formal logic cares about how an argument is built, not what it is about."},
+    {x:"Weighs the relevance and strength of the evidence", k:"b", why:"Judging evidence means judging content, which is informal logic's job."},
+    {x:"Can be analyzed using symbols", k:"a", why:"Because content matters less, formal logic can replace words with symbols."},
+    {x:"Also called dialectical logic", k:"b", why:"Dialectical logic is another name for informal logic, the logic of debate."},
+    {x:"Reasoning in the abstract", k:"a", why:"Formal logic steps back from specific content to study reasoning itself."},
+    {x:"Deals with everyday arguments traded back and forth between people", k:"b", why:"Ordinary-language arguments in conversation and debate belong to informal logic."},
+    {x:"Mostly deductive", k:"a", why:"Formal logic focuses primarily on deductive reasoning."},
+    {x:"Mostly inductive", k:"b", why:"Informal logic usually argues from particular evidence to a probable conclusion."}
+  ]},
+  {title:"Deductive or inductive?", a:"Deductive", b:"Inductive", cards:[
+    {x:"Evaluated as valid or invalid", k:"a", why:"Deductive arguments are black-or-white: the conclusion either follows or it doesn't."},
+    {x:"Evaluated as strong or weak", k:"b", why:"Inductive arguments deal in shades of gray, so they are stronger or weaker."},
+    {x:"Starts with given propositions, or axioms", k:"a", why:"Deduction begins with statements accepted as a starting point."},
+    {x:"Starts with observations used as evidence", k:"b", why:"Induction begins with what we can observe and compile."},
+    {x:"Deals with certainty, as long as the premises are true", k:"a", why:"In a valid deductive argument, true premises guarantee a true conclusion."},
+    {x:"Deals with probability", k:"b", why:"Inductive conclusions are likely, never absolutely certain."},
+    {x:"\"All mammals breathe air. Whales are mammals. So whales breathe air.\"", k:"a", why:"If both premises are true, the conclusion has to be true."},
+    {x:"\"Every swan I've seen at the lake is white, so the next one I see will probably be white.\"", k:"b", why:"It moves from observations to a probable generalization."}
+  ]},
+  {title:"Categorical or propositional logic?", a:"Categorical logic", b:"Propositional logic", cards:[
+    {x:"Its basic building block is a term", k:"a", why:"A term names a category of things, the unit of categorical logic."},
+    {x:"Its basic building block is a whole sentence", k:"b", why:"Propositional logic works with entire propositions."},
+    {x:"Building blocks are connected by \"is\" or \"are\"", k:"a", why:"Categorical logic links terms with the \"being\" verb."},
+    {x:"Building blocks are connected by logical operators like \"if…then\" and \"or\"", k:"b", why:"Logical operators join propositions together."},
+    {x:"Like a microscope's high magnification setting", k:"a", why:"It examines thought up close, one category at a time."},
+    {x:"Like a microscope's low magnification setting", k:"b", why:"It steps back to see the whole scenario at once."},
+    {x:"\"All dogs are mammals. Rex is a dog. So Rex is a mammal.\"", k:"a", why:"A categorical syllogism connecting three categories: dogs, mammals, and Rex."},
+    {x:"\"If it rains, the game is canceled. It is raining. So the game is canceled.\"", k:"b", why:"A hypothetical syllogism built on an if-then proposition."}
+  ]}
+];
+
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+let selT=null, selD=null, matched=0, missed=new Set();
+let sortScore=0, sortTotal=0, si=0, ci=0, queue=[];
+
+function startMatch(){
+  selT=null; selD=null; matched=0; missed=new Set();
+  const terms=$("terms"), defs=$("defs");
+  terms.innerHTML=""; defs.innerHTML="";
+  shuffle(PAIRS.map((p,i)=>i)).forEach(i=>{
+    const b=document.createElement("button");
+    b.className="tile term"; b.textContent=PAIRS[i].t; b.dataset.i=i;
+    b.onclick=()=>pick("t",i,b); terms.appendChild(b);
+  });
+  shuffle(PAIRS.map((p,i)=>i)).forEach(i=>{
+    const b=document.createElement("button");
+    b.className="tile def"; b.dataset.i=i;
+    b.innerHTML='<span class="tag hidden"></span><span class="txt"></span>';
+    b.querySelector(".txt").textContent=PAIRS[i].d;
+    b.onclick=()=>pick("d",i,b); defs.appendChild(b);
+  });
+  $("mstatus").textContent=""; $("mstatus").className="status";
+  $("toPart2").classList.add("hidden");
+}
+
+function pick(kind,i,el){
+  if(el.classList.contains("ok")) return;
+  const listSel = kind==="t" ? "#terms .tile" : "#defs .tile";
+  document.querySelectorAll(listSel).forEach(x=>x.classList.remove("sel","no"));
+  el.classList.add("sel");
+  if(kind==="t") selT={i,el}; else selD={i,el};
+  if(selT && selD) check();
+}
+
+function check(){
+  const st=$("mstatus");
+  if(selT.i===selD.i){
+    selT.el.classList.remove("sel"); selD.el.classList.remove("sel");
+    selT.el.classList.add("ok"); selD.el.classList.add("ok");
+    const tag=selD.el.querySelector(".tag"); tag.textContent=PAIRS[selT.i].t; tag.classList.remove("hidden");
+    selT.el.disabled=true; selD.el.disabled=true;
+    matched++;
+    st.className="status good";
+    st.textContent = matched===PAIRS.length ? "All matched. Nice work." : "Match! "+(PAIRS.length-matched)+" to go.";
+    if(matched===PAIRS.length) $("toPart2").classList.remove("hidden");
+  } else {
+    missed.add(selT.i);
+    const d=selD.el; d.classList.remove("sel"); void d.offsetWidth; d.classList.add("no");
+    st.className="status bad";
+    st.textContent="Not a match. \""+PAIRS[selT.i].t+"\" is still selected, so try another definition.";
+    selD=null; return;
+  }
+  selT=null; selD=null;
+}
+
+function setStep(n){
+  ["st1","st2","st3"].forEach((id,k)=>{
+    const li=$(id); li.classList.remove("on","done");
+    if(k+1<n) li.classList.add("done"); if(k+1===n) li.classList.add("on");
+  });
+  $("part1").classList.toggle("hidden",n!==1);
+  $("part2").classList.toggle("hidden",n!==2);
+  $("part3").classList.toggle("hidden",n!==3);
+  window.scrollTo({top:0});
+}
+
+function startSortSet(){
+  const s=SORTS[si];
+  queue=shuffle(s.cards); ci=0;
+  $("sortTitle").textContent="Set "+(si+1)+" of "+SORTS.length+": "+s.title;
+  $("choiceA").textContent=s.a; $("choiceB").textContent=s.b;
+  $("binAName").textContent=s.a; $("binBName").textContent=s.b;
+  $("binA").innerHTML=""; $("binB").innerHTML="";
+  showCard();
+}
+
+function showCard(){
+  const c=queue[ci];
+  $("sortCount").textContent="Card "+(ci+1)+" of "+queue.length;
+  $("sortStmt").textContent=c.x;
+  $("choiceA").disabled=false; $("choiceB").disabled=false;
+  $("sortFb").className="feedback"; $("sortFb").innerHTML="";
+  $("sortNext").classList.add("hidden");
+}
+
+function answer(k){
+  const s=SORTS[si], c=queue[ci], right=k===c.k;
+  sortTotal++; if(right) sortScore++;
+  $("choiceA").disabled=true; $("choiceB").disabled=true;
+  const fb=$("sortFb");
+  fb.className="feedback show "+(right?"good":"bad");
+  const head=document.createElement("strong");
+  head.textContent = right ? "Correct." : "Not quite. This one belongs in "+(c.k==="a"?s.a:s.b)+".";
+  const why=document.createElement("span"); why.textContent=c.why;
+  fb.innerHTML=""; fb.append(head,why);
+  const li=document.createElement("li"); li.textContent=c.x; if(!right) li.classList.add("missed");
+  $(c.k==="a"?"binA":"binB").appendChild(li);
+  const btn=$("sortNext");
+  const lastCard = ci===queue.length-1, lastSet = si===SORTS.length-1;
+  btn.textContent = !lastCard ? "Next card" : (lastSet ? "See my score" : "Next set");
+  btn.classList.remove("hidden"); btn.focus();
+}
+
+$("choiceA").onclick=()=>answer("a");
+$("choiceB").onclick=()=>answer("b");
+$("sortNext").onclick=()=>{
+  if(ci<queue.length-1){ ci++; showCard(); }
+  else if(si<SORTS.length-1){ si++; startSortSet(); window.scrollTo({top:0}); }
+  else finish();
+};
+
+$("toPart2").onclick=()=>{ si=0; sortScore=0; sortTotal=0; setStep(2); startSortSet(); };
+
+// Microsoft Form (pre-filled link) that collects results
+const FORM_BASE="https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=vcRQu_0urkuAIZ4D1JaqGWaqXu5htlJGjGifn6xX5BFUMk9XOEUwQlpaRzZRTEFXS0tNS1BPM1RFOS4u";
+const FORM_FIELDS={
+  name:"rd1ef1adfba4548918fbed0ed95e8647f",
+  matching:"r882c8bbeb36c4aa2af312f739f064491",
+  sorting:"rcdd4ebcb8180424b9a78909898b89662",
+  total:"rda334cd01bab4695ba0169874793b722",
+  time:"rc3243814debe488eba184ef685e0ab11"
+};
+let result=null;
+
+function finish(){
+  setStep(3);
+  const m=PAIRS.length-missed.size, mt=PAIRS.length;
+  const total=m+sortScore, max=mt+sortTotal;
+  const when=new Date().toLocaleString([], {dateStyle:"medium", timeStyle:"short"});
+  result={
+    matching:m+" / "+mt,
+    sorting:sortScore+" / "+sortTotal,
+    total:total+" / "+max,
+    time:when
+  };
+  $("total").textContent=total+" / "+max;
+  $("breakdown").textContent="Matching: "+m+" of "+mt+" on the first try. Sorting: "+sortScore+" of "+sortTotal+" correct.";
+  $("when").textContent="Completed "+when;
+  updateName();
+}
+function updateName(){
+  const n=$("name").value.trim();
+  $("who").textContent=n || "Type your name above";
+  $("send").disabled=!n;
+  $("sendNote").textContent = n ? "The form opens in a new tab. Press Submit there to turn in your score." : "Type your name to send your score.";
+}
+$("name").addEventListener("input",updateName);
+
+$("send").onclick=()=>{
+  const n=$("name").value.trim();
+  if(!n || !result) return;
+  const q=[
+    [FORM_FIELDS.name,n],
+    [FORM_FIELDS.matching,result.matching],
+    [FORM_FIELDS.sorting,result.sorting],
+    [FORM_FIELDS.total,result.total],
+    [FORM_FIELDS.time,result.time]
+  ].map(([k,v])=>k+"="+encodeURIComponent(v)).join("&");
+  window.open(FORM_BASE+"&"+q,"_blank","noopener");
+};
+
+$("again").onclick=()=>{ startMatch(); setStep(1); };
+
+startMatch();
+</script>
+</body>
+</html>
