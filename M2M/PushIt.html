@@ -1,0 +1,294 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Push It! F = ma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+:root{
+  --bg:#EEF3FA; --card:#FFFFFF; --ink:#1B2A4A; --muted:#5A6883; --line:#D5DEEB;
+  --F:#E8671F; --m:#138C7E; --a:#7447D1;
+  --good:#1E9E55; --goodbg:#E3F6EA; --bad:#D33F49; --badbg:#FCE8EA;
+  --ground:#B9C6D8; --boxtext:#FFFFFF;
+  --display:"Fredoka", "Trebuchet MS", system-ui, sans-serif;
+  --body:"Nunito", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121A2B; --card:#1B2640; --ink:#EEF2FA; --muted:#A5B1C9; --line:#2E3B5A;
+    --F:#FF8A47; --m:#2EC4B0; --a:#A284F0;
+    --good:#4BD384; --goodbg:#16362A; --bad:#FF6B74; --badbg:#3B1D25;
+    --ground:#3C4A68; --boxtext:#0E1524;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121A2B; --card:#1B2640; --ink:#EEF2FA; --muted:#A5B1C9; --line:#2E3B5A;
+  --F:#FF8A47; --m:#2EC4B0; --a:#A284F0;
+  --good:#4BD384; --goodbg:#16362A; --bad:#FF6B74; --badbg:#3B1D25;
+  --ground:#3C4A68; --boxtext:#0E1524;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:18px;line-height:1.45;padding-inline:16px}
+.wrap{max-width:920px;margin:0 auto;padding-block:20px 40px;display:flex;flex-direction:column;gap:18px;min-height:100%;box-sizing:border-box}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.eq{font-family:var(--display);font-weight:700;font-size:28px;letter-spacing:.5px}
+.eq .F{color:var(--F)} .eq .m{color:var(--m)} .eq .a{color:var(--a)} .eq .op{color:var(--muted);font-weight:500;margin:0 4px}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.dots{display:flex;gap:6px;flex-wrap:wrap}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--line)}
+.dot.done{background:var(--good)} .dot.now{background:var(--ink)}
+.iconbtn{font:inherit;font-size:14px;font-weight:700;background:transparent;color:var(--muted);border:2px solid var(--line);border-radius:999px;padding:4px 12px;cursor:pointer}
+.iconbtn:hover{color:var(--ink);border-color:var(--muted)}
+
+.card{background:var(--card);border-radius:22px;padding:24px;box-shadow:0 2px 0 var(--line), 0 10px 30px rgba(27,42,74,.08);display:flex;flex-direction:column;gap:18px}
+.qnum{font-family:var(--display);font-weight:600;font-size:15px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+h1.q{font-family:var(--display);font-weight:600;font-size:clamp(24px,4vw,34px);line-height:1.2;margin:0;text-wrap:balance}
+h1.q .F{color:var(--F)} h1.q .m{color:var(--m)} h1.q .a{color:var(--a)}
+
+.scenes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:600px){.scenes{grid-template-columns:1fr}}
+.scene{border:2px solid var(--line);border-radius:16px;padding:10px 12px 6px;display:flex;flex-direction:column;gap:4px}
+.scene-label{font-family:var(--display);font-weight:600;font-size:16px;color:var(--muted)}
+.scene svg{width:100%;height:auto;display:block}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:15px;color:var(--muted);font-weight:700}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:4px;display:inline-block}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.opt{font-family:var(--display);font-weight:600;font-size:22px;padding:18px 16px;border-radius:16px;border:3px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .12s, border-color .12s, background .12s}
+.opt:hover:not(:disabled){transform:translateY(-2px);border-color:var(--ink)}
+.opt:focus-visible{outline:4px solid var(--a);outline-offset:3px}
+.opt .ic{font-size:26px;line-height:1}
+.opt.wrong{border-color:var(--bad);background:var(--badbg);color:var(--bad);cursor:not-allowed;text-decoration:line-through}
+.opt.right{border-color:var(--good);background:var(--goodbg);color:var(--good)}
+.opt:disabled{cursor:default}
+.shake{animation:shake .4s}
+@keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+
+.feedback{border-radius:14px;padding:14px 16px;font-size:19px;font-weight:700;display:flex;gap:12px;align-items:flex-start}
+.feedback.bad{background:var(--badbg);color:var(--ink)}
+.feedback.bad b{color:var(--bad)}
+.feedback.good{background:var(--goodbg);color:var(--ink);flex-wrap:wrap;align-items:center;justify-content:space-between}
+.feedback.good .cheer{font-family:var(--display);font-size:28px;color:var(--good);display:block}
+.next{font-family:var(--display);font-weight:600;font-size:22px;background:var(--good);color:#fff;border:0;border-radius:14px;padding:12px 26px;cursor:pointer}
+.next:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+.next:hover{filter:brightness(1.08)}
+
+.big{align-items:center;text-align:center;padding-block:40px}
+.big h1{font-family:var(--display);font-weight:700;font-size:clamp(40px,8vw,72px);margin:0;line-height:1.05}
+.big p{max-width:560px;margin:0;color:var(--muted);font-size:20px}
+.trio{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.chip{border-radius:14px;padding:10px 16px;font-weight:800;color:var(--ink);background:var(--bg);border:2px solid var(--line);display:flex;align-items:center;gap:8px}
+.chip b{font-family:var(--display);font-size:24px}
+.start{font-family:var(--display);font-weight:600;font-size:26px;background:var(--F);color:#fff;border:0;border-radius:16px;padding:14px 40px;cursor:pointer}
+.start:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
+.start:hover{filter:brightness(1.06)}
+
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:10;width:100%;height:100%}
+.pop{animation:pop .5s ease-out}
+@keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.05)}100%{transform:scale(1)}}
+.reveal{animation:grow .7s ease-out both;transform-box:fill-box;transform-origin:left center}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@media (prefers-reduced-motion:reduce){.shake,.pop,.reveal{animation:none}.opt{transition:none}}
+</style>
+
+<canvas id="confetti"></canvas>
+<div class="wrap">
+  <header>
+    <div class="eq" aria-label="F equals m times a"><span class="F">F</span><span class="op">=</span><span class="m">m</span><span class="op">×</span><span class="a">a</span></div>
+    <div class="hdr-right">
+      <div class="dots" id="dots" aria-hidden="true"></div>
+      <button class="iconbtn" id="sound" type="button" aria-pressed="true">Sound on</button>
+    </div>
+  </header>
+  <main id="stage"></main>
+</div>
+
+<script>
+/* Each question: before/after scenes with F (push), m (mass), a (acceleration) on a 1–4 scale.
+   "hide" lists which quantities show as "?" until the answer is found. */
+const UP={t:"Goes UP",ic:"⬆️",k:"up"}, DOWN={t:"Goes DOWN",ic:"⬇️",k:"down"}, SAME={t:"Stays the SAME",ic:"↔️",k:"same"};
+const Q=[
+ {q:'You push the cart <span class="F">harder</span>. The cart’s <span class="m">mass</span> doesn’t change. What happens to its <span class="a">acceleration</span>?',
+  L:"Before", R:"Push harder", b:{F:1.5,m:2,a:1.5}, r:{F:3,m:2,a:3}, hide:{r:["a"]}, opts:[UP,DOWN,SAME], ans:"up",
+  hint:"A bigger push on the same cart makes it speed up faster.", why:"More force, same mass → more acceleration."},
+ {q:'Same <span class="F">push</span>, but now the cart is loaded with bricks (more <span class="m">mass</span>). What happens to its <span class="a">acceleration</span>?',
+  L:"Empty cart", R:"Cart full of bricks", b:{F:2.5,m:1.5,a:3}, r:{F:2.5,m:3.5,a:1.3}, hide:{r:["a"]}, opts:[UP,DOWN,SAME], ans:"down",
+  hint:"Think about pushing a heavy thing with the same effort. Is it harder to get it moving?", why:"Same force, more mass → less acceleration."},
+ {q:'You push <span class="F">more gently</span> on the same cart. What happens to its <span class="a">acceleration</span>?',
+  L:"Before", R:"Push gently", b:{F:3,m:2,a:3}, r:{F:1.2,m:2,a:1.2}, hide:{r:["a"]}, opts:[UP,DOWN,SAME], ans:"down",
+  hint:"A weaker push on the same cart can’t speed it up as quickly.", why:"Less force, same mass → less acceleration."},
+ {q:'Same <span class="F">push</span>, but you take the bricks out so the cart has less <span class="m">mass</span>. What happens to its <span class="a">acceleration</span>?',
+  L:"Heavy cart", R:"Bricks removed", b:{F:2.5,m:3.5,a:1.3}, r:{F:2.5,m:1.5,a:3}, hide:{r:["a"]}, opts:[UP,DOWN,SAME], ans:"up",
+  hint:"A lighter cart is easier to get moving with the same push.", why:"Same force, less mass → more acceleration."},
+ {q:'Nothing changes. Same <span class="F">push</span>, same cart. What happens to the <span class="a">acceleration</span>?',
+  L:"Monday", R:"Tuesday", b:{F:2,m:2,a:2}, r:{F:2,m:2,a:2}, hide:{r:["a"]}, opts:[UP,DOWN,SAME], ans:"same",
+  hint:"If the push and the mass are exactly the same, would anything be different?", why:"Nothing changed on the left side, so nothing changes on the right."},
+ {q:'Your friend adds heavy books to the cart. You want it to speed up <span class="a">just as fast as before</span>. How hard do you need to <span class="F">push</span>?',
+  L:"Before", R:"Books added, same acceleration", b:{F:1.5,m:1.5,a:2}, r:{F:3.2,m:3.2,a:2}, hide:{r:["F"]}, opts:[{t:"Push HARDER",ic:"💪",k:"up"},{t:"Push SOFTER",ic:"🪶",k:"down"},{t:"Push the SAME",ic:"↔️",k:"same"}], ans:"up",
+  hint:"More mass fights back more. What would you need to do to keep up?", why:"More mass needs more force to get the same acceleration."},
+ {q:'You want the same cart to speed up <span class="a">faster</span>. What do you need to do with your <span class="F">push</span>?',
+  L:"Before", R:"Want more acceleration", b:{F:1.5,m:2,a:1.5}, r:{F:3,m:2,a:3}, hide:{r:["F"]}, opts:[{t:"Push HARDER",ic:"💪",k:"up"},{t:"Push SOFTER",ic:"🪶",k:"down"},{t:"Push the SAME",ic:"↔️",k:"same"}], ans:"up",
+  hint:"The cart didn’t change. The only thing you control is the push.", why:"Same mass, more acceleration → you need more force."},
+ {q:'A mystery cart gets the same <span class="F">push</span>, but its <span class="a">acceleration</span> is smaller. What must be true about its <span class="m">mass</span>?',
+  L:"Regular cart", R:"Mystery cart", b:{F:2.5,m:1.5,a:3}, r:{F:2.5,m:3.5,a:1.3}, hide:{r:["m"]}, opts:[{t:"More mass",ic:"🧱",k:"up"},{t:"Less mass",ic:"🎈",k:"down"},{t:"Same mass",ic:"↔️",k:"same"}], ans:"up",
+  hint:"What makes a cart speed up more slowly when the push is the same?", why:"Same force, less acceleration → the mystery cart has more mass."},
+ {q:'You kick a soccer ball and a bowling ball with the <span class="F">same force</span>. Which one gets more <span class="a">acceleration</span>?',
+  L:"Soccer ball", R:"Bowling ball", b:{F:2.5,m:1,a:3.5,look:"ball"}, r:{F:2.5,m:3.5,a:1,look:"ball"}, hide:{b:["a"],r:["a"]}, opts:[{t:"Soccer ball",ic:"⚽",k:"L"},{t:"Bowling ball",ic:"🎳",k:"R"},{t:"They’re the same",ic:"↔️",k:"same"}], ans:"L",
+  hint:"Which ball has less mass for your kick to move?", why:"Same force, less mass → more acceleration. (Please don’t kick bowling balls.)"},
+ {q:'You push twice as <span class="F">hard</span>, but the cart also has twice the <span class="m">mass</span>. What happens to the <span class="a">acceleration</span>?',
+  L:"Before", R:"Double push, double mass", b:{F:1.5,m:1.5,a:2}, r:{F:3,m:3,a:2}, hide:{r:["a"]}, opts:[UP,DOWN,SAME], ans:"same",
+  hint:"The extra push helps, the extra mass hurts. Do they cancel out?", why:"The bigger push and the bigger mass balance out, so acceleration stays the same."}
+];
+
+const $=s=>document.querySelector(s);
+const stage=$("#stage"), dotsEl=$("#dots");
+let i=0, soundOn=true, audio=null;
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ---------- drawing ---------- */
+const col=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function scene(s, hidden, reveal){
+  const W=320,H=170,G=140;
+  const side=26+s.m*16, bx=150, by=G-side;
+  const fLen=18+s.F*22, aLen=18+s.a*24;
+  const hF=hidden.includes("F"), hm=hidden.includes("m"), ha=hidden.includes("a");
+  let obj;
+  if(s.look==="ball"){
+    const r=side/2, cx=bx+r, cy=G-r;
+    obj=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="var(--m)"/>`+
+        (hm?`<text x="${cx}" y="${cy+8}" text-anchor="middle" font-family="Fredoka, Trebuchet MS, sans-serif" font-weight="700" font-size="24" fill="var(--boxtext)">?</text>`
+           :`<text x="${cx}" y="${cy+6}" text-anchor="middle" font-family="Fredoka, Trebuchet MS, sans-serif" font-weight="700" font-size="17" fill="var(--boxtext)">m</text>`);
+  }else{
+    obj=`<rect x="${bx}" y="${by}" width="${side}" height="${side}" rx="8" fill="var(--m)"/>`+
+        `<circle cx="${bx+side*0.25}" cy="${G+2}" r="6" fill="var(--ink)"/><circle cx="${bx+side*0.75}" cy="${G+2}" r="6" fill="var(--ink)"/>`+
+        `<text x="${bx+side/2}" y="${by+side/2+(hm?8:6)}" text-anchor="middle" font-family="Fredoka, Trebuchet MS, sans-serif" font-weight="700" font-size="${hm?24:17}" fill="var(--boxtext)">${hm?"?":"m"}</text>`;
+  }
+  const fy=G-side/2, fx2=bx-6;
+  const force = hF
+    ? `<circle cx="${fx2-30}" cy="${fy}" r="17" fill="none" stroke="var(--F)" stroke-width="3" stroke-dasharray="5 4"/><text x="${fx2-30}" y="${fy+8}" text-anchor="middle" font-family="Fredoka, Trebuchet MS, sans-serif" font-weight="700" font-size="22" fill="var(--F)">?</text><text x="${fx2-30}" y="${fy-24}" text-anchor="middle" font-family="Fredoka, Trebuchet MS, sans-serif" font-weight="700" font-size="16" fill="var(--F)">F</text>`
+    : `<g class="${reveal==="F"?"reveal":""}"><line x1="${fx2-fLen}" y1="${fy}" x2="${fx2-12}" y2="${fy}" stroke="var(--F)" stroke-width="${6+s.F*1.5}" stroke-linecap="round"/><polygon points="${fx2},${fy} ${fx2-16},${fy-12} ${fx2-16},${fy+12}" fill="var(--F)"/></g><text x="${fx2-fLen/2-6}" y="${fy-16}" text-anchor="middle" font-family="Fredoka, Trebuchet MS, sans-serif" font-weight="700" font-size="16" fill="var(--F)">F</text>`;
+  const ay=Math.max(22,by-22), ax1=bx+side/2-10;
+  const acc = ha
+    ? `<circle cx="${ax1+20}" cy="${ay}" r="17" fill="none" stroke="var(--a)" stroke-width="3" stroke-dasharray="5 4"/><text x="${ax1+20}" y="${ay+8}" text-anchor="middle" font-family="Fredoka, Trebuchet MS, sans-serif" font-weight="700" font-size="22" fill="var(--a)">?</text><text x="${ax1+46}" y="${ay+6}" font-family="Fredoka, Trebuchet MS, sans-serif" font-weight="700" font-size="16" fill="var(--a)">a</text>`
+    : `<g class="${reveal==="a"?"reveal":""}"><line x1="${ax1}" y1="${ay}" x2="${ax1+aLen-10}" y2="${ay}" stroke="var(--a)" stroke-width="5" stroke-linecap="round"/><polygon points="${ax1+aLen+2},${ay} ${ax1+aLen-12},${ay-10} ${ax1+aLen-12},${ay+10}" fill="var(--a)"/></g><text x="${ax1+aLen+10}" y="${ay+6}" font-family="Fredoka, Trebuchet MS, sans-serif" font-weight="700" font-size="16" fill="var(--a)">a</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-hidden="true">
+    <line x1="4" y1="${G+9}" x2="${W-4}" y2="${G+9}" stroke="var(--ground)" stroke-width="4" stroke-linecap="round"/>
+    ${obj}${force}${acc}</svg>`;
+}
+
+/* ---------- screens ---------- */
+function dots(){
+  dotsEl.innerHTML=Q.map((_,k)=>`<span class="dot ${k<i?"done":k===i?"now":""}"></span>`).join("");
+}
+function startScreen(){
+  dotsEl.innerHTML="";
+  stage.innerHTML=`<section class="card big">
+    <h1>Push It!</h1>
+    <p>Change one thing and watch what happens to the others. For each question, pick what you think will change.</p>
+    <div class="trio">
+      <span class="chip"><b style="color:var(--F)">F</b> force (the push)</span>
+      <span class="chip"><b style="color:var(--m)">m</b> mass (how much stuff)</span>
+      <span class="chip"><b style="color:var(--a)">a</b> acceleration (how fast it speeds up)</span>
+    </div>
+    <button class="start" id="go" type="button">Start</button>
+  </section>`;
+  $("#go").onclick=()=>{ensureAudio();i=0;show();};
+  $("#go").focus();
+}
+function show(){
+  const d=Q[i]; dots();
+  const hb=(d.hide&&d.hide.b)||[], hr=(d.hide&&d.hide.r)||[];
+  stage.innerHTML=`<section class="card">
+    <div class="qnum">Question ${i+1} of ${Q.length}</div>
+    <h1 class="q">${d.q}</h1>
+    <div class="scenes">
+      <div class="scene"><div class="scene-label">${d.L}</div><div id="sb">${scene(d.b,hb)}</div></div>
+      <div class="scene"><div class="scene-label">${d.R}</div><div id="sr">${scene(d.r,hr)}</div></div>
+    </div>
+    <div class="legend"><span><i class="sw" style="background:var(--F)"></i>Arrow length = force</span><span><i class="sw" style="background:var(--m)"></i>Size = mass</span><span><i class="sw" style="background:var(--a)"></i>Arrow length = acceleration</span></div>
+    <div class="opts" id="opts">${d.opts.map((o,k)=>`<button class="opt" id="opt${k}" type="button" data-k="${o.k}"><span class="ic" aria-hidden="true">${o.ic}</span>${o.t}</button>`).join("")}</div>
+    <div id="fb" aria-live="polite"></div>
+  </section>`;
+  stage.querySelectorAll(".opt").forEach(b=>b.onclick=()=>pick(b));
+}
+function pick(btn){
+  const d=Q[i];
+  if(btn.classList.contains("wrong"))return;
+  if(btn.dataset.k===d.ans){
+    stage.querySelectorAll(".opt").forEach(b=>b.disabled=true);
+    btn.classList.add("right","pop");
+    const hb=(d.hide&&d.hide.b)||[], hr=(d.hide&&d.hide.r)||[];
+    const rv=[...new Set([...hb,...hr])][0];
+    if(hb.length)$("#sb").innerHTML=scene(d.b,[],rv);
+    if(hr.length)$("#sr").innerHTML=scene(d.r,[],rv);
+    const last=i===Q.length-1;
+    const cheers=["You got it!","Nailed it!","Yes!","Awesome!","Correct!","Great thinking!"];
+    $("#fb").innerHTML=`<div class="feedback good pop"><div><span class="cheer">${cheers[Math.floor(Math.random()*cheers.length)]}</span>${d.why}</div><button class="next" id="next" type="button">${last?"Finish":"Next →"}</button></div>`;
+    $("#next").onclick=()=>{ if(last) endScreen(); else {i++;show();} };
+    $("#next").focus();
+    confetti(90); ding(true);
+  }else{
+    btn.classList.add("wrong","shake");
+    btn.setAttribute("aria-disabled","true");
+    $("#fb").innerHTML=`<div class="feedback bad"><div><b>Not quite. Try again!</b> ${d.hint}</div></div>`;
+    ding(false);
+  }
+}
+function endScreen(){
+  i=Q.length; dots();
+  stage.innerHTML=`<section class="card big pop">
+    <h1>You did it!</h1>
+    <p>You know how <b style="color:var(--F)">force</b>, <b style="color:var(--m)">mass</b>, and <b style="color:var(--a)">acceleration</b> work together.</p>
+    <div class="trio">
+      <span class="chip">More push → more speeding up</span>
+      <span class="chip">More mass → less speeding up</span>
+    </div>
+    <button class="start" id="again" type="button">Play again</button>
+  </section>`;
+  $("#again").onclick=startScreen; $("#again").focus();
+  confetti(260); setTimeout(()=>confetti(160),600); ding(true);
+}
+document.addEventListener("keydown",e=>{
+  if(/^[1-3]$/.test(e.key)){const b=document.getElementById("opt"+(e.key-1)); if(b&&!b.disabled)b.click();}
+});
+
+/* ---------- sound ---------- */
+function ensureAudio(){ try{ if(!audio) audio=new (window.AudioContext||window.webkitAudioContext)(); if(audio.state==="suspended")audio.resume(); }catch(e){} }
+function ding(ok){
+  if(!soundOn)return; ensureAudio(); if(!audio)return;
+  const notes=ok?[523.25,659.25,783.99,1046.5]:[220,196];
+  notes.forEach((f,k)=>{
+    const o=audio.createOscillator(), g=audio.createGain(), t=audio.currentTime+k*(ok?0.09:0.14);
+    o.type=ok?"triangle":"sine"; o.frequency.value=f;
+    g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(ok?0.18:0.12,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.25);
+    o.connect(g).connect(audio.destination); o.start(t); o.stop(t+0.3);
+  });
+}
+$("#sound").onclick=e=>{soundOn=!soundOn;e.currentTarget.textContent=soundOn?"Sound on":"Sound off";e.currentTarget.setAttribute("aria-pressed",soundOn);};
+
+/* ---------- confetti ---------- */
+const cv=$("#confetti"), cx=cv.getContext("2d"); let parts=[], running=false;
+function size(){cv.width=innerWidth*devicePixelRatio;cv.height=innerHeight*devicePixelRatio;}
+addEventListener("resize",size); size();
+function confetti(n){
+  if(reduce)return;
+  const cols=[col("--F"),col("--m"),col("--a"),col("--good"),"#F5C518"];
+  for(let k=0;k<n;k++){
+    parts.push({x:innerWidth*(0.2+Math.random()*0.6),y:innerHeight*0.35,vx:(Math.random()-0.5)*14,vy:-Math.random()*14-4,
+      r:Math.random()*6+4,c:cols[k%cols.length],rot:Math.random()*6,vr:(Math.random()-0.5)*0.4,life:0});
+  }
+  if(!running){running=true;requestAnimationFrame(tick);}
+}
+function tick(){
+  const dpr=devicePixelRatio; cx.setTransform(dpr,0,0,dpr,0,0); cx.clearRect(0,0,innerWidth,innerHeight);
+  parts.forEach(p=>{p.vy+=0.35;p.vx*=0.99;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.life++;
+    cx.save();cx.translate(p.x,p.y);cx.rotate(p.rot);cx.fillStyle=p.c;cx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);cx.restore();});
+  parts=parts.filter(p=>p.y<innerHeight+40&&p.life<260);
+  if(parts.length)requestAnimationFrame(tick); else {running=false;cx.clearRect(0,0,innerWidth,innerHeight);}
+}
+
+startScreen();
+</script>
+
+</body></html>
