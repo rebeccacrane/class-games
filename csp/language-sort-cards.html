@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pick the Right Language — CSP Card Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1d2433;
+    --muted: #5b6573;
+    --lang: #2f5d8a;
+    --lang-tint: #eaf0f6;
+    --job: #b77900;
+    --job-tint: #fdf4de;
+    --cut: #a8b0bb;
+    --paper: #ffffff;
+  }
+  @page { size: letter; margin: 0.25in; }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0;
+    background: #d6dbe2;
+    color: var(--ink);
+    font-family: "Atkinson Hyperlegible", system-ui, sans-serif;
+    overflow-x: auto;
+  }
+  .sheet {
+    width: 8in;
+    min-height: 10.5in;
+    margin: 0.4in auto;
+    background: var(--paper);
+    padding: 0.25in;
+    box-shadow: 0 2px 10px rgba(29, 36, 51, 0.18);
+  }
+  h1, h2, .lname {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------- Teacher pages ---------- */
+  .teacher { padding: 0.45in 0.55in; font-size: 11pt; line-height: 1.5; }
+  .teacher h1 { font-size: 30pt; line-height: 1.05; margin: 0 0 0.12in; }
+  .teacher h2 { font-size: 14pt; margin: 0.28in 0 0.06in; }
+  .teacher p, .teacher li { max-width: 6.6in; }
+  .teacher .lede { font-size: 12.5pt; color: var(--muted); margin: 0 0 0.2in; }
+  .teacher ol, .teacher ul { padding-left: 1.2em; margin: 0.05in 0; }
+  .teacher li { margin-bottom: 0.05in; }
+  .round { font-weight: 700; }
+  .tip {
+    border-left: 4px solid var(--job);
+    background: var(--job-tint);
+    padding: 0.1in 0.15in;
+    margin-top: 0.2in;
+    font-size: 10pt;
+  }
+  .spectrum {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 3px;
+    margin: 0.08in 0 0.04in;
+    font-size: 9pt;
+    text-align: center;
+  }
+  .spectrum div { padding: 0.06in 0.03in; background: var(--lang-tint); }
+  .spectrum div:nth-child(1) { background: #c9d7e6; }
+  .spectrum div:nth-child(6) { background: #f3f6f9; }
+  .spectrum-ends { display: flex; justify-content: space-between; font-size: 9pt; color: var(--muted); }
+  table.key { width: 100%; border-collapse: collapse; font-size: 8.8pt; line-height: 1.35; }
+  table.key th {
+    text-align: left; font-size: 9pt; padding: 0.05in 0.06in;
+    border-bottom: 2px solid var(--ink);
+  }
+  table.key td { padding: 0.045in 0.06in; border-bottom: 1px solid #dde2e8; vertical-align: top; }
+  table.key td:first-child { font-weight: 700; color: var(--job); width: 0.2in; }
+  table.key td:nth-child(2) { width: 2.45in; }
+  table.key td:nth-child(3) { font-weight: 700; width: 0.95in; }
+  table.key td:nth-child(4) { color: var(--muted); width: 0.95in; }
+
+  /* ---------- Card grid ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 2.5in);
+    grid-auto-rows: 3.5in;
+    justify-content: center;
+  }
+  .card {
+    border: 1px dashed var(--cut);
+    padding: 0.13in 0.14in 0.12in;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Language cards */
+  .lang { border-top: 0.09in solid var(--lang); }
+  .lhead { display: flex; justify-content: space-between; align-items: baseline; gap: 0.05in; }
+  .lname { font-size: 17pt; line-height: 1; color: var(--lang); }
+  .born { font-size: 7.5pt; color: var(--muted); white-space: nowrap; }
+  pre {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 7.3pt;
+    line-height: 1.35;
+    background: var(--lang-tint);
+    margin: 0.08in 0 0.06in;
+    padding: 0.06in 0.07in;
+    white-space: pre;
+    overflow: hidden;
+    min-height: 0.46in;
+  }
+  .scratch {
+    background: var(--lang-tint);
+    margin: 0.08in 0 0.06in;
+    padding: 0.06in 0.07in;
+    min-height: 0.46in;
+    display: flex; flex-direction: column; gap: 2px; align-items: flex-start;
+    font-size: 7.5pt; font-weight: 700; color: #fff;
+  }
+  .scratch span { padding: 2px 8px; border-radius: 8px; }
+  .scratch .ev { background: #c88a00; border-radius: 10px 10px 4px 4px; }
+  .scratch .lk { background: #7a55c9; }
+  dl { margin: 0; font-size: 7.6pt; line-height: 1.3; }
+  dt { font-weight: 700; color: var(--lang); margin-top: 0.035in; }
+  dd { margin: 0; }
+  .wild { border-top-color: var(--ink); }
+  .wild .lname { color: var(--ink); }
+  .wild dt { color: var(--ink); }
+  .wildnote { margin-top: auto; font-size: 7.4pt; font-style: italic; color: var(--muted); }
+
+  /* Scenario cards */
+  .job { border-top: 0.09in solid var(--job); background: var(--paper); }
+  .jhead { display: flex; justify-content: space-between; align-items: baseline; }
+  .jtag { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 11pt; color: var(--job); }
+  .jletter { font-family: "Bricolage Grotesque", sans-serif; font-weight: 800; font-size: 20pt; color: var(--job-tint); -webkit-text-stroke: 1px var(--job); line-height: 1; }
+  .jtext { font-size: 10.6pt; line-height: 1.38; margin: 0.08in 0 0; }
+  .answer { margin-top: auto; font-size: 8pt; color: var(--muted); }
+  .answer div { border-bottom: 1px solid #c4cad2; height: 0.26in; display: flex; align-items: flex-end; padding-bottom: 1px; }
+  .answer div + div { height: 0.24in; }
+
+  .sheet-note { text-align: center; font-size: 8pt; color: var(--muted); margin-top: 0.06in; }
+
+  @media print {
+    body { background: none; overflow: visible; }
+    .sheet { margin: 0; box-shadow: none; padding: 0; min-height: 0; page-break-after: always; break-after: page; }
+    .sheet:last-child { page-break-after: auto; break-after: auto; }
+    .teacher { padding: 0.35in 0.5in; }
+    .sheet-note { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= TEACHER: HOW TO PLAY ================= -->
+<section class="sheet teacher">
+  <h1>Pick the Right Language</h1>
+  <p class="lede">A card game about trade-offs. There's no best programming language, only the best one for a particular job, team, and platform.</p>
+
+  <h2>Setup</h2>
+  <ul>
+    <li>Groups of 3–4. Each group gets one language deck (pages 2–3) and one job deck (pages 4–5).</li>
+    <li>Printing on two colors of cardstock makes the decks easy to separate. Print at 100% / actual size with background graphics on.</li>
+    <li>The job cards have write-on lines. Laminate and use dry-erase markers if you want to reuse them, or have students write answers on sticky notes.</li>
+    <li>The decks don't match one-to-one on purpose. Some jobs have several defensible answers, and that's where the best arguments happen.</li>
+  </ul>
+
+  <h2>How to play (about 45 minutes)</h2>
+  <ol>
+    <li><span class="round">Line them up (10 min).</span> Teams lay the language cards in a single row, from "closest to the hardware" to "closest to how humans think." They should use the code snippets and details as evidence. Compare with a neighboring team, then share the spectrum from the key.</li>
+    <li><span class="round">Take the job (20 min).</span> Shuffle the job deck face down. Flip one at a time. The team picks a language card and writes one "because" sentence. Languages can be used more than once.</li>
+    <li><span class="round">Challenge (10 min).</span> Each team presents one match. Any other team can challenge with a different language, but only with an argument. Then reveal the key's deciding factor.</li>
+    <li><span class="round">Wrap-up (5 min).</span> Exit question: name a job where the language was chosen for a reason that had nothing to do with the language itself.</li>
+  </ol>
+
+  <h2>What students should walk away with</h2>
+  <ul>
+    <li>Low-level languages give more control and speed but are harder to write and read. High-level languages trade some speed and control for readability and faster development.</li>
+    <li>Often the platform, existing code, or team decides for you: Unity means C#, Roblox means Lua, an old bank system means COBOL.</li>
+    <li>"Fast to run" and "fast to write" are different goals. Python is a great pick when your time matters more than the computer's.</li>
+  </ul>
+
+  <div class="tip"><strong>Wild card:</strong> HTML/CSS is in the language deck to start an argument. It describes structure and style but can't make decisions or repeat steps on its own. Ask the class whether it counts as programming, and what their definition says about it.</div>
+</section>
+
+<!-- ================= LANGUAGE CARDS 1 ================= -->
+<section class="sheet">
+  <div class="grid">
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">Python</span><span class="born">born 1991</span></div>
+      <pre>for n in range(3):
+    print(n)</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Interpreted, line by line</dd>
+        <dt>Good at</dt><dd>Reads almost like English. Huge libraries for data, AI, and automating chores.</dd>
+        <dt>The catch</dt><dd>Slower than compiled languages. Doesn't run natively on phones or in browsers.</dd>
+        <dt>Found in</dt><dd>Data science, AI, quick scripts, CMU CS Academy</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">JavaScript</span><span class="born">born 1995</span></div>
+      <pre>let score = 0;
+score++;
+document.title = score;</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Interpreted by the web browser</dd>
+        <dt>Good at</dt><dd>The one language every web browser runs. Makes pages interactive.</dd>
+        <dt>The catch</dt><dd>Quirky rules: "2" + 2 gives "22".</dd>
+        <dt>Found in</dt><dd>Nearly every website; also web servers (Node.js)</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">Java</span><span class="born">born 1995</span></div>
+      <pre>int x = 5;
+System.out.println(x);</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Compiled to bytecode, run by the Java Virtual Machine</dd>
+        <dt>Good at</dt><dd>"Write once, run anywhere." Strict rules help huge teams work together.</dd>
+        <dt>The catch</dt><dd>Wordy. Even tiny programs need a lot of setup.</dd>
+        <dt>Found in</dt><dd>Big company servers, older Android apps, Minecraft Java Edition, AP CS A</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">C</span><span class="born">born 1972</span></div>
+      <pre>int x = 5;
+printf("%d\n", x);</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Compiled to machine code</dd>
+        <dt>Good at</dt><dd>Fast and tiny. Works very close to the hardware.</dd>
+        <dt>The catch</dt><dd>You manage memory yourself. Mistakes cause crashes and security holes.</dd>
+        <dt>Found in</dt><dd>Operating systems, microwaves, thermostats, car computers</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">C++</span><span class="born">born 1985</span></div>
+      <pre>int x = 5;
+std::cout &lt;&lt; x;</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Compiled to machine code</dd>
+        <dt>Good at</dt><dd>C's speed plus tools for organizing very large programs.</dd>
+        <dt>The catch</dt><dd>Enormous and complicated. Easy to make subtle mistakes.</dd>
+        <dt>Found in</dt><dd>Game engines (Unreal), web browsers, video editing software</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">C#</span><span class="born">born 2000</span></div>
+      <pre>int x = 5;
+Console.WriteLine(x);</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Compiled to bytecode, run by Microsoft's .NET</dd>
+        <dt>Good at</dt><dd>Clean, modern, well supported. The scripting language of Unity.</dd>
+        <dt>The catch</dt><dd>Strongest inside the Microsoft and Unity worlds.</dd>
+        <dt>Found in</dt><dd>Unity games, Windows software, business apps</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">Swift</span><span class="born">born 2014</span></div>
+      <pre>let name = "Ada"
+print("Hi, \(name)")</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Compiled to machine code</dd>
+        <dt>Good at</dt><dd>Apple's modern language. Safe, fast, and built into Apple's tools.</dd>
+        <dt>The catch</dt><dd>Mostly used only on Apple devices.</dd>
+        <dt>Found in</dt><dd>iPhone, iPad, Mac, and Apple Watch apps</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">Kotlin</span><span class="born">born 2011</span></div>
+      <pre>val name = "Ada"
+println("Hi, $name")</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Compiled to bytecode, like Java</dd>
+        <dt>Good at</dt><dd>Google's preferred Android language. Shorter than Java and works alongside Java code.</dd>
+        <dt>The catch</dt><dd>Mostly used for Android and Java-world projects.</dd>
+        <dt>Found in</dt><dd>Android apps</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">SQL</span><span class="born">born 1974</span></div>
+      <pre>SELECT name FROM pets
+WHERE age &gt; 3;</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Inside a database. You describe what you want, not how to get it.</dd>
+        <dt>Good at</dt><dd>Asking questions of enormous tables of data, fast.</dd>
+        <dt>The catch</dt><dd>Not general-purpose. You can't build a whole app with it.</dd>
+        <dt>Found in</dt><dd>Behind almost every app that stores data</dd>
+      </dl>
+    </article>
+
+  </div>
+  <p class="sheet-note">Language deck, sheet 1 of 2. Cut along the dashed lines.</p>
+</section>
+
+<!-- ================= LANGUAGE CARDS 2 ================= -->
+<section class="sheet">
+  <div class="grid">
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">R</span><span class="born">born 1993</span></div>
+      <pre>scores &lt;- c(88, 92, 75)
+mean(scores)</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Interpreted</dd>
+        <dt>Good at</dt><dd>Statistics and graphs. Built by statisticians, for statisticians.</dd>
+        <dt>The catch</dt><dd>Unusual syntax. Not meant for apps or games.</dd>
+        <dt>Found in</dt><dd>Research labs, biology, medicine, public health</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">Rust</span><span class="born">born 2015</span></div>
+      <pre>let x: i32 = 5;
+println!("{}", x);</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Compiled to machine code</dd>
+        <dt>Good at</dt><dd>As fast as C, but the compiler blocks whole categories of memory bugs.</dd>
+        <dt>The catch</dt><dd>Hard to learn. The compiler is very strict.</dd>
+        <dt>Found in</dt><dd>Parts of web browsers and operating systems, security-critical tools</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">Go</span><span class="born">born 2009</span></div>
+      <pre>x := 5
+fmt.Println(x)</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Compiled into a single file</dd>
+        <dt>Good at</dt><dd>Simple, fast, and great at doing many tasks at once. Easy to deploy.</dd>
+        <dt>The catch</dt><dd>Leaves out features on purpose, so some code gets repetitive.</dd>
+        <dt>Found in</dt><dd>Cloud services and web servers</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">Scratch</span><span class="born">born 2007</span></div>
+      <div class="scratch"><span class="ev">when green flag clicked</span><span class="lk">say Hi! for 2 seconds</span></div>
+      <dl>
+        <dt>Runs by</dt><dd>Snapping blocks together in a web browser</dd>
+        <dt>Good at</dt><dd>No syntax errors possible. Instant animations and games.</dd>
+        <dt>The catch</dt><dd>Hard to build large or professional software.</dd>
+        <dt>Found in</dt><dd>Classrooms and first-time coders, ages 8 and up</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">Assembly</span><span class="born">born 1940s</span></div>
+      <pre>mov eax, 5
+add eax, 2</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Translated almost directly into the processor's own instructions</dd>
+        <dt>Good at</dt><dd>Total control of the chip. Nothing runs faster.</dd>
+        <dt>The catch</dt><dd>Each chip family has its own. Slow to write, hard to read.</dd>
+        <dt>Found in</dt><dd>Startup code for chips, tiny devices, speed-critical pieces</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">PHP</span><span class="born">born 1995</span></div>
+      <pre>&lt;?php
+echo "Hi, visitor!";
+?&gt;</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Interpreted on a web server, which sends back finished pages</dd>
+        <dt>Good at</dt><dd>Building web pages on the server. Cheap, easy hosting everywhere.</dd>
+        <dt>The catch</dt><dd>A messy history of inconsistent design.</dd>
+        <dt>Found in</dt><dd>WordPress (a huge share of all websites), Wikipedia</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">Lua</span><span class="born">born 1993</span></div>
+      <pre>local coins = 0
+coins = coins + 1</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Interpreted, usually inside another program</dd>
+        <dt>Good at</dt><dd>Tiny and easy to plug into games and apps as a scripting language.</dd>
+        <dt>The catch</dt><dd>Very small toolkit. Rarely used on its own.</dd>
+        <dt>Found in</dt><dd>Roblox (as Luau), game mods and add-ons</dd>
+      </dl>
+    </article>
+
+    <article class="card lang">
+      <div class="lhead"><span class="lname">COBOL</span><span class="born">born 1959</span></div>
+      <pre>ADD 1 TO COUNTER.
+DISPLAY COUNTER.</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Compiled, usually on big mainframe computers</dd>
+        <dt>Good at</dt><dd>Business record-keeping. Reads like English. Rock-solid for decades.</dd>
+        <dt>The catch</dt><dd>Few new programmers learn it.</dd>
+        <dt>Found in</dt><dd>Banks, insurance companies, government systems</dd>
+      </dl>
+    </article>
+
+    <article class="card lang wild">
+      <div class="lhead"><span class="lname">HTML/CSS</span><span class="born">born 1993/96</span></div>
+      <pre>&lt;h1&gt;Hi!&lt;/h1&gt;
+h1 { color: teal; }</pre>
+      <dl>
+        <dt>Runs by</dt><dd>Read and drawn by the web browser</dd>
+        <dt>Good at</dt><dd>HTML gives a page its structure. CSS gives it its look.</dd>
+        <dt>The catch</dt><dd>No decisions and no loops on its own.</dd>
+      </dl>
+      <p class="wildnote">Wild card: is this a programming language? Argue it.</p>
+    </article>
+
+  </div>
+  <p class="sheet-note">Language deck, sheet 2 of 2.</p>
+</section>
+
+<!-- ================= JOB CARDS 1 ================= -->
+<section class="sheet">
+  <div class="grid">
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">A</span></div>
+      <p class="jtext">Your school wants an iPhone app that shows today's lunch menu.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">B</span></div>
+      <p class="jtext">A local gym wants an Android app where members log their workouts.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">C</span></div>
+      <p class="jtext">A teacher wants a quiz that runs in any web browser, with buttons and a score counter. Students can't install anything.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">D</span></div>
+      <p class="jtext">A 3rd-grade class wants to make animated stories about their favorite animals.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">E</span></div>
+      <p class="jtext">A friend needs a portfolio page for their art. It just has to look good: no buttons, no logic.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">F</span></div>
+      <p class="jtext">An online store's data lives in a database. They want a list of every customer who ordered more than 3 times last month.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">G</span></div>
+      <p class="jtext">A smart thermostat has a tiny chip with very little memory. The code has to fit and run for years without crashing.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">H</span></div>
+      <p class="jtext">A big studio is building a 3D game engine that has to hit 120 frames per second.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">I</span></div>
+      <p class="jtext">A two-person team is making an indie game in the Unity game engine.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+  </div>
+  <p class="sheet-note">Job deck, sheet 1 of 2.</p>
+</section>
+
+<!-- ================= JOB CARDS 2 ================= -->
+<section class="sheet">
+  <div class="grid">
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">J</span></div>
+      <p class="jtext">You want to add custom scripts to your Roblox obby, like a door that opens when you collect 10 coins.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">K</span></div>
+      <p class="jtext">A bank's account system has run since 1985. There's a bug to fix by Friday, and rewriting the system is not an option.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">L</span></div>
+      <p class="jtext">A web browser team needs new code that is fast and can't have memory bugs that hackers could exploit.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">M</span></div>
+      <p class="jtext">A startup's cloud service has to handle thousands of requests at the same moment and be easy to deploy.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">N</span></div>
+      <p class="jtext">A company with 500 developers needs a backend system that runs on any server and lasts 20 years.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">O</span></div>
+      <p class="jtext">An engineer has to write the very first instructions a brand-new chip runs when it powers on.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">P</span></div>
+      <p class="jtext">A small bakery wants a contact form added to its existing WordPress website.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">Q</span></div>
+      <p class="jtext">You need to rename 2,000 field-trip photos by date. You need it done this afternoon, and you'll only do it once.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+
+    <article class="card job"><div class="jhead"><span class="jtag">The job</span><span class="jletter">R</span></div>
+      <p class="jtext">A biology lab needs statistical tests and publication-quality graphs for a research paper.</p>
+      <div class="answer"><div>Our pick:</div><div>Because:</div><div></div></div></article>
+  </div>
+  <p class="sheet-note">Job deck, sheet 2 of 2.</p>
+</section>
+
+<!-- ================= TEACHER KEY ================= -->
+<section class="sheet teacher">
+  <h1 style="font-size:22pt">Teacher key</h1>
+
+  <h2 style="margin-top:0.12in">Round 1 spectrum</h2>
+  <div class="spectrum-ends"><span>Closest to the hardware</span><span>Closest to how humans think</span></div>
+  <div class="spectrum">
+    <div>Assembly</div>
+    <div>C</div>
+    <div>C++<br>Rust</div>
+    <div>Go, Java<br>C#, Swift, Kotlin<br>COBOL</div>
+    <div>Python, JS<br>Lua, PHP, R</div>
+    <div>Scratch</div>
+  </div>
+  <p style="font-size:9.5pt; color: var(--muted); margin-top:0.04in">SQL and HTML/CSS don't sit neatly on this line. You describe what you want rather than giving step-by-step instructions. Groups that set them aside have noticed something real. The middle columns are a judgment call; reward good evidence over exact placement.</p>
+
+  <h2>Round 2–3 answers</h2>
+  <table class="key">
+    <thead><tr><th></th><th>Job</th><th>Best fit</th><th>Also arguable</th><th>The deciding factor</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td>iPhone lunch menu app</td><td>Swift</td><td>JavaScript (web app)</td><td>Apple's tools are built around Swift.</td></tr>
+      <tr><td>B</td><td>Android workout app</td><td>Kotlin</td><td>Java</td><td>Google recommends Kotlin for Android.</td></tr>
+      <tr><td>C</td><td>Browser quiz, no installs</td><td>JavaScript</td><td>+ HTML/CSS for the page</td><td>Browsers run JavaScript with nothing to install.</td></tr>
+      <tr><td>D</td><td>3rd-grade animations</td><td>Scratch</td><td></td><td>Blocks remove syntax errors; kids see results instantly.</td></tr>
+      <tr><td>E</td><td>Art portfolio page</td><td>HTML/CSS</td><td></td><td>Needs structure and style, not logic. Good place for the "is it programming?" debate.</td></tr>
+      <tr><td>F</td><td>Frequent customers</td><td>SQL</td><td>Python</td><td>The data already lives in a database, and SQL was made to query it.</td></tr>
+      <tr><td>G</td><td>Thermostat chip</td><td>C</td><td>Rust, Assembly</td><td>Small, fast, and needs nothing extra installed to run.</td></tr>
+      <tr><td>H</td><td>3D game engine</td><td>C++</td><td>Rust</td><td>Raw speed plus tools for huge codebases; the industry standard.</td></tr>
+      <tr><td>I</td><td>Unity indie game</td><td>C#</td><td></td><td>The tool decides: Unity scripts are C#.</td></tr>
+      <tr><td>J</td><td>Roblox scripts</td><td>Lua</td><td></td><td>The platform decides: Roblox runs Luau.</td></tr>
+      <tr><td>K</td><td>1985 bank system</td><td>COBOL</td><td></td><td>Existing code decides. Rewriting critical working code is risky and expensive.</td></tr>
+      <tr><td>L</td><td>Safe, fast browser code</td><td>Rust</td><td>C++</td><td>Rust's compiler catches memory mistakes before the program ever runs.</td></tr>
+      <tr><td>M</td><td>Busy cloud service</td><td>Go</td><td>Java, Rust, JS (Node)</td><td>Built for handling many tasks at once; compiles to one easy-to-deploy file.</td></tr>
+      <tr><td>N</td><td>500-developer backend</td><td>Java</td><td>C#, Go</td><td>Mature, stable, runs anywhere, and easy to hire for.</td></tr>
+      <tr><td>O</td><td>Chip's first instructions</td><td>Assembly</td><td>C</td><td>Nothing else is loaded yet; you talk to the processor directly.</td></tr>
+      <tr><td>P</td><td>WordPress contact form</td><td>PHP</td><td></td><td>Existing code decides: WordPress is written in PHP.</td></tr>
+      <tr><td>Q</td><td>Rename 2,000 photos</td><td>Python</td><td>Almost anything</td><td>Fast to write matters more than fast to run.</td></tr>
+      <tr><td>R</td><td>Biology lab statistics</td><td>R</td><td>Python</td><td>Built by statisticians, and the lab's colleagues likely already use it.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Discussion prompts</h2>
+  <ul style="font-size:10pt">
+    <li>Which jobs were decided by the platform, the existing code, or the team instead of the language's features? (I, J, K, P, N)</li>
+    <li>We use Python in class. Which jobs would it be a poor choice for, and why?</li>
+    <li>Compare Q and H. What does "fast" mean in each one?</li>
+  </ul>
+</section>
+
+</body>
+</html>
