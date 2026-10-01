@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creative Task 1 Rubric</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f7fa;
+    --text: #1d232b;
+    --muted: #5a6572;
+    --border: #d6dce3;
+    --accent: #2f5f8f;
+    --accent-soft: #e6eef7;
+    --strong: #e8f3ea;
+    --mid: #fbf4e2;
+    --weak: #f8e9e7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15191e;
+      --surface: #1e242b;
+      --text: #e4e8ed;
+      --muted: #9aa5b1;
+      --border: #333c46;
+      --accent: #8ab4e0;
+      --accent-soft: #1f2d3c;
+      --strong: #1c2c21;
+      --mid: #2f2a1b;
+      --weak: #31201e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  h2 {
+    font-size: 1.25rem; margin: 40px 0 12px; padding-bottom: 6px;
+    border-bottom: 2px solid var(--accent);
+  }
+  h3 { font-size: 1.05rem; margin: 20px 0 6px; }
+  p, li { max-width: 72ch; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0 4px;
+  }
+  .callout {
+    background: var(--accent-soft); border-left: 4px solid var(--accent);
+    padding: 12px 16px; border-radius: 4px; margin: 16px 0;
+  }
+  .callout p { margin: 4px 0; }
+  .toolbox {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px;
+  }
+  .card h3 { margin-top: 0; }
+  .card ul { margin: 0; padding-left: 20px; }
+  ul.check { list-style: none; padding-left: 0; }
+  ul.check li { padding-left: 30px; position: relative; margin: 8px 0; }
+  ul.check li::before {
+    content: ""; position: absolute; left: 0; top: 3px; width: 16px; height: 16px;
+    border: 2px solid var(--accent); border-radius: 3px;
+  }
+  ol.prompts > li { margin: 16px 0; }
+  .tag {
+    display: inline-block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--accent); border: 1px solid var(--accent); border-radius: 999px;
+    padding: 0 8px; margin-left: 6px; vertical-align: 2px; white-space: nowrap;
+  }
+  .table-wrap { overflow-x: auto; margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.95rem; }
+  th, td { border: 1px solid var(--border); padding: 10px; vertical-align: top; text-align: left; }
+  thead th { background: var(--surface); }
+  th.row { background: var(--surface); width: 17%; }
+  th.row span { display: block; font-weight: normal; color: var(--muted); font-size: 0.85rem; }
+  td.s { background: var(--strong); }
+  td.m { background: var(--mid); }
+  td.w { background: var(--weak); }
+  .pts { display: block; margin-top: 8px; font-weight: 600; font-size: 0.85rem; }
+  td.score { width: 9%; white-space: nowrap; }
+  .muted { color: var(--muted); font-size: 0.9rem; }
+  .map td, .map th { font-size: 0.92rem; }
+  .map table { min-width: 520px; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 0.85rem; }
+  .namebar { display: none; }
+  @media print {
+    :root { --bg:#fff; --surface:#f3f3f3; --text:#000; --muted:#444; --border:#999; --accent:#000; --accent-soft:#f3f3f3; --strong:#fff; --mid:#fff; --weak:#fff; }
+    body { font-size: 11pt; }
+    main { max-width: none; padding: 0; }
+    h2 { break-after: avoid; }
+    .table-wrap, table, .card, .callout { break-inside: avoid; }
+    table { min-width: 0; }
+    .namebar { display: flex; gap: 24px; margin-bottom: 12px; }
+    .namebar span { flex: 1; border-bottom: 1px solid #000; padding-bottom: 2px; }
+    footer { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<div class="namebar"><span>Name:</span><span>Date:</span></div>
+
+<h1>Creative Task 1: Intro to Graphics</h1>
+<p class="sub">AP Computer Science Principles &middot; CMU CS Academy, Unit 1</p>
+
+<h2>The task</h2>
+<p>Design and code a picture of your choice using only what you learned in Unit 1. It can be a scene from nature, a place you love, a poster, a logo for a made-up team, a character you invent, or anything else you can draw with shapes. Pick something that matters to you.</p>
+<div class="callout">
+  <p><strong>This is a still picture.</strong> Clicking, moving, and animation come in later units, so your program doesn't need to respond to the user yet.</p>
+  <p>This task is a practice run for the AP Create Performance Task. You'll plan, build, test, and then explain your code in writing, like you will on the real one.</p>
+</div>
+
+<h2>Your Unit 1 toolbox</h2>
+<p>Use only these tools. If you find something online that isn't on this list, save the idea for a future creative task.</p>
+<div class="toolbox">
+  <div class="card">
+    <h3>Canvas</h3>
+    <ul>
+      <li>400 &times; 400 canvas, (0, 0) in the top-left corner</li>
+      <li>x grows to the right, y grows <em>down</em></li>
+      <li><code>app.background</code></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Shapes</h3>
+    <ul>
+      <li><code>Rect</code>, <code>Oval</code>, <code>Circle</code></li>
+      <li><code>Line</code>, <code>Polygon</code></li>
+      <li><code>RegularPolygon</code>, <code>Star</code></li>
+      <li><code>Label</code> (text)</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Colors and style</h3>
+    <ul>
+      <li><code>fill</code>: color names, <code>rgb(&hellip;)</code>, <code>gradient(&hellip;)</code></li>
+      <li><code>border</code>, <code>borderWidth</code>, <code>dashes</code></li>
+      <li><code>opacity</code></li>
+      <li>Label <code>size</code></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Program structure</h3>
+    <ul>
+      <li>Code runs top to bottom</li>
+      <li>Later shapes are drawn <em>on top of</em> earlier ones</li>
+      <li><code># comments</code> to label parts of your code</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Program requirements</h2>
+<p>Check each one off before you turn in your project.</p>
+<ul class="check">
+  <li>The program runs with no errors in the console.</li>
+  <li>It uses <strong>at least 3 different kinds of shapes</strong> from the toolbox.</li>
+  <li>It includes <strong>at least one <code>Label</code></strong> (a title, a sign, a caption, or other text).</li>
+  <li>It uses <strong>at least 2 style properties besides <code>fill</code></strong>, such as <code>border</code>, <code>borderWidth</code>, <code>dashes</code>, <code>opacity</code>, or a <code>gradient</code>.</li>
+  <li>It uses <strong>layering on purpose</strong>: at least one shape is drawn on top of another because of the order of your code.</li>
+  <li>Everything important is <strong>visible on the canvas</strong>. Nothing you meant to show is hidden or drawn off the edge.</li>
+  <li>The code has <strong>comments</strong> that label each part of the picture (for example, <code># sky</code>, <code># house</code>, <code># title</code>).</li>
+</ul>
+
+<h2>Plan it first</h2>
+<p>Before you start coding, fill out the Design and Development Guide:</p>
+<ol>
+  <li><strong>Description:</strong> What will your picture show? Don't worry yet about how to code it.</li>
+  <li><strong>Canvas sketch:</strong> Sketch it on a 400 &times; 400 grid and label the coordinates of the main shapes.</li>
+  <li><strong>Code design:</strong> For each shape or property you plan to use, write its purpose. For example, <em>Polygon: mountains</em> or <em>opacity: see-through clouds</em>.</li>
+</ol>
+
+<h2>Written responses</h2>
+<p>Answer these after your program is finished. Each one has a tag that shows which AP Create Performance Task skill it practices.</p>
+<ol class="prompts">
+  <li>
+    <strong>Purpose and audience</strong><span class="tag">AP: Program Design &amp; Purpose</span><br>
+    Who is your picture for, or who would enjoy it? Describe <em>one</em> way your design choices (colors, layout, text, and so on) fit that person or purpose.
+  </li>
+  <li>
+    <strong>Difficulties and opportunities</strong><span class="tag">AP: Development &amp; Iteration</span><br>
+    Describe one difficulty you ran into, or one opportunity you found to add something you hadn't planned. How did you resolve it or add it? How did your design change from your original plan?
+  </li>
+  <li>
+    <strong>Errors and testing</strong><span class="tag">AP: Errors &amp; Testing</span><br>
+    Pick one line of your code. Describe a small change to that line that would cause an error, or would make the picture come out wrong. Explain <em>why</em> it would happen. (Examples: a missing comma or parenthesis, a misspelled shape name, a coordinate that puts a shape off the canvas.)
+  </li>
+  <li>
+    <strong>Order matters</strong><span class="tag">AP: Algorithms (Sequencing)</span><br>
+    Find two lines of code where the order changes what you see. Give the line numbers and describe exactly how the picture would look different if those two lines were swapped.
+  </li>
+  <li>
+    <strong>Code outline</strong><span class="tag">AP: Code explanation</span><br>
+    Fill in a table like the one below with the important coding concepts in your program. Include <strong>at least two</strong> Unit 1 concepts. Put a star next to the part you're most proud of.
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Concept</th><th>Line number(s)</th><th>Purpose in my picture</th></tr></thead>
+        <tbody>
+          <tr><td><em>Example: Star</em></td><td><em>14&ndash;16</em></td><td><em>Three gold stars in the night sky</em></td></tr>
+          <tr><td>&nbsp;</td><td></td><td></td></tr>
+          <tr><td>&nbsp;</td><td></td><td></td></tr>
+          <tr><td>&nbsp;</td><td></td><td></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </li>
+  <li>
+    <strong>Future goals</strong><br>
+    What would you do differently if you started over, or add if you had more time?
+  </li>
+</ol>
+
+<h2>Rubric</h2>
+<p class="muted">Adapted from the CMU CS Academy Creative Task rubric. The task is worth <strong>30 points</strong>: Program Design 9, Program Development 10.5, Reflection 10.5.</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Criteria</th>
+        <th>Strong evidence</th>
+        <th>Inconsistent evidence</th>
+        <th>Weak or no evidence</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th class="row">Program Design<span>30%<br>Requirements + Response 1</span></th>
+        <td class="s">The picture clearly shows its purpose and meets <strong>all</strong> program requirements using Unit 1 tools. Response 1 names an audience or purpose and explains how a design choice fits it.<span class="pts">9 pts</span></td>
+        <td class="m">The picture's purpose is unclear, <strong>or</strong> one or two requirements are missing, <strong>or</strong> Response 1 names an audience or purpose without connecting it to the design.<span class="pts">6 pts</span></td>
+        <td class="w">The program doesn't run, <strong>or</strong> most requirements are missing, <strong>or</strong> it doesn't use Unit 1 concepts.<span class="pts">3 pts</span></td>
+        <td class="score"></td>
+      </tr>
+      <tr>
+        <th class="row">Program Development<span>35%<br>Responses 2, 3, 6</span></th>
+        <td class="s">Identifies at least one difficulty or opportunity <strong>and</strong> explains how it was resolved or added. Correctly describes a change that would cause an error or wrong output and explains why. Includes a future goal.<span class="pts">10.5 pts</span></td>
+        <td class="m">Identifies a difficulty or opportunity but doesn't explain the resolution, <strong>or</strong> the error/testing response is missing or doesn't explain why.<span class="pts">7 pts</span></td>
+        <td class="w">Doesn't identify a difficulty or opportunity.<span class="pts">3.5 pts</span></td>
+        <td class="score"></td>
+      </tr>
+      <tr>
+        <th class="row">Reflection<span>35%<br>Responses 4, 5</span></th>
+        <td class="s">Identifies and explains at least <strong>two</strong> Unit 1 concepts with correct line numbers and how each is used. Correctly explains how swapping two lines would change the picture.<span class="pts">10.5 pts</span></td>
+        <td class="m">Identifies and explains at least <strong>one</strong> Unit 1 concept and how it's used, <strong>or</strong> the order response is missing or incorrect.<span class="pts">7 pts</span></td>
+        <td class="w">Doesn't identify any Unit 1 concepts used in the program.<span class="pts">3.5 pts</span></td>
+        <td class="score"></td>
+      </tr>
+      <tr>
+        <th class="row">Bonus</th>
+        <td colspan="3">Bonus points may be awarded for high-quality work, including (but not limited to) originality, cleverness, complexity within the Unit 1 toolbox, and a compelling or engaging picture.</td>
+        <td class="score"></td>
+      </tr>
+      <tr>
+        <th class="row">Total</th>
+        <td colspan="3"></td>
+        <td class="score"><strong>___ / 30</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2>How this connects to the AP Create Performance Task</h2>
+<div class="map">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>On the real AP task you will&hellip;</th><th>In this task you practice&hellip;</th></tr></thead>
+      <tbody>
+        <tr><td>Identify an expected user and explain how your design meets their needs</td><td>Response 1: purpose and audience</td></tr>
+        <tr><td>Show how your program was developed and improved</td><td>Planning guide and Response 2</td></tr>
+        <tr><td>Describe a change that causes an error and explain why</td><td>Response 3: errors and testing</td></tr>
+        <tr><td>Explain how the steps of an algorithm work together</td><td>Response 4: sequencing and draw order</td></tr>
+        <tr><td>Point to specific code segments and explain what they do</td><td>Response 5: code outline with line numbers</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="muted">The AP task also requires input, a list, a procedure, selection, and iteration. You'll learn those in later units and add them to future creative tasks.</p>
+</div>
+
+<footer>Based on the CMU CS Academy CS1 Creative Task Guide and Create Performance Task Guide.</footer>
+</main>
+</body>
+</html>
