@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CSP Unit 3 Jeopardy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0}
+[hidden]{display:none!important}
+img{max-width:100%}
+/* Layout: a circuit board. Header strip, 6-column board of copper "pads", team score row below; clues open full-screen for the projector. Single dark look by choice. */
+:root{
+  --pcb:#0e3b2d; --pcb-deep:#07261d; --trace:#1f5d47; --copper:#e3a65a; --copper-hi:#f6cf94;
+  --silk:#f1f5ee; --muted:#a3c4b4; --good:#74d494; --bad:#ff8a7a;
+  --f-display:"Chakra Petch", "Arial Narrow", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{
+  background:var(--pcb-deep); color:var(--silk); font-family:var(--f-body); font-size:16px;
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 58px, rgba(31,93,71,.35) 58px 60px),
+    repeating-linear-gradient(0deg, transparent 0 88px, rgba(31,93,71,.22) 88px 90px);
+}
+.wrap{padding-inline:clamp(16px,2.5vw,32px); padding-block:16px 28px; display:flex; flex-direction:column; gap:16px; min-height:100%; box-sizing:border-box}
+header{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px}
+h1{font-family:var(--f-display); font-weight:700; letter-spacing:.04em; margin:0; font-size:clamp(22px,3vw,34px); text-wrap:balance}
+h1 small{display:block; font-family:var(--f-body); font-weight:400; font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.tools{display:flex; flex-wrap:wrap; gap:8px}
+button{font:inherit; cursor:pointer}
+.btn{background:transparent; color:var(--silk); border:1.5px solid var(--trace); border-radius:6px; padding:8px 14px; font-weight:700; font-size:14px}
+.btn:hover{border-color:var(--copper); color:var(--copper-hi)}
+.btn.primary{background:var(--copper); color:var(--pcb-deep); border-color:var(--copper)}
+.btn.primary:hover{background:var(--copper-hi); color:var(--pcb-deep)}
+.btn.warn{border-color:var(--bad); color:var(--bad)}
+.btn.on{background:var(--trace); border-color:var(--copper)}
+:focus-visible{outline:3px solid var(--copper-hi); outline-offset:2px}
+
+.board-scroll{overflow-x:auto; flex:1}
+.board{display:grid; grid-template-columns:repeat(6,minmax(120px,1fr)); gap:8px; min-width:740px; height:100%}
+.cat{background:var(--pcb); border:1.5px solid var(--trace); border-radius:6px; padding:12px 8px; display:flex; align-items:center; justify-content:center; text-align:center;
+  font-family:var(--f-display); font-weight:700; text-transform:uppercase; letter-spacing:.05em; font-size:clamp(14px,1.5vw,20px); line-height:1.15; text-wrap:balance; min-height:64px}
+.cell{background:var(--pcb); border:1.5px solid var(--trace); border-radius:6px; min-height:clamp(64px,11vh,120px); display:flex; align-items:center; justify-content:center; position:relative;
+  color:var(--copper); font-family:var(--f-display); font-weight:700; font-size:clamp(28px,4vw,52px); font-variant-numeric:tabular-nums; transition:background .15s, transform .15s}
+.cell:hover{background:var(--trace); color:var(--copper-hi)}
+.cell::before,.cell::after{content:""; position:absolute; width:7px; height:7px; border-radius:50%; border:1.5px solid var(--trace); top:7px}
+.cell::before{left:7px}.cell::after{right:7px}
+.cell.used{color:transparent; background:rgba(14,59,45,.45)}
+.cell.used span{display:block; width:22px; height:22px; border-radius:50%; border:3px solid var(--trace)}
+.editing .cell{outline:2px dashed var(--copper); outline-offset:-6px}
+.editing .cat{cursor:pointer; outline:2px dashed var(--copper); outline-offset:-6px}
+
+.teams{display:flex; flex-wrap:wrap; gap:10px}
+.team{flex:1 1 180px; min-width:0; background:var(--pcb); border:1.5px solid var(--trace); border-radius:6px; padding:10px 12px; display:flex; flex-direction:column; gap:4px}
+.team input{background:transparent; border:0; border-bottom:1px dashed var(--trace); color:var(--muted); font:inherit; font-weight:700; text-transform:uppercase; letter-spacing:.06em; font-size:13px; padding:2px 0; width:100%}
+.team .score{font-family:var(--f-display); font-weight:700; font-size:clamp(28px,3.4vw,42px); font-variant-numeric:tabular-nums; line-height:1}
+.team .score.neg{color:var(--bad)}
+.team .adj{display:flex; gap:6px}
+.team .adj button{flex:1; background:transparent; border:1px solid var(--trace); color:var(--muted); border-radius:4px; padding:2px 0; font-size:13px}
+.team .adj button:hover{border-color:var(--copper); color:var(--silk)}
+.teamctl{display:flex; flex-direction:column; gap:6px; justify-content:center}
+
+/* overlay */
+.ov{position:fixed; inset:0; background:var(--pcb); z-index:10; display:flex; flex-direction:column; padding:calc(env(safe-area-inset-top,0px) + 20px) clamp(16px,5vw,72px) calc(env(safe-area-inset-bottom,0px) + 20px); gap:20px; overflow:auto}
+.ov-top{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
+.tag{font-family:var(--f-display); font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--copper); font-size:clamp(16px,2vw,24px)}
+.clue{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:28px; min-height:0}
+.clue .q{font-size:clamp(26px,4.2vw,58px); line-height:1.25; max-width:28ch; text-wrap:balance; font-weight:700}
+.clue .q.long{font-size:clamp(22px,3.2vw,44px); max-width:34ch}
+.clue .a{font-size:clamp(22px,3vw,40px); color:var(--copper-hi); max-width:36ch; line-height:1.3; text-wrap:balance; border-top:2px solid var(--trace); padding-top:24px}
+code{font-family:var(--f-mono); background:var(--pcb-deep); border:1px solid var(--trace); border-radius:4px; padding:.05em .3em; font-size:.88em; white-space:nowrap}
+pre.code{font-family:var(--f-mono); background:var(--pcb-deep); border:1px solid var(--trace); border-radius:6px; padding:.6em .9em; text-align:left; font-size:.72em; line-height:1.45; margin:.4em auto; overflow-x:auto; max-width:100%; white-space:pre}
+.ov-actions{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center}
+.ov-actions .btn{font-size:16px; padding:10px 18px}
+.award{display:flex; flex-wrap:wrap; gap:10px; justify-content:center}
+.award .who{display:flex; flex-direction:column; align-items:center; gap:6px; background:var(--pcb-deep); border:1.5px solid var(--trace); border-radius:6px; padding:10px 14px}
+.award .who b{font-size:14px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted)}
+.award .who div{display:flex; gap:6px}
+.ok{background:var(--good); color:var(--pcb-deep); border:0; border-radius:5px; padding:8px 14px; font-weight:700}
+.no{background:transparent; color:var(--bad); border:1.5px solid var(--bad); border-radius:5px; padding:8px 14px; font-weight:700}
+.ok.done,.no.done{outline:3px solid var(--silk)}
+.dd{font-family:var(--f-display); font-weight:700; font-size:clamp(48px,9vw,120px); color:var(--copper); letter-spacing:.04em; text-transform:uppercase; line-height:1}
+.field{display:flex; flex-direction:column; gap:6px; text-align:left}
+.field label{font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); font-weight:700}
+.field input,.field textarea,.field select{background:var(--pcb-deep); color:var(--silk); border:1.5px solid var(--trace); border-radius:6px; padding:10px; font:inherit; font-size:18px}
+.field textarea{min-height:110px; resize:vertical; font-family:var(--f-body)}
+.row{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; align-items:flex-end}
+.wagers{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; width:min(900px,100%)}
+.editor{width:min(900px,100%); margin:0 auto; display:flex; flex-direction:column; gap:14px}
+.hint{color:var(--muted); font-size:14px; text-align:center}
+.note{color:var(--muted); font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+  <header>
+    <h1><span id="title">CSP Review Jeopardy</span><small>Unit 3 (CMU Unit 1) · Languages · How Computers Work</small></h1>
+    <div class="tools">
+      <button class="btn primary" id="finalBtn">Final Jeopardy</button>
+      <button class="btn" id="editBtn">Edit questions</button>
+      <button class="btn" id="dataBtn">Import / export</button>
+      <button class="btn warn" id="newBtn">New game</button>
+    </div>
+  </header>
+  <div class="board-scroll"><div class="board" id="board"></div></div>
+  <div class="teams" id="teams"></div>
+</div>
+<div class="ov" id="ov" hidden></div>
+
+<script>
+const VALUES=[100,200,300,400,500];
+const STARTER={
+  categories:[
+    {name:"The Stack",clues:[
+      {q:"These microscopic switches sit at the very bottom of the computing stack. On means 1, off means 0.",a:"Transistors"},
+      {q:"Hiding the details of a lower layer so you can work with simpler ideas on top is called this.",a:"Abstraction"},
+      {q:"This software starts when you power on. It decides which program uses the CPU next, hands out memory, and manages files.",a:"The operating system (OS)"},
+      {q:"An AND gate gets the inputs 1 and 0. What does it output, and when is an AND gate's output 1?",a:"0. AND outputs 1 only when both inputs are 1."},
+      {q:"Put these layers in order, top to bottom: Hardware, Applications, Logic gates, Operating system, Machine language",a:"Applications, Operating system, Machine language, Hardware, Logic gates"}
+    ]},
+    {name:"Inside the Box",clues:[
+      {q:"In the kitchen analogy, the CPU is the cook. What are RAM and storage?",a:"RAM is the countertop; storage is the pantry"},
+      {q:"RAM or storage: which one clears when the power shuts off?",a:"RAM"},
+      {q:"This part of the CPU does the math and logic.",a:"The ALU (Arithmetic Logic Unit)"},
+      {q:"The CPU repeats these three steps billions of times per second.",a:"Fetch, decode, execute"},
+      {q:"What is the big idea of the Von Neumann architecture?",a:"One memory holds both the program's instructions and its data"}
+    ]},
+    {name:"Language Ladder",clues:[
+      {q:"Scratch is a ____-based language. Python is a ____-based language.",a:"Scratch is block-based; Python is text-based"},
+      {q:"In AP pseudocode, what does the arrow mean?\n```total ← abc + xyz```",a:"Store the value on the right (abc + xyz) in the variable on the left (total)"},
+      {q:"Give one advantage of a high-level language and one advantage of a low-level language.",a:"High-level: less code, hides hardware details, runs on many CPU types. Low-level: exact control of the hardware (fast, precise)."},
+      {q:"Compiler or interpreter: which translates the whole program ahead of time into a runnable file, and which one does Python use?",a:"A compiler translates ahead of time (C, C++). Python uses an interpreter, which runs the code as it reads it."},
+      {q:"Java is a hybrid. Explain how Java code gets run.",a:"It's compiled to bytecode, then the Java Virtual Machine runs it: \"write once, run anywhere\""}
+    ]},
+    {name:"Off the Grid",clues:[
+      {q:"How big is the CMU canvas, and where is the point (0, 0)?",a:"400 × 400 pixels; (0, 0) is the top-left corner"},
+      {q:"What do the four numbers mean in `Rect(50, 100, 200, 80)`?",a:"left = 50, top = 100, width = 200, height = 80"},
+      {q:"Write a line that shows the text Hello in the center of the canvas.",a:"`Label('Hello', 200, 200)`"},
+      {q:"Is this square centered on the canvas? Explain.\n```Rect(200, 200, 100, 100)```",a:"No — (200, 200) is its top-left corner, so it sits below and right of center. Centered: `Rect(150, 150, 100, 100)`"},
+      {q:"Write one Line that goes from the bottom-left corner of the canvas to the top-right corner.",a:"`Line(0, 400, 400, 0)`"}
+    ]},
+    {name:"Property Values",clues:[
+      {q:"This property sets the color inside a shape.",a:"`fill`"},
+      {q:"If you don't give a shape a fill, what color is it?",a:"Black"},
+      {q:"Change this line so the circle gets a red outline 5 pixels thick:\n```Circle(200, 200, 50)```",a:"`Circle(200, 200, 50, border='red', borderWidth=5)`"},
+      {q:"What does `opacity=0` look like? What about `opacity=100`?",a:"0 is completely invisible (see-through); 100 is fully solid"},
+      {q:"Write a fill that fades from red on the left to blue on the right.",a:"`fill=gradient('red', 'blue', start='left')`"}
+    ]},
+    {name:"Bug Hunt",clues:[
+      {q:"What does Python do with a line that starts with `#`?",a:"Ignores it — it's a comment for humans"},
+      {q:"Find the bug:\n```Circle(200, 200, 50, fill=red)```",a:"The color needs quotes: `fill='red'`"},
+      {q:"Find the bug:\n```rect(50, 50, 100, 100)```",a:"Python is case-sensitive: it must be `Rect` with a capital R"},
+      {q:"Why can't you see the yellow circle?\n```Circle(200, 200, 40, fill='yellow')\nRect(100, 100, 200, 200, fill='blue')```",a:"Shapes drawn later go on top. The Rect covers the circle — draw the Circle after the Rect."},
+      {q:"Find the bug:\n```Label('Score', 200, 200, size=20, bold=true)```",a:"`True` must be capitalized in Python: `bold=True`"}
+    ]}
+  ],
+  final:{category:"Down the Stack",q:"You run `Circle(200, 200, 50)`. While the program runs, where are the numbers 200, 200, and 50 kept, and which piece of hardware figures out which pixels make the circle and colors them all at once?",a:"In memory (RAM). The GPU colors the pixels in parallel."}
+};
+
+const CKEY="cspJeop.content.v2", SKEY="cspJeop.state.v1";
+function load(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+let content=load(CKEY)||clone(STARTER);
+let state=load(SKEY)||freshState(3);
+let editing=false, ov=null;
+
+function pickDD(){const c=Math.floor(Math.random()*6), r=2+Math.floor(Math.random()*3);return c+"-"+r}
+function freshState(n,names){return{teams:Array.from({length:n},(_,i)=>({name:(names&&names[i])||"Team "+(i+1),score:0})),used:{},dd:pickDD()}}
+function persist(){save(SKEY,state)}
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function fmt(s){
+  const parts=String(s).split(/```([\s\S]*?)```/);
+  return parts.map((p,i)=>{
+    if(i%2) return '<pre class="code">'+esc(p.replace(/^\n|\n$/g,""))+'</pre>';
+    return esc(p).replace(/`([^`]+)`/g,"<code>$1</code>").replace(/\n/g,"<br>");
+  }).join("");
+}
+
+const $=id=>document.getElementById(id);
+
+function renderBoard(){
+  const b=$("board"); b.innerHTML="";
+  content.categories.forEach((cat,c)=>{
+    const h=document.createElement(editing?"button":"div");
+    h.className="cat"; h.textContent=cat.name; h.style.gridColumn=c+1; h.style.gridRow=1;
+    if(editing){h.onclick=()=>openEditor(c,null)}
+    b.appendChild(h);
+  });
+  VALUES.forEach((v,r)=>content.categories.forEach((cat,c)=>{
+    const key=c+"-"+r, used=!!state.used[key];
+    const el=document.createElement("button");
+    el.className="cell"+(used&&!editing?" used":"");
+    el.style.gridColumn=c+1; el.style.gridRow=r+2;
+    el.innerHTML=used&&!editing?"<span></span>":v;
+    el.setAttribute("aria-label",cat.name+" for "+v+(used?" (played)":""));
+    el.onclick=()=>editing?openEditor(c,r):openClue(c,r);
+    b.appendChild(el);
+  }));
+  document.body.classList.toggle("editing",editing);
+  $("editBtn").classList.toggle("on",editing);
+  $("editBtn").textContent=editing?"Done editing":"Edit questions";
+}
+
+function renderTeams(){
+  const t=$("teams"); t.innerHTML="";
+  state.teams.forEach((tm,i)=>{
+    const d=document.createElement("div"); d.className="team";
+    d.innerHTML=`<input id="team-${i}" value="${esc(tm.name)}" aria-label="Team name">
+      <div class="score${tm.score<0?" neg":""}">${tm.score}</div>
+      <div class="adj"><button data-d="-100" aria-label="Subtract 100">−100</button><button data-d="100" aria-label="Add 100">+100</button></div>`;
+    d.querySelector("input").oninput=e=>{tm.name=e.target.value;persist()};
+    d.querySelectorAll(".adj button").forEach(bt=>bt.onclick=()=>{tm.score+=+bt.dataset.d;persist();renderTeams()});
+    t.appendChild(d);
+  });
+  const ctl=document.createElement("div"); ctl.className="teamctl";
+  ctl.innerHTML=`<button class="btn" id="addTeam" ${state.teams.length>=6?"disabled":""}>+ Team</button><button class="btn" id="rmTeam" ${state.teams.length<=1?"disabled":""}>− Team</button>`;
+  t.appendChild(ctl);
+  $("addTeam").onclick=()=>{state.teams.push({name:"Team "+(state.teams.length+1),score:0});persist();renderTeams()};
+  $("rmTeam").onclick=()=>{state.teams.pop();persist();renderTeams()};
+}
+
+/* ---------- overlay ---------- */
+function show(html){const o=$("ov"); o.innerHTML=html; o.hidden=false; o.scrollTop=0;}
+function closeOv(){ov=null; $("ov").hidden=true; $("ov").innerHTML=""; renderBoard(); renderTeams();}
+
+function openClue(c,r){
+  const key=c+"-"+r;
+  ov={type:"clue",c,r,stage:(key===state.dd&&!state.used[key])?"dd":"clue",results:{},wager:null,ddTeam:0};
+  state.used[key]=true; persist(); renderClue();
+}
+function renderClue(){
+  const {c,r,stage}=ov, cat=content.categories[c], cl=cat.clues[r], val=VALUES[r];
+  const isDD=ov.wager!==null||stage==="dd";
+  const top=`<div class="ov-top"><div class="tag">${esc(cat.name)} · ${isDD?"Daily Double":val}</div><button class="btn" id="back">Back to board (Esc)</button></div>`;
+  if(stage==="dd"){
+    const max=Math.max(500,state.teams[ov.ddTeam]?.score||0);
+    show(top+`<div class="clue"><div class="dd">Daily Double</div>
+      <div class="row">
+        <div class="field"><label for="ddTeam">Team</label><select id="ddTeam">${state.teams.map((t,i)=>`<option value="${i}" ${i===ov.ddTeam?"selected":""}>${esc(t.name)}</option>`).join("")}</select></div>
+        <div class="field"><label for="ddWager">Wager (up to ${max})</label><input id="ddWager" type="number" min="0" max="${max}" step="50" value="${val}"></div>
+        <button class="btn primary" id="ddGo">Show the clue</button>
+      </div><p class="hint">Teams may wager up to their score, or up to 500 if their score is lower.</p></div>`);
+    $("ddTeam").onchange=e=>{ov.ddTeam=+e.target.value;renderClue()};
+    $("ddGo").onclick=()=>{const m=Math.max(500,state.teams[ov.ddTeam].score);ov.wager=Math.max(0,Math.min(m,Math.round(+$("ddWager").value||0)));ov.stage="clue";renderClue()};
+    $("back").onclick=closeOv; return;
+  }
+  const long=(cl.q||"").length>110||/```/.test(cl.q);
+  let body=`<div class="clue"><div class="q${long?" long":""}">${fmt(cl.q||"(no clue yet — use Edit questions)")}</div>`;
+  if(stage==="answer") body+=`<div class="a">${fmt(cl.a||"")}</div>`;
+  body+=`</div>`;
+  let actions;
+  if(stage==="clue"){
+    actions=`<div class="ov-actions"><button class="btn primary" id="reveal">Show answer (Space)</button></div>`;
+  }else if(ov.wager!==null){
+    const t=state.teams[ov.ddTeam], res=ov.results[ov.ddTeam];
+    actions=`<div class="award"><div class="who"><b>${esc(t.name)} wagered ${ov.wager}</b><div>
+      <button class="ok${res==="ok"?" done":""}" data-t="${ov.ddTeam}" data-k="ok">Correct +${ov.wager}</button>
+      <button class="no${res==="no"?" done":""}" data-t="${ov.ddTeam}" data-k="no">Wrong −${ov.wager}</button></div></div></div>`;
+  }else{
+    actions=`<div class="award">${state.teams.map((t,i)=>{const res=ov.results[i];return `<div class="who"><b>${esc(t.name)}</b><div>
+      <button class="ok${res==="ok"?" done":""}" data-t="${i}" data-k="ok">+${val}</button>
+      <button class="no${res==="no"?" done":""}" data-t="${i}" data-k="no">−${val}</button></div></div>`}).join("")}</div>
+      <p class="hint">Click a button again to undo it. Wrong answers subtract; skip the minus if you play without penalties.</p>`;
+  }
+  show(top+body+actions);
+  $("back").onclick=closeOv;
+  if($("reveal")) $("reveal").onclick=()=>{ov.stage="answer";renderClue()};
+  document.querySelectorAll(".award [data-k]").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.t, k=b.dataset.k, amt=ov.wager!==null?ov.wager:val, prev=ov.results[i];
+    if(prev) state.teams[i].score-=prev==="ok"?amt:-amt;          // undo previous
+    if(prev===k){delete ov.results[i]} else {ov.results[i]=k; state.teams[i].score+=k==="ok"?amt:-amt}
+    persist(); renderClue();
+  });
+}
+
+function openFinal(){
+  if(editing){openEditor("final");return}
+  ov={type:"final",stage:"category",wagers:state.teams.map(()=>0),results:{}}; renderFinal();
+}
+function renderFinal(){
+  const f=content.final;
+  const top=`<div class="ov-top"><div class="tag">Final Jeopardy · ${esc(f.category)}</div><button class="btn" id="back">Back to board (Esc)</button></div>`;
+  let html=top;
+  if(ov.stage==="category"){
+    html+=`<div class="clue"><div class="dd" style="font-size:clamp(36px,6vw,80px)">${esc(f.category)}</div>
+      <p class="hint">Each team writes down a secret wager (0 up to their score). Enter wagers, then show the clue.</p>
+      <div class="wagers">${state.teams.map((t,i)=>`<div class="field"><label for="w${i}">${esc(t.name)} (has ${t.score})</label><input id="w${i}" type="number" min="0" step="50" value="${ov.wagers[i]||0}"></div>`).join("")}</div>
+      <button class="btn primary" id="fgo">Show the clue</button></div>`;
+  }else{
+    html+=`<div class="clue"><div class="q long">${fmt(f.q)}</div>${ov.stage==="answer"?`<div class="a">${fmt(f.a)}</div>`:""}</div>`;
+    html+=ov.stage==="clue"
+      ?`<div class="ov-actions"><button class="btn primary" id="reveal">Show answer (Space)</button></div>`
+      :`<div class="award">${state.teams.map((t,i)=>{const res=ov.results[i],w=ov.wagers[i];return `<div class="who"><b>${esc(t.name)} · wager ${w}</b><div>
+          <button class="ok${res==="ok"?" done":""}" data-t="${i}" data-k="ok">Correct</button>
+          <button class="no${res==="no"?" done":""}" data-t="${i}" data-k="no">Wrong</button></div></div>`}).join("")}</div>`;
+  }
+  show(html);
+  $("back").onclick=closeOv;
+  if($("fgo")) $("fgo").onclick=()=>{ov.wagers=state.teams.map((t,i)=>Math.max(0,Math.round(+$("w"+i).value||0)));ov.stage="clue";renderFinal()};
+  if($("reveal")) $("reveal").onclick=()=>{ov.stage="answer";renderFinal()};
+  document.querySelectorAll(".award [data-k]").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.t,k=b.dataset.k,amt=ov.wagers[i],prev=ov.results[i];
+    if(prev) state.teams[i].score-=prev==="ok"?amt:-amt;
+    if(prev===k){delete ov.results[i]} else {ov.results[i]=k; state.teams[i].score+=k==="ok"?amt:-amt}
+    persist(); renderFinal();
+  });
+}
+
+/* ---------- editing ---------- */
+function openEditor(c,r){
+  ov={type:"edit"};
+  let fields, heading;
+  if(c==="final"){
+    heading="Final Jeopardy";
+    fields=`<div class="field"><label for="eCat">Category</label><input id="eCat" value="${esc(content.final.category)}"></div>
+      <div class="field"><label for="eQ">Clue</label><textarea id="eQ">${esc(content.final.q)}</textarea></div>
+      <div class="field"><label for="eA">Answer</label><textarea id="eA">${esc(content.final.a)}</textarea></div>`;
+  }else if(r===null){
+    heading="Category "+(c+1);
+    fields=`<div class="field"><label for="eCat">Category name</label><input id="eCat" value="${esc(content.categories[c].name)}"></div>`;
+  }else{
+    const cl=content.categories[c].clues[r];
+    heading=esc(content.categories[c].name)+" · "+VALUES[r];
+    fields=`<div class="field"><label for="eQ">Clue</label><textarea id="eQ">${esc(cl.q)}</textarea></div>
+      <div class="field"><label for="eA">Answer</label><textarea id="eA">${esc(cl.a)}</textarea></div>`;
+  }
+  show(`<div class="ov-top"><div class="tag">Edit · ${heading}</div><button class="btn" id="back">Cancel (Esc)</button></div>
+    <div class="editor">${fields}
+    <p class="note">Wrap code in single backticks for inline code, like \`Rect(0, 0, 50, 50)\`, or triple backticks for a code block on its own lines.</p>
+    <div class="row" style="justify-content:flex-start"><button class="btn primary" id="eSave">Save</button></div></div>`);
+  $("back").onclick=closeOv;
+  $("eSave").onclick=()=>{
+    if(c==="final"){content.final={category:$("eCat").value,q:$("eQ").value,a:$("eA").value}}
+    else if(r===null){content.categories[c].name=$("eCat").value}
+    else{content.categories[c].clues[r]={q:$("eQ").value,a:$("eA").value}}
+    save(CKEY,content); closeOv();
+  };
+  const first=document.querySelector(".editor input, .editor textarea"); if(first) first.focus();
+}
+
+function openData(){
+  ov={type:"data"};
+  show(`<div class="ov-top"><div class="tag">Import / export questions</div><button class="btn" id="back">Close (Esc)</button></div>
+    <div class="editor">
+      <p class="note">Your edits are saved in this browser only. To move them to another computer, copy this text and paste it into the same box there, then click Load.</p>
+      <div class="field"><label for="json">Question set</label><textarea id="json" style="min-height:300px;font-family:var(--f-mono);font-size:13px">${esc(JSON.stringify(content,null,2))}</textarea></div>
+      <div class="row" style="justify-content:flex-start">
+        <button class="btn primary" id="copy">Copy</button>
+        <button class="btn" id="loadJ">Load pasted set</button>
+        <button class="btn warn" id="resetQ">Restore starter questions</button>
+        <span class="note" id="msg" role="status"></span>
+      </div>
+    </div>`);
+  $("back").onclick=closeOv;
+  $("copy").onclick=()=>{const t=$("json");navigator.clipboard?.writeText(t.value).then(()=>$("msg").textContent="Copied.",()=>{t.select();$("msg").textContent="Selected — press Ctrl/Cmd+C."})};
+  $("loadJ").onclick=()=>{
+    try{const d=JSON.parse($("json").value);
+      if(!Array.isArray(d.categories)||d.categories.length!==6||d.categories.some(c=>!Array.isArray(c.clues)||c.clues.length!==5)||!d.final) throw 0;
+      content=d; save(CKEY,content); $("msg").textContent="Loaded. Close to see the board.";
+    }catch(e){$("msg").textContent="That text isn't a valid set: it needs 6 categories with 5 clues each, plus a final."}
+  };
+  let armed=false;
+  $("resetQ").onclick=()=>{
+    if(!armed){armed=true;$("resetQ").textContent="Click again to replace your edits";return}
+    content=clone(STARTER); save(CKEY,content); $("json").value=JSON.stringify(content,null,2); $("resetQ").textContent="Restore starter questions"; armed=false; $("msg").textContent="Starter questions restored.";
+  };
+}
+
+/* ---------- top controls ---------- */
+$("finalBtn").onclick=openFinal;
+$("editBtn").onclick=()=>{editing=!editing; renderBoard()};
+$("dataBtn").onclick=openData;
+let newArmed=null;
+$("newBtn").onclick=()=>{
+  const b=$("newBtn");
+  if(!newArmed){b.textContent="Click again to reset scores";newArmed=setTimeout(()=>{b.textContent="New game";newArmed=null},3000);return}
+  clearTimeout(newArmed); newArmed=null; b.textContent="New game";
+  state=freshState(state.teams.length,state.teams.map(t=>t.name)); persist(); renderBoard(); renderTeams();
+};
+document.addEventListener("keydown",e=>{
+  if(!ov) return;
+  const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||"");
+  if(e.key==="Escape"){e.preventDefault();closeOv()}
+  else if(e.key===" "&&!typing&&$("reveal")){e.preventDefault();$("reveal").click()}
+});
+
+renderBoard(); renderTeams();
+</script>
+
+</body>
+</html>
