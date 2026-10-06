@@ -1,0 +1,161 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>AP CS Principles Home</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one column, a "memory register" header of bits, then short sections in a 2-col grid that stacks on phones */
+:root{
+  --bg:#f3f6f8; --surface:#ffffff; --fg:#14212b; --muted:#56656f; --line:#d5dee4;
+  --accent:#1f5fbf; --accent-soft:#e3ecfa; --bit-on:#1f5fbf; --bit-off:#cfd9e2; --warm:#b5651d;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Work Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f161c; --surface:#16212a; --fg:#e4ecf2; --muted:#93a4b1; --line:#26343f;
+  --accent:#7aa8f0; --accent-soft:#1b2b40; --bit-on:#7aa8f0; --bit-off:#26343f; --warm:#e0a066; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --surface:#16212a; --fg:#e4ecf2; --muted:#93a4b1; --line:#26343f;
+  --accent:#7aa8f0; --accent-soft:#1b2b40; --bit-on:#7aa8f0; --bit-off:#26343f; --warm:#e0a066; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;padding-inline:16px;padding-block:28px 48px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2rem,6vw,3.1rem);font-weight:700;letter-spacing:-.01em}
+h2{font-size:1.3rem;font-weight:700}
+p{margin:0;max-width:65ch}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+.label{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+/* header */
+header{display:flex;flex-direction:column;gap:14px;padding-bottom:24px;border-bottom:1px solid var(--line)}
+.bits{display:flex;flex-wrap:wrap;gap:14px 22px;font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.byte{display:flex;flex-direction:column;gap:4px}
+.byte .cells{display:flex;gap:3px}
+.byte .cells i{width:12px;height:12px;border-radius:2px;background:var(--bit-off)}
+.byte .cells i.on{background:var(--bit-on)}
+.byte span b{color:var(--fg);font-weight:600}
+.sub{font-size:1.1rem;color:var(--muted)}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--mono);font-size:.78rem;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surface)}
+/* links */
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.link{display:flex;flex-direction:column;gap:4px;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--fg);transition:border-color .15s}
+.link:hover{border-color:var(--accent)}
+.link strong{font-family:var(--display);font-size:1.1rem;color:var(--accent)}
+.link span{font-size:.9rem;color:var(--muted)}
+.link.static strong{color:var(--fg)}
+/* sections */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:28px 36px}
+@media (max-width:680px){.grid{grid-template-columns:1fr}}
+section{display:flex;flex-direction:column;gap:10px;min-width:0}
+ul.plain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+ul.plain li{display:flex;gap:10px;align-items:baseline}
+ul.plain li code{font-family:var(--mono);font-size:.8rem;color:var(--accent);min-width:4.2em}
+/* grade bar */
+.bar{display:flex;height:14px;border-radius:3px;overflow:hidden;gap:2px}
+.bar div{background:var(--accent)}
+.bar div:nth-child(2){opacity:.75}.bar div:nth-child(3){opacity:.5}.bar div:nth-child(4){opacity:.3}
+.weights{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-variant-numeric:tabular-nums}
+.weights b{font-family:var(--mono);font-weight:600;text-align:right}
+.note{padding:16px 18px;background:var(--accent-soft);border-radius:8px;display:flex;flex-direction:column;gap:6px}
+ol.units{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+ol.units li{display:grid;grid-template-columns:2.4rem 1fr auto;gap:4px 14px;align-items:baseline;padding-block:10px;border-bottom:1px solid var(--line)}
+.un{font-family:var(--mono);font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.ut{display:flex;flex-direction:column;min-width:0}
+.ut strong{font-weight:600}
+.ut span{font-size:.9rem;color:var(--muted)}
+.tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.04em;padding:2px 8px;border-radius:999px;white-space:nowrap;border:1px solid var(--line)}
+.tag.code{color:var(--accent);border-color:var(--accent)}
+.tag.cmu{color:var(--warm);border-color:var(--warm)}
+.tag.own{color:var(--muted)}
+@media (max-width:520px){ol.units li{grid-template-columns:2.4rem 1fr}.tag{grid-column:2;justify-self:start}}
+.contact{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding-top:20px;border-top:1px solid var(--line)}
+.contact code{font-family:var(--mono);font-size:.95rem;user-select:all}
+</style>
+</head><body>
+
+<div class="wrap">
+  <header>
+    <div class="bits" aria-label="CSP written in binary">
+      <div class="byte"><div class="cells"><i></i><i class="on"></i><i></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i></div><span>01000011 = <b>C</b></span></div>
+      <div class="byte"><div class="cells"><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i></div><span>01010011 = <b>S</b></span></div>
+      <div class="byte"><div class="cells"><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i></i><i></i></div><span>01010000 = <b>P</b></span></div>
+    </div>
+    <h1>Computer Science Principles</h1>
+    <p class="sub">How computers represent information, how programs work, and how computing shapes the world. Taught with Code.org and CMU CS Academy (Python).</p>
+    <div class="facts">
+      <span class="chip">Class meets Wednesdays</span>
+      <span class="chip">32 weeks</span>
+      <span class="chip">Ms. Crane · Connections NW</span>
+    </div>
+  </header>
+
+  <section>
+    <span class="label">Quick links</span>
+    <div class="links">
+      <a class="link" href="https://studio.code.org" target="_blank" rel="noopener"><strong>Code.org</strong><span>Lessons for the non-programming units</span></a>
+      <a class="link" href="https://academy.cs.cmu.edu" target="_blank" rel="noopener"><strong>CMU CS Academy</strong><span>Python lessons and exercises for the programming units</span></a>
+      <a class="link" href="csp-resources.html"><strong>Class resources</strong><span>Handouts, review exercises, and everything we've used in class</span></a>
+      <div class="link static"><strong>Assignments</strong><span>Open the Assignments tab at the top of this Team</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Course units</h2>
+    <ol class="units">
+        <li><span class="un">0</span><div class="ut"><strong>Intro to computing</strong><span>What computer science is, how computers work, and types of programming languages.</span></div><span class="tag own">Class</span></li>
+        <li><span class="un">1</span><div class="ut"><strong>Digital information</strong><span>How computers store numbers, text, images, and sound in binary.</span></div><span class="tag code">Code.org</span></li>
+        <li><span class="un">2</span><div class="ut"><strong>The internet</strong><span>How the internet works, and how it shapes politics, culture, and money.</span></div><span class="tag code">Code.org</span></li>
+        <li><span class="un">3</span><div class="ut"><strong>Intro to CMU Graphics</strong><span>Your first Python programs: drawing images and the core moves of coding.</span></div><span class="tag cmu">CMU CS Academy</span></li>
+        <li><span class="un">4</span><div class="ut"><strong>Functions, events, conditionals</strong><span>Programs that respond to input and make decisions, organized with functions.</span></div><span class="tag cmu">CMU CS Academy</span></li>
+        <li><span class="un">5</span><div class="ut"><strong>Data</strong><span>Explore and visualize real datasets, looking for patterns.</span></div><span class="tag code">Code.org</span></li>
+        <li><span class="un">6</span><div class="ut"><strong>Groups, lists, and loops</strong><span>Loop over collections and manage groups of objects and data.</span></div><span class="tag cmu">CMU CS Academy</span></li>
+        <li><span class="un">7</span><div class="ut"><strong>Complex conditionals, events, libraries</strong><span>Handle richer input and reuse code others have written.</span></div><span class="tag cmu">CMU CS Academy</span></li>
+        <li><span class="un">8</span><div class="ut"><strong>Cybersecurity and global impacts</strong><span>Where data, policy, law, ethics, and society collide.</span></div><span class="tag code">Code.org</span></li>
+        <li><span class="un">9</span><div class="ut"><strong>Create Performance Task</strong><span>The AP Create task. Only for students taking the AP exam, done outside class.</span></div><span class="tag cmu">CMU CS Academy</span></li>
+        <li><span class="un">10</span><div class="ut"><strong>Algorithms</strong><span>Design and compare algorithms, and why some are better than others.</span></div><span class="tag code">Code.org</span></li>
+    </ol>
+    <p class="label">Weeks with two lessons are lettered: Week 2a, Week 2b.</p>
+  </section>
+
+  <div class="grid">
+    <section>
+      <h2>Your week</h2>
+      <ul class="plain">
+        <li><code>Wed</code><span>Class: hands-on lessons and new material.</span></li>
+        <li><code>Home</code><span>Readings, homework, and online lessons posted in Assignments.</span></li>
+        <li><code>Notes</code><span>Keep your notebook current. It is graded.</span></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Grades</h2>
+      <div class="bar" role="img" aria-label="Homework 40%, notebooking 20%, participation 10%, assessments 30%">
+        <div style="flex:40"></div><div style="flex:20"></div><div style="flex:10"></div><div style="flex:30"></div>
+      </div>
+      <div class="weights">
+        <b>40%</b><span>Homework</span>
+        <b>30%</b><span>Assessments</span>
+        <b>20%</b><span>Notebooking</span>
+        <b>10%</b><span>Participation</span>
+      </div>
+      <p class="label">Assignments live in Teams.</p>
+    </section>
+
+  </div>
+
+  <section>
+    <h2>About the AP exam</h2>
+    <div class="note">
+      <p>This class follows a College Board–approved AP CSP curriculum. Taking the AP exam is optional and is handled outside class time.</p>
+    </div>
+  </section>
+
+  <div class="contact">
+    <span class="label">Questions</span>
+    <code>rebecca.crane@connectionsnw.org</code>
+  </div>
+</div>
+</body></html>
