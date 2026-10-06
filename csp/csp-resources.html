@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSP Resources</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: same system as the CSP home page; one column of resources grouped by semester */
+:root{
+  --bg:#f3f6f8; --surface:#ffffff; --fg:#14212b; --muted:#56656f; --line:#d5dee4;
+  --accent:#1f5fbf; --accent-soft:#e3ecfa;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Work Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f161c; --surface:#16212a; --fg:#e4ecf2; --muted:#93a4b1; --line:#26343f;
+  --accent:#7aa8f0; --accent-soft:#1b2b40; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --surface:#16212a; --fg:#e4ecf2; --muted:#93a4b1; --line:#26343f;
+  --accent:#7aa8f0; --accent-soft:#1b2b40; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;padding-inline:16px;padding-block:28px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--display);font-weight:700;margin:0;line-height:1.1;text-wrap:balance}
+h1{font-size:clamp(2rem,6vw,2.8rem)}
+h2{font-size:1.3rem}
+p{margin:0;max-width:65ch}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+.back{font-family:var(--mono);font-size:.8rem;text-decoration:none}
+header{display:flex;flex-direction:column;gap:10px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.sub{color:var(--muted)}
+section{display:flex;flex-direction:column;gap:10px}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+li a,li .nolink{display:grid;grid-template-columns:5.5rem 1fr;gap:4px 14px;align-items:baseline;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;text-decoration:none;color:var(--fg)}
+li a:hover{border-color:var(--accent)}
+.type{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.title{font-weight:600}
+.note{grid-column:2;font-size:.9rem;color:var(--muted)}
+.nolink .title::after{content:" · link coming soon";font-weight:400;color:var(--muted)}
+@media (max-width:420px){li a,li .nolink{grid-template-columns:1fr}.note{grid-column:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="csp-home.html">← CSP home</a>
+    <h1>Resources</h1>
+    <p class="sub">Everything we've used in class, in one place. Links open in a new tab.</p>
+  </header>
+  <div id="list"></div>
+</div>
+
+<script>
+/* ===== ADD RESOURCES HERE =====
+   One line per resource. Newest at the bottom of its section is fine.
+   section: groups items on the page (sections appear in the order they first show up)
+   type:    short label, e.g. Handout, Review, Interactive, Cards, Rubric, Reference, Video, Link
+   url:     full https link. For files in the class-games repo, use the GitHub Pages address:
+            https://rebeccacrane.github.io/class-games/csp/FILENAME  (spaces become %20)
+            Leave it "" and the item shows as "link coming soon".
+   note:    optional one-line description
+*/
+const RESOURCES = [
+  { section: "All year", type: "Reference", title: "CSP quick reference", url: "https://rebeccacrane.github.io/class-games/csp/CSP_Quick_Reference.pdf", note: "PDF" },
+
+  { section: "Unit 0 · Intro to computing", type: "Interactive", title: "The Computing Stack", url: "https://rebeccacrane.github.io/class-games/csp/TheComputingStack.html", note: "" },
+  { section: "Unit 0 · Intro to computing", type: "Handout", title: "Week 3 – The Computing Stack", url: "https://rebeccacrane.github.io/class-games/csp/Week%203%20-%20The%20Computing%20Stack.pdf", note: "PDF" },
+  { section: "Unit 0 · Intro to computing", type: "Cards", title: "Programming language sort cards", url: "https://rebeccacrane.github.io/class-games/csp/language-sort-cards.pdf", note: "PDF" },
+  { section: "Unit 0 · Intro to computing", type: "Review", title: "Unit 0 review game", url: "https://rebeccacrane.github.io/class-games/csp/unit0-review-game.html", note: "" },
+
+  { section: "Unit 3 · Intro to CMU Graphics", type: "Rubric", title: "Creative Task 1 rubric", url: "https://rebeccacrane.github.io/class-games/csp/creative-task-1-rubric.html", note: "" },
+];
+/* ===== END OF LIST ===== */
+
+const list = document.getElementById("list");
+const groups = new Map();
+RESOURCES.forEach(r => { if (!groups.has(r.section)) groups.set(r.section, []); groups.get(r.section).push(r); });
+const esc = s => String(s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+let html = "";
+groups.forEach((items, name) => {
+  html += `<section><h2>${esc(name)}</h2><ul>`;
+  items.forEach(r => {
+    const inner = `<span class="type">${esc(r.type)}</span><span class="title">${esc(r.title)}</span>${r.note ? `<span class="note">${esc(r.note)}</span>` : ""}`;
+    html += r.url
+      ? `<li><a href="${esc(r.url)}" target="_blank" rel="noopener">${inner}</a></li>`
+      : `<li><div class="nolink">${inner}</div></li>`;
+  });
+  html += `</ul></section>`;
+});
+list.innerHTML = html || `<p class="sub">No resources yet.</p>`;
+list.style.display = "flex"; list.style.flexDirection = "column"; list.style.gap = "28px";
+</script>
+</body>
+</html>
