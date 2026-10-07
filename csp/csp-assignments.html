@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSP Assignments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: same system as the CSP home page; a sort toggle over one list of assignment rows */
+:root{
+  --bg:#f3f6f8; --surface:#ffffff; --fg:#14212b; --muted:#56656f; --line:#d5dee4;
+  --accent:#1f5fbf; --accent-soft:#e3ecfa; --warm:#b5651d; --warm-soft:#f8eadc;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Work Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f161c; --surface:#16212a; --fg:#e4ecf2; --muted:#93a4b1; --line:#26343f;
+  --accent:#7aa8f0; --accent-soft:#1b2b40; --warm:#e0a066; --warm-soft:#33261a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --surface:#16212a; --fg:#e4ecf2; --muted:#93a4b1; --line:#26343f;
+  --accent:#7aa8f0; --accent-soft:#1b2b40; --warm:#e0a066; --warm-soft:#33261a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.5;margin:0;padding-inline:16px;padding-block:28px 48px}
+.wrap{max-width:880px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,6vw,2.8rem);margin:0;line-height:1.1}
+p{margin:0;max-width:65ch}
+a{color:var(--accent);text-underline-offset:3px}
+.back{font-family:var(--mono);font-size:.8rem;text-decoration:none}
+header{display:flex;flex-direction:column;gap:10px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+.sub{color:var(--muted)}
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+.label{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{font:inherit;font-size:.9rem;padding:7px 14px;border:0;background:transparent;color:var(--fg);cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:600}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.range{display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=date]{font:inherit;font-size:.9rem;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg)}
+select{font:inherit;font-size:.9rem;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg)}
+.list{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:1fr 7.5rem 7.5rem;gap:4px 16px;align-items:baseline;padding-block:12px;border-bottom:1px solid var(--line)}
+.row.head{padding-block:8px}
+.row.past .title{color:var(--muted)}
+.main{display:flex;flex-direction:column;gap:4px;min-width:0}
+.title{font-weight:600}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.unit{font-family:var(--mono);font-size:.72rem;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
+.cat{font-size:.85rem;color:var(--muted)}
+.soon{font-family:var(--mono);font-size:.7rem;padding:2px 8px;border-radius:999px;background:var(--warm-soft);color:var(--warm);white-space:nowrap}
+.date{font-family:var(--mono);font-size:.85rem;font-variant-numeric:tabular-nums;color:var(--muted)}
+.date.sorted{color:var(--fg);font-weight:600}
+.date small{display:none;font-family:var(--body);font-size:.75rem;color:var(--muted);font-weight:400;margin-right:6px}
+@media (max-width:560px){
+  .row{grid-template-columns:1fr 1fr}
+  .row.head{display:none}
+  .main{grid-column:1/-1}
+  .date small{display:inline}
+}
+.foot{font-size:.9rem;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="csp-home.html">← CSP home</a>
+    <h1>Assignments</h1>
+    <p class="sub">Every CSP assignment so far. Assignments are given and turned in through Teams; this list is for keeping track.</p>
+  </header>
+
+  <div class="controls">
+    <span class="label">Sort by</span>
+    <div class="seg" role="group" aria-label="Sort assignments">
+      <button type="button" id="sort-due" aria-pressed="true">Date due</button>
+      <button type="button" id="sort-assigned" aria-pressed="false">Date assigned</button>
+    </div>
+    <label class="label" for="unit-filter">Unit</label>
+    <select id="unit-filter"><option value="">All units</option></select>
+    <label class="label" for="date-filter">Due</label>
+    <select id="date-filter">
+      <option value="">Any date</option>
+      <option value="upcoming">Today or later</option>
+      <option value="week">In the next 7 days</option>
+      <option value="past">Already past</option>
+      <option value="range">Between dates…</option>
+    </select>
+    <span class="range" id="range" hidden>
+      <input type="date" id="date-from" aria-label="Due on or after">
+      <span class="label">to</span>
+      <input type="date" id="date-to" aria-label="Due on or before">
+    </span>
+  </div>
+
+  <div class="list" id="list"></div>
+  <p class="foot">Due dates match Teams. If they ever disagree, Teams is correct.</p>
+</div>
+
+<script>
+/* ===== ADD ASSIGNMENTS HERE =====
+   One line per assignment. Order doesn't matter; the page sorts them.
+   unit:     shown as a tag and used by the Unit filter
+   assigned: date given out, as "YYYY-MM-DD"
+   due:      due date from Teams, as "YYYY-MM-DD"
+   category: grading category (Homework, Notebook, Assessments, or "" for none)
+*/
+const ASSIGNMENTS = [
+  { title: "Code.org account setup",                     unit: "Welcome to CSP", assigned: "2026-09-02", due: "2026-09-08", category: "" },
+  { title: "CMU Academy account setup",                  unit: "Welcome to CSP", assigned: "2026-09-02", due: "2026-09-08", category: "" },
+  { title: "Join AP Classroom (if this applies to you)", unit: "Welcome to CSP", assigned: "2026-09-02", due: "2026-09-08", category: "" },
+  { title: "Syllabus questionnaire",                     unit: "Welcome to CSP", assigned: "2026-09-16", due: "2026-09-22", category: "Homework" },
+  { title: "How Computers Work",                         unit: "Unit 0",          assigned: "2026-09-16", due: "2026-09-22", category: "Homework" },
+  { title: "The Computing Stack",                        unit: "Unit 0",          assigned: "2026-09-23", due: "2026-09-30", category: "Homework" },
+  { title: "The Computing Stack notebooking",            unit: "Unit 0",          assigned: "2026-09-23", due: "2026-09-30", category: "Notebook" },
+  { title: "Complete Job Cards",                         unit: "Unit 0",          assigned: "2026-09-30", due: "2026-10-07", category: "Homework" },
+  { title: "Code.org: Lesson 1",                         unit: "Unit 1",          assigned: "2026-09-09", due: "2026-09-15", category: "Homework" },
+  { title: "CMU: Getting Started & Drawing Basics",      unit: "Unit 3",          assigned: "2026-09-09", due: "2026-09-16", category: "Homework" },
+  { title: "CMU: More About Drawing",                    unit: "Unit 3",          assigned: "2026-09-16", due: "2026-09-23", category: "Homework" },
+  { title: "CMU: More About Drawing & Unit 1 Exercises", unit: "Unit 3",          assigned: "2026-09-30", due: "2026-10-06", category: "Homework" },
+  { title: "CMU: Unit 1 Review & CMU Test Prep",         unit: "Unit 3",          assigned: "2026-10-07", due: "2026-10-13", category: "Homework" },
+  { title: "Exam 1 (in class)",                          unit: "Unit 3",          assigned: "2026-10-07", due: "2026-10-14", category: "Assessments" },
+  { title: "Create Performance Task intro",              unit: "Unit 3",          assigned: "2026-10-14", due: "2026-10-21", category: "Assessments" },
+];
+/* ===== END OF LIST ===== */
+
+const listEl = document.getElementById("list");
+const btnDue = document.getElementById("sort-due");
+const btnAssigned = document.getElementById("sort-assigned");
+const unitSel = document.getElementById("unit-filter");
+const dateSel = document.getElementById("date-filter");
+const rangeEl = document.getElementById("range");
+const fromEl = document.getElementById("date-from");
+const toEl = document.getElementById("date-to");
+let sortKey = "due";
+
+const esc = s => String(s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const parse = d => { const [y, m, day] = d.split("-").map(Number); return new Date(y, m - 1, day); };
+const fmt = d => parse(d).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+const today = new Date(); today.setHours(0, 0, 0, 0);
+const DAY = 86400000;
+
+[...new Set(ASSIGNMENTS.map(a => a.unit))].forEach(u => {
+  const o = document.createElement("option"); o.value = u; o.textContent = u; unitSel.appendChild(o);
+});
+
+function render() {
+  const unit = unitSel.value;
+  const rows = ASSIGNMENTS
+    .filter(a => !unit || a.unit === unit)
+    .filter(a => {
+      const due = parse(a.due), mode = dateSel.value;
+      if (mode === "upcoming") return due >= today;
+      if (mode === "week") return due >= today && due - today <= 7 * DAY;
+      if (mode === "past") return due < today;
+      if (mode === "range") return (!fromEl.value || a.due >= fromEl.value) && (!toEl.value || a.due <= toEl.value);
+      return true;
+    })
+    .slice()
+    .sort((a, b) => a[sortKey].localeCompare(b[sortKey]) || a.due.localeCompare(b.due) || a.title.localeCompare(b.title));
+  let html = `<div class="row head"><span class="label">Assignment</span><span class="label">Assigned</span><span class="label">Due</span></div>`;
+  rows.forEach(a => {
+    const due = parse(a.due);
+    const past = due < today;
+    const days = Math.round((due - today) / DAY);
+    const soon = !past && days <= 7 ? `<span class="soon">${days === 0 ? "Due today" : days === 1 ? "Due tomorrow" : `Due in ${days} days`}</span>` : "";
+    html += `<div class="row${past ? " past" : ""}">
+      <div class="main"><span class="title">${esc(a.title)}</span>
+        <span class="meta"><span class="unit">${esc(a.unit)}</span>${a.category ? `<span class="cat">${esc(a.category)}</span>` : ""}${soon}</span></div>
+      <span class="date${sortKey === "assigned" ? " sorted" : ""}"><small>Assigned</small>${fmt(a.assigned)}</span>
+      <span class="date${sortKey === "due" ? " sorted" : ""}"><small>Due</small>${fmt(a.due)}</span>
+    </div>`;
+  });
+  if (!rows.length) html += `<p class="sub" style="padding-block:12px">No assignments match these filters.</p>`;
+  listEl.innerHTML = html;
+}
+
+function setSort(key) {
+  sortKey = key;
+  btnDue.setAttribute("aria-pressed", key === "due");
+  btnAssigned.setAttribute("aria-pressed", key === "assigned");
+  try { localStorage.setItem("csp-assign-sort", key); } catch (e) {}
+  render();
+}
+btnDue.addEventListener("click", () => setSort("due"));
+btnAssigned.addEventListener("click", () => setSort("assigned"));
+unitSel.addEventListener("change", render);
+dateSel.addEventListener("change", () => { rangeEl.hidden = dateSel.value !== "range"; render(); });
+fromEl.addEventListener("change", render);
+toEl.addEventListener("change", render);
+let saved = null; try { saved = localStorage.getItem("csp-assign-sort"); } catch (e) {}
+setSort(saved === "assigned" ? "assigned" : "due");
+</script>
+</body>
+</html>
