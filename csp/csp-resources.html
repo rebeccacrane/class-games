@@ -34,14 +34,21 @@ a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius
 header{display:flex;flex-direction:column;gap:10px;padding-bottom:20px;border-bottom:1px solid var(--line)}
 .sub{color:var(--muted)}
 section{display:flex;flex-direction:column;gap:10px}
-ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
-li a,li .nolink{display:grid;grid-template-columns:5.5rem 1fr;gap:4px 14px;align-items:baseline;padding:12px 14px;background:var(--surface);border:1px solid var(--line);border-radius:6px;text-decoration:none;color:var(--fg)}
-li a:hover{border-color:var(--accent)}
+.items{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.item h3{margin:0;font-family:var(--body);font-size:1rem;font-weight:600;line-height:1.3}
+.item p.inote{margin:0;font-size:.9rem;color:var(--muted)}
+.links{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.links li{border-bottom:1px solid var(--line)}
+.links li:last-child{border-bottom:0}
+.links a,.links .nolink{display:grid;grid-template-columns:6.5rem 1fr auto;gap:4px 12px;align-items:baseline;padding:9px 2px;text-decoration:none;color:var(--fg)}
+.links a:hover .label{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.links a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 .type{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-.title{font-weight:600}
-.note{grid-column:2;font-size:.9rem;color:var(--muted)}
-.nolink .title::after{content:" · link coming soon";font-weight:400;color:var(--muted)}
-@media (max-width:420px){li a,li .nolink{grid-template-columns:1fr}.note{grid-column:1}}
+.label{font-weight:500;min-width:0}
+.fmt{font-family:var(--mono);font-size:.75rem;color:var(--muted);white-space:nowrap}
+.nolink .label{color:var(--muted)}
+@media (max-width:460px){.links a,.links .nolink{grid-template-columns:1fr auto}.links .type{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -56,46 +63,66 @@ li a:hover{border-color:var(--accent)}
 
 <script>
 /* ===== ADD RESOURCES HERE =====
-   One line per resource. Newest at the bottom of its section is fine.
-   section: groups items on the page (sections appear in the order they first show up)
-   type:    short label, e.g. Handout, Review, Interactive, Cards, Rubric, Reference, Video, Link
-   url:     full https link. For files in the class-games repo, use the GitHub Pages address:
-            https://rebeccacrane.github.io/class-games/csp/FILENAME  (spaces become %20)
-            Leave it "" and the item shows as "link coming soon".
-   note:    optional one-line description
+   Each item is one box on the page. Put related files (slides, notes, games) in the same item.
+   section: heading the item goes under (sections appear in the order they first show up)
+   title:   name of the box
+   note:    optional line under the title
+   links:   the files in this box, in the order shown. Put slides first.
+     type:  short tag, e.g. Slides, Notes, Reading, Interactive, Game, Cards, Rubric, Guide, Reference
+     label: optional text for the link (defaults to the item title)
+     url:   full link. For files in the class-games repo use
+            https://rebeccacrane.github.io/class-games/csp/FILENAME  (spaces become %20, & becomes %26)
+            Leave it "" and the link shows as "coming soon".
+     fmt:   optional format note, e.g. PDF
 */
+const U0 = "Unit 0 · Introduction to Computer Science";
+const U3 = "Unit 3 · Intro to CMU Graphics";
 const RESOURCES = [
-  { section: "All year", type: "Reference", title: "CSP quick reference", url: "https://rebeccacrane.github.io/class-games/csp/CSP_Quick_Reference.pdf", note: "PDF" },
+  { section: "All year", title: "CSP quick reference", links: [
+    { type: "Reference", url: "https://rebeccacrane.github.io/class-games/csp/CSP_Quick_Reference.pdf", fmt: "PDF" },
+  ]},
 
-  { section: "Unit 0 · Introduction to Computer Science", type: "Notes", title: "Week 2a – Guided notes: What Is Computer Science?", url: "https://rebeccacrane.github.io/class-games/csp/Week_2a_GuidedNotes.pdf", note: "PDF" },
-  { section: "Unit 0 · Introduction to Computer Science", type: "Slides", title: "Week 2a – Slides: What Is Computer Science?", url: "https://rebeccacrane.github.io/class-games/csp/Week_2a_Slides.pdf", note: "PDF" },
-  { section: "Unit 0 · Introduction to Computer Science", type: "Notes", title: "Week 2b – Guided notes: How Computers Work", url: "https://rebeccacrane.github.io/class-games/csp/Week_2b_GuidedNotes.pdf", note: "PDF" },
-  { section: "Unit 0 · Introduction to Computer Science", type: "Slides", title: "Week 2b – Slides: How Computers Work", url: "https://rebeccacrane.github.io/class-games/csp/Week_2b_Slides.pdf", note: "PDF" },
-  { section: "Unit 0 · Introduction to Computer Science", type: "Interactive", title: "The Computing Stack", url: "https://rebeccacrane.github.io/class-games/csp/TheComputingStack.html", note: "" },
-  { section: "Unit 0 · Introduction to Computer Science", type: "Handout", title: "Week 3 – The Computing Stack", url: "https://rebeccacrane.github.io/class-games/csp/Week_3_TheComputingStack.pdf", note: "PDF" },
-  { section: "Unit 0 · Introduction to Computer Science", type: "Cards", title: "Programming language sort cards", url: "https://rebeccacrane.github.io/class-games/csp/language-sort-cards.pdf", note: "PDF" },
-  { section: "Unit 0 · Introduction to Computer Science", type: "Review", title: "Unit 0 review game", url: "https://rebeccacrane.github.io/class-games/csp/unit0-review-game.html", note: "" },
+  { section: U0, title: "Week 2a: What Is Computer Science?", links: [
+    { type: "Slides", label: "Lesson slides", url: "https://rebeccacrane.github.io/class-games/csp/Week_2a_Slides.pdf", fmt: "PDF" },
+    { type: "Notes",  label: "Guided notes", url: "https://rebeccacrane.github.io/class-games/csp/Week_2a_GuidedNotes.pdf", fmt: "PDF" },
+  ]},
+  { section: U0, title: "Week 2b: How Computers Work", links: [
+    { type: "Slides", label: "Lesson slides", url: "https://rebeccacrane.github.io/class-games/csp/Week_2b_Slides.pdf", fmt: "PDF" },
+    { type: "Notes",  label: "Guided notes", url: "https://rebeccacrane.github.io/class-games/csp/Week_2b_GuidedNotes.pdf", fmt: "PDF" },
+  ]},
+  { section: U0, title: "Week 3: The Computing Stack", note: "All three are the same lesson. Pick the version you need.", links: [
+    { type: "Reading",     label: "The reading only", url: "https://rebeccacrane.github.io/class-games/csp/Week_3_TheComputingStack.pdf", fmt: "PDF" },
+    { type: "Interactive", label: "The reading online, plus the review game", url: "https://rebeccacrane.github.io/class-games/csp/TheComputingStack.html" },
+    { type: "Game",        label: "The review game only", url: "https://rebeccacrane.github.io/class-games/csp/unit0-review-game.html" },
+  ]},
+  { section: U0, title: "Programming language sort", links: [
+    { type: "Cards", label: "Language and job cards", url: "https://rebeccacrane.github.io/class-games/csp/language-sort-cards.pdf", fmt: "PDF" },
+  ]},
 
-  { section: "Unit 3 · Intro to CMU Graphics", type: "Rubric", title: "Creative Task 1 rubric", url: "https://rebeccacrane.github.io/class-games/csp/creative-task-1-rubric.html", note: "" },
-  { section: "Unit 3 · Intro to CMU Graphics", type: "Guide", title: "Design & Development Guide", url: "https://rebeccacrane.github.io/class-games/csp/Design%26DevelopmentGuide.pdf", note: "PDF · use with the Creative Task 1 rubric" },
+  { section: U3, title: "Creative Task 1", links: [
+    { type: "Rubric", label: "Rubric", url: "https://rebeccacrane.github.io/class-games/csp/creative-task-1-rubric.html" },
+    { type: "Guide",  label: "Design & Development Guide", url: "https://rebeccacrane.github.io/class-games/csp/Design%26DevelopmentGuide.pdf", fmt: "PDF" },
+  ]},
 ];
 /* ===== END OF LIST ===== */
 
-const list = document.getElementById("list");
+const esc = s => String(s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const groups = new Map();
 RESOURCES.forEach(r => { if (!groups.has(r.section)) groups.set(r.section, []); groups.get(r.section).push(r); });
-const esc = s => String(s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 let html = "";
 groups.forEach((items, name) => {
-  html += `<section><h2>${esc(name)}</h2><ul>`;
-  items.forEach(r => {
-    const inner = `<span class="type">${esc(r.type)}</span><span class="title">${esc(r.title)}</span>${r.note ? `<span class="note">${esc(r.note)}</span>` : ""}`;
-    html += r.url
-      ? `<li><a href="${esc(r.url)}" target="_blank" rel="noopener">${inner}</a></li>`
-      : `<li><div class="nolink">${inner}</div></li>`;
+  html += `<section><h2>${esc(name)}</h2><div class="items">`;
+  items.forEach(it => {
+    html += `<div class="item"><h3>${esc(it.title)}</h3>${it.note ? `<p class="inote">${esc(it.note)}</p>` : ""}<ul class="links">`;
+    (it.links || []).forEach(l => {
+      const inner = `<span class="type">${esc(l.type)}</span><span class="label">${esc(l.label || it.title)}</span><span class="fmt">${l.url ? esc(l.fmt || "") : "coming soon"}</span>`;
+      html += l.url ? `<li><a href="${esc(l.url)}" target="_blank" rel="noopener">${inner}</a></li>` : `<li><div class="nolink">${inner}</div></li>`;
+    });
+    html += `</ul></div>`;
   });
-  html += `</ul></section>`;
+  html += `</div></section>`;
 });
+const list = document.getElementById("list");
 list.innerHTML = html || `<p class="sub">No resources yet.</p>`;
 list.style.display = "flex"; list.style.flexDirection = "column"; list.style.gap = "28px";
 </script>
