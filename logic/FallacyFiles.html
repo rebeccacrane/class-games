@@ -1,0 +1,399 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Fallacy Files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@600;700&family=Atkinson+Hyperlegible:wght@400;700&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+/* Layout: a detective's desk. Header + lineup of suspects (the six fallacies), 6-column board of manila case folders, team scores below; clues open full-screen for the projector. Single dark look by choice. */
+:root{
+  --desk:#151823; --desk-hi:#1f2433; --edge:#363d55; --manila:#dfc68c; --manila-hi:#ecd9a8; --manila-ink:#3a2d12;
+  --stamp:#e0503f; --paper:#f1eee6; --muted:#9ca2ba; --good:#7fd08f; --bad:#ff8a7a;
+  --f-display:"Zilla Slab", Rockwell, Georgia, serif;
+  --f-body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-type:"Courier Prime", "Courier New", ui-monospace, monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--desk); color:var(--paper); font-family:var(--f-body); font-size:16px;
+  background-image:radial-gradient(ellipse at 50% -10%, rgba(223,198,140,.10), transparent 60%)}
+.wrap{padding-inline:clamp(16px,2.5vw,32px); padding-block:16px 28px; display:flex; flex-direction:column; gap:14px; min-height:100%; box-sizing:border-box}
+header{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px}
+h1{font-family:var(--f-display); font-weight:700; margin:0; font-size:clamp(26px,3.4vw,40px); line-height:1; text-wrap:balance}
+h1 small{display:block; font-family:var(--f-type); font-weight:400; font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-top:6px}
+.tools{display:flex; flex-wrap:wrap; gap:8px}
+button{font:inherit; cursor:pointer}
+.btn{background:transparent; color:var(--paper); border:1.5px solid var(--edge); border-radius:4px; padding:8px 14px; font-weight:700; font-size:14px}
+.btn:hover{border-color:var(--manila); color:var(--manila-hi)}
+.btn.primary{background:var(--manila); color:var(--manila-ink); border-color:var(--manila)}
+.btn.primary:hover{background:var(--manila-hi); color:var(--manila-ink)}
+.btn.warn{border-color:var(--bad); color:var(--bad)}
+.btn.on{background:var(--desk-hi); border-color:var(--manila)}
+.btn:disabled{opacity:.4; cursor:default}
+:focus-visible{outline:3px solid var(--manila-hi); outline-offset:2px}
+
+.lineup{display:flex; flex-wrap:wrap; gap:6px 8px; align-items:center}
+.lineup b{font-family:var(--f-type); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-right:4px}
+.suspect{font-size:14px; font-weight:700; border:1px solid var(--edge); border-radius:3px; padding:3px 9px; background:var(--desk-hi)}
+.suspect.bonus{border-style:dashed; color:var(--manila-hi)}
+
+.board-scroll{overflow-x:auto; flex:1}
+.board{display:grid; grid-template-columns:repeat(6,minmax(120px,1fr)); gap:10px 8px; min-width:740px; height:100%}
+.cat{display:flex; align-items:flex-end; justify-content:center; text-align:center; padding:8px 6px 10px; border-bottom:2px solid var(--manila);
+  font-family:var(--f-display); font-weight:700; font-size:clamp(16px,1.7vw,22px); line-height:1.1; text-wrap:balance; min-height:56px; background:none; color:var(--paper)}
+.cell{position:relative; background:var(--manila); color:var(--manila-ink); border:0; border-radius:2px 6px 6px 6px; margin-top:9px;
+  min-height:clamp(60px,10vh,112px); display:flex; align-items:center; justify-content:center;
+  font-family:var(--f-display); font-weight:700; font-size:clamp(28px,4vw,52px); font-variant-numeric:tabular-nums;
+  box-shadow:0 2px 0 rgba(0,0,0,.35); transition:transform .12s, background .12s}
+.cell::before{content:""; position:absolute; left:0; top:-9px; width:42%; height:10px; background:inherit; border-radius:4px 6px 0 0}
+.cell:hover{background:var(--manila-hi); transform:translateY(-2px)}
+.cell.used{background:var(--desk-hi); color:transparent; box-shadow:none; transform:none}
+.cell.used span{font-family:var(--f-type); font-weight:700; font-size:clamp(12px,1.2vw,16px); letter-spacing:.18em; color:var(--stamp); border:2px solid var(--stamp); padding:2px 8px; transform:rotate(-8deg); opacity:.75}
+.editing .cell, .editing .cat{outline:2px dashed var(--stamp); outline-offset:-5px}
+.editing .cat{cursor:pointer}
+
+.teams{display:flex; flex-wrap:wrap; gap:10px}
+.team{flex:1 1 180px; min-width:0; background:var(--desk-hi); border:1.5px solid var(--edge); border-radius:4px; padding:10px 12px; display:flex; flex-direction:column; gap:4px}
+.team input{background:transparent; border:0; border-bottom:1px dashed var(--edge); color:var(--muted); font-family:var(--f-type); font-weight:700; text-transform:uppercase; letter-spacing:.08em; font-size:13px; padding:2px 0; width:100%}
+.team .score{font-family:var(--f-display); font-weight:700; font-size:clamp(28px,3.4vw,42px); font-variant-numeric:tabular-nums; line-height:1}
+.team .score.neg{color:var(--bad)}
+.team .adj{display:flex; gap:6px}
+.team .adj button{flex:1; background:transparent; border:1px solid var(--edge); color:var(--muted); border-radius:3px; padding:2px 0; font-size:13px}
+.team .adj button:hover{border-color:var(--manila); color:var(--paper)}
+.teamctl{display:flex; flex-direction:column; gap:6px; justify-content:center}
+
+/* overlay */
+.ov{position:fixed; inset:0; background:var(--desk); z-index:10; display:flex; flex-direction:column; padding:calc(env(safe-area-inset-top,0px) + 20px) clamp(16px,5vw,72px) calc(env(safe-area-inset-bottom,0px) + 20px); gap:20px; overflow:auto}
+.ov-top{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap}
+.tag{font-family:var(--f-type); font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:var(--manila); font-size:clamp(15px,1.8vw,22px)}
+.tag .star{color:var(--stamp); border:2px solid var(--stamp); padding:1px 8px; margin-left:10px; display:inline-block; transform:rotate(-3deg)}
+.clue{flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; gap:28px; min-height:0}
+.clue .q{font-size:clamp(26px,4vw,56px); line-height:1.28; max-width:30ch; text-wrap:pretty; font-weight:700}
+.clue .q.long{font-size:clamp(22px,3vw,42px); max-width:38ch}
+.clue .q q{quotes:"\201C" "\201D"; color:var(--manila-hi)}
+.clue .a{background:var(--manila); color:var(--manila-ink); border-radius:4px; padding:22px clamp(18px,3vw,36px) 24px; max-width:40ch; position:relative; text-align:left; box-shadow:0 4px 0 rgba(0,0,0,.4)}
+.clue .a::before{content:"Verdict"; position:absolute; top:-14px; right:18px; font-family:var(--f-type); font-weight:700; letter-spacing:.2em; text-transform:uppercase; font-size:14px;
+  color:var(--stamp); background:var(--desk); border:2px solid var(--stamp); padding:2px 10px; transform:rotate(4deg)}
+.clue .a strong{display:block; font-family:var(--f-display); font-size:clamp(28px,3.8vw,50px); line-height:1.1; margin-bottom:8px}
+.clue .a span.why{display:block; font-size:clamp(18px,2.2vw,28px); line-height:1.35}
+.ov-actions{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center}
+.ov-actions .btn{font-size:16px; padding:10px 18px}
+.award{display:flex; flex-wrap:wrap; gap:10px; justify-content:center}
+.award .who{display:flex; flex-direction:column; align-items:center; gap:6px; background:var(--desk-hi); border:1.5px solid var(--edge); border-radius:4px; padding:10px 14px}
+.award .who b{font-family:var(--f-type); font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+.award .who div{display:flex; gap:6px}
+.ok{background:var(--good); color:var(--desk); border:0; border-radius:4px; padding:8px 14px; font-weight:700}
+.no{background:transparent; color:var(--bad); border:1.5px solid var(--bad); border-radius:4px; padding:8px 14px; font-weight:700}
+.ok.done,.no.done{outline:3px solid var(--paper)}
+.dd{font-family:var(--f-display); font-weight:700; font-size:clamp(48px,9vw,120px); color:var(--manila); line-height:1}
+.field{display:flex; flex-direction:column; gap:6px; text-align:left}
+.field label{font-family:var(--f-type); font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); font-weight:700}
+.field input,.field textarea,.field select{background:var(--desk-hi); color:var(--paper); border:1.5px solid var(--edge); border-radius:4px; padding:10px; font:inherit; font-size:18px}
+.field textarea{min-height:110px; resize:vertical; font-family:var(--f-body)}
+.check{display:flex; gap:8px; align-items:center; color:var(--muted); font-size:15px}
+.row{display:flex; flex-wrap:wrap; gap:12px; justify-content:center; align-items:flex-end}
+.wagers{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; width:min(900px,100%)}
+.editor{width:min(900px,100%); margin:0 auto; display:flex; flex-direction:column; gap:14px}
+.hint{color:var(--muted); font-size:14px; text-align:center}
+.note{color:var(--muted); font-size:13px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap" id="app">
+  <header>
+    <h1>Fallacy Files<small>Fallacy in the Wild · Review game</small></h1>
+    <div class="tools">
+      <button class="btn primary" id="finalBtn">Final Jeopardy</button>
+      <button class="btn" id="editBtn">Edit questions</button>
+      <button class="btn" id="dataBtn">Import / export</button>
+      <button class="btn warn" id="newBtn">New game</button>
+    </div>
+  </header>
+  <div class="lineup" aria-label="Fallacies in this game"><b>The lineup</b>
+    <span class="suspect">Straw Man</span><span class="suspect">Ad Hominem Abusive</span><span class="suspect">Tu Quoque</span>
+    <span class="suspect">Black &amp; White</span><span class="suspect">Appeal to Illegitimate Authority</span><span class="suspect bonus">★ Bonus: No True Scotsman</span>
+  </div>
+  <div class="board-scroll"><div class="board" id="board"></div></div>
+  <div class="teams" id="teams"></div>
+</div>
+<div class="ov" id="ov" hidden></div>
+
+<script>
+const VALUES=[100,200,300,400,500];
+/* Answers: first line = fallacy name (shown big), lines after = why. */
+const STARTER={
+  categories:[
+    {name:"Group Chat",clues:[
+      {q:"Maya posts her theory about how the book series will end. Jordan replies: \"lol nobody cares what you think, you still sleep with a nightlight.\"",a:"Ad Hominem Abusive\nJordan insults Maya instead of answering her theory."},
+      {q:"\"Either you repost this, or you don't actually care about animals.\"",a:"Black & White (False Dilemma / Either-Or)\nYou can care about animals without reposting. There are more than two options."},
+      {q:"Eli: \"Maybe we should start the group project a few days earlier.\"\nSam: \"So you want us to give up our whole weekend and do nothing but homework? No thanks.\"",a:"Straw Man\nEli asked for a few extra days, not the whole weekend. Sam argues against a bigger, sillier version."},
+      {q:"Priya tells her brother that posting spoilers in the chat is rude. He replies: \"You spoiled the finale for me last month!\"",a:"Tu Quoque\n\"You do it too\" doesn't make spoilers polite. Priya's point can still be true even if she's a hypocrite."},
+      {q:"\"My favorite gaming streamer says this vitamin gummy cures colds, so it definitely works.\"",a:"Appeal to Illegitimate Authority (Faulty Appeal to Authority)\nA gaming streamer is not an expert in medicine."}
+    ]},
+    {name:"Dinner Table",clues:[
+      {q:"Dad says drinking too much soda is bad for you. His son answers: \"You drink three cups of coffee a day!\"",a:"Tu Quoque\nDad's coffee habit doesn't change whether too much soda is bad."},
+      {q:"\"Mom, I don't need to stretch before running. My friend's older brother told me, and he's in college.\"",a:"Appeal to Illegitimate Authority (Faulty Appeal to Authority)\nBeing in college doesn't make him an expert on exercise."},
+      {q:"\"If you won't eat the broccoli, you obviously don't care about being healthy at all.\"",a:"Black & White (False Dilemma / Either-Or)\nSkipping one vegetable isn't the same as not caring about health. There's a lot of middle ground."},
+      {q:"Teen: \"Could my bedtime be 10:30 on Fridays?\"\nParent: \"So you want no bedtime at all? You'd be up until 3 every night.\"",a:"Straw Man\nThe teen asked for 10:30 on one night. The parent attacks \"no bedtime at all,\" which nobody said."},
+      {q:"Ana tells her brother he's loading the dishwasher wrong. He snaps: \"You can't tell me what to do. You're a slob who can't even match your socks.\"\nName it, and say why it is NOT tu quoque.",a:"Ad Hominem Abusive\nHe insults her character. It's not tu quoque because he doesn't claim she loads the dishwasher wrong too."}
+    ]},
+    {name:"Ad Break",clues:[
+      {q:"\"Olympic gold medal swimmer Dana Reyes says the Volt X is the best phone you can buy.\"",a:"Appeal to Illegitimate Authority (Faulty Appeal to Authority)\nShe's an expert swimmer, not a phone expert."},
+      {q:"\"You can buy a SafeHome alarm system, or you can leave your family unprotected.\"",a:"Black & White (False Dilemma / Either-Or)\nThere are other ways to protect a home: locks, neighbors, a different brand."},
+      {q:"A grocery store ad: \"Don't shop at Quickmart. Its owner is a greedy, lazy slob.\"",a:"Ad Hominem Abusive\nIt attacks the owner instead of giving a reason about prices, quality, or service."},
+      {q:"Brand X says its toothpaste still protects your teeth if you forget to brush one night.\nBrightwhite's ad replies: \"Brand X says you don't need to brush. We think your smile deserves better.\"",a:"Straw Man\nBrand X said \"one missed night,\" not \"don't brush.\" Brightwhite twists the claim to make it easy to attack."},
+      {q:"Ad: \"No true runner wears anything but Swiftstride shoes.\"\nCustomer: \"My friend runs marathons in other shoes.\"\nAd: \"Then she isn't a true runner.\"",a:"No True Scotsman\nWhen a counterexample shows up, the ad changes the definition of \"runner\" to shut it out.",bonus:true}
+    ]},
+    {name:"Game Day",clues:[
+      {q:"\"Either we win state this year, or the whole season was a waste.\"",a:"Black & White (False Dilemma / Either-Or)\nA season can be worth it without a championship: improving, team bonds, a winning record."},
+      {q:"A fan yells: \"Why would anyone listen to that ref? He's a bald, nearsighted loser!\"",a:"Ad Hominem Abusive\nIt insults the ref instead of explaining why the call was wrong."},
+      {q:"The coach tells a player to stop arguing with the referees. The player says: \"You got a technical foul last game for yelling at the ref!\"",a:"Tu Quoque\nThe coach's own behavior doesn't make arguing with refs a good idea."},
+      {q:"The other coach proposes limiting practices to two hours. Our coach tells the parents: \"He wants your kids to be lazy and never get better.\"",a:"Straw Man\nShorter practices aren't the same as wanting lazy players. Our coach attacks a distorted version."},
+      {q:"Two people say Jamal's sprained ankle needs a week of rest: the team's athletic trainer and the star quarterback.\nWhich appeal to authority is illegitimate, and why?",a:"The quarterback\nThe trainer is an expert on injuries, so that appeal is fine. The quarterback is an expert at football, not ankles."}
+    ]},
+    {name:"Town Hall",clues:[
+      {q:"A council member proposes adding a small skate park to Elm Field. Her opponent says: \"She wants to pave over every park in town.\"",a:"Straw Man\nOne skate park on one field becomes \"pave every park,\" which is far easier to oppose."},
+      {q:"\"A famous pop singer says the new bus routes are a disaster, so we should vote them down.\"",a:"Appeal to Illegitimate Authority (Faulty Appeal to Authority)\nFame in music doesn't make someone an expert on public transit."},
+      {q:"\"Don't listen to Mr. Hale's plan for the library. Look at him. He can't even dress himself.\"",a:"Ad Hominem Abusive\nHis clothing says nothing about whether the library plan is good."},
+      {q:"\"We either ban phones in the library completely, or the library turns into a noisy arcade.\"",a:"Black & White (False Dilemma / Either-Or)\nThere are middle options: quiet zones, silent mode, no calls."},
+      {q:"The mayor criticizes Council Member Diaz for missing three meetings. Diaz answers: \"You missed five meetings last year!\"\nName it. Does Diaz's reply show she didn't miss the meetings?",a:"Tu Quoque\nNo. Even if the mayor missed five, Diaz still missed three. She changes the subject to the mayor's record."}
+    ]},
+    {name:"Close Calls",clues:[
+      {q:"This fallacy misrepresents someone's argument, then knocks down the weaker version.",a:"Straw Man\nLike beating up a scarecrow instead of the real opponent."},
+      {q:"Tu quoque is Latin for what?",a:"\"You too\"\n(or \"you also\")"},
+      {q:"Fallacy or not? \"My doctor says I have strep throat, so I'm taking the antibiotic she prescribed.\"",a:"Not a fallacy\nA doctor speaking about medicine is a legitimate authority. Appeals to authority are only fallacies when the authority isn't qualified."},
+      {q:"Both attack the person, not the argument. What's the difference between Ad Hominem Abusive and Tu Quoque?",a:"Insult vs. hypocrisy\nAbusive insults the person's character. Tu quoque says \"you do it too,\" pointing at the person's own behavior."},
+      {q:"Liam: \"No Seattle kid would ever use an umbrella.\"\nAva: \"My cousin lives in Seattle and uses one.\"\nLiam: \"Well, no REAL Seattle kid does.\"",a:"No True Scotsman\nInstead of admitting the counterexample, Liam redefines \"Seattle kid\" so it can't count.",bonus:true}
+    ]}
+  ],
+  final:{category:"Triple Threat",q:"Name the three fallacies, in order:\n\"Mr. Ortiz wants homework graded, but he's the grumpiest teacher in the building. Besides, he never did his homework when he was a kid. So either we get rid of grades completely, or students will be miserable forever.\"",a:"Ad Hominem Abusive, Tu Quoque, Black & White\nGrumpy = insult. Never did homework = \"you too.\" No grades vs. miserable forever = only two options."}
+};
+const CKEY="fallacyJeop.content.v1", SKEY="fallacyJeop.state.v1";
+function load(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+let content=load(CKEY)||clone(STARTER);
+let state=load(SKEY)||freshState(3);
+let editing=false, ov=null;
+
+function pickDD(){const c=Math.floor(Math.random()*6), r=2+Math.floor(Math.random()*3);return c+"-"+r}
+function freshState(n,names){return{teams:Array.from({length:n},(_,i)=>({name:(names&&names[i])||"Team "+(i+1),score:0})),used:{},dd:pickDD()}}
+function persist(){save(SKEY,state)}
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function fmt(s){return esc(s).replace(/&quot;([^\n]*?)&quot;/g,"<q>$1</q>").replace(/\n/g,"<br>")}
+function fmtAns(s){const [head,...rest]=String(s).split("\n");return "<strong>"+esc(head)+"</strong>"+(rest.length?'<span class="why">'+esc(rest.join("\n")).replace(/\n/g,"<br>")+"</span>":"")}
+
+const $=id=>document.getElementById(id);
+
+function renderBoard(){
+  const b=$("board"); b.innerHTML="";
+  content.categories.forEach((cat,c)=>{
+    const h=document.createElement(editing?"button":"div");
+    h.className="cat"; h.textContent=cat.name; h.style.gridColumn=c+1; h.style.gridRow=1;
+    if(editing){h.onclick=()=>openEditor(c,null)}
+    b.appendChild(h);
+  });
+  VALUES.forEach((v,r)=>content.categories.forEach((cat,c)=>{
+    const key=c+"-"+r, used=!!state.used[key];
+    const el=document.createElement("button");
+    el.className="cell"+(used&&!editing?" used":"");
+    el.style.gridColumn=c+1; el.style.gridRow=r+2;
+    el.innerHTML=used&&!editing?"<span>Closed</span>":v;
+    el.setAttribute("aria-label",cat.name+" for "+v+(used?" (played)":""));
+    el.onclick=()=>editing?openEditor(c,r):openClue(c,r);
+    b.appendChild(el);
+  }));
+  document.body.classList.toggle("editing",editing);
+  $("editBtn").classList.toggle("on",editing);
+  $("editBtn").textContent=editing?"Done editing":"Edit questions";
+}
+
+function renderTeams(){
+  const t=$("teams"); t.innerHTML="";
+  state.teams.forEach((tm,i)=>{
+    const d=document.createElement("div"); d.className="team";
+    d.innerHTML=`<input id="team-${i}" value="${esc(tm.name)}" aria-label="Team name">
+      <div class="score${tm.score<0?" neg":""}">${tm.score}</div>
+      <div class="adj"><button data-d="-100" aria-label="Subtract 100">−100</button><button data-d="100" aria-label="Add 100">+100</button></div>`;
+    d.querySelector("input").oninput=e=>{tm.name=e.target.value;persist()};
+    d.querySelectorAll(".adj button").forEach(bt=>bt.onclick=()=>{tm.score+=+bt.dataset.d;persist();renderTeams()});
+    t.appendChild(d);
+  });
+  const ctl=document.createElement("div"); ctl.className="teamctl";
+  ctl.innerHTML=`<button class="btn" id="addTeam" ${state.teams.length>=6?"disabled":""}>+ Team</button><button class="btn" id="rmTeam" ${state.teams.length<=1?"disabled":""}>− Team</button>`;
+  t.appendChild(ctl);
+  $("addTeam").onclick=()=>{state.teams.push({name:"Team "+(state.teams.length+1),score:0});persist();renderTeams()};
+  $("rmTeam").onclick=()=>{state.teams.pop();persist();renderTeams()};
+}
+
+/* ---------- overlay ---------- */
+function show(html){const o=$("ov"); o.innerHTML=html; o.hidden=false; o.scrollTop=0;}
+function closeOv(){ov=null; $("ov").hidden=true; $("ov").innerHTML=""; renderBoard(); renderTeams();}
+
+function openClue(c,r){
+  const key=c+"-"+r;
+  ov={type:"clue",c,r,stage:(key===state.dd&&!state.used[key])?"dd":"clue",results:{},wager:null,ddTeam:0};
+  state.used[key]=true; persist(); renderClue();
+}
+function renderClue(){
+  const {c,r,stage}=ov, cat=content.categories[c], cl=cat.clues[r], val=VALUES[r];
+  const isDD=ov.wager!==null||stage==="dd";
+  const top=`<div class="ov-top"><div class="tag">${esc(cat.name)} · ${isDD?"Daily Double":val}${cl.bonus?'<span class="star">★ Bonus</span>':""}</div><button class="btn" id="back">Back to board (Esc)</button></div>`;
+  if(stage==="dd"){
+    const max=Math.max(500,state.teams[ov.ddTeam]?.score||0);
+    show(top+`<div class="clue"><div class="dd">Daily Double</div>
+      <div class="row">
+        <div class="field"><label for="ddTeam">Team</label><select id="ddTeam">${state.teams.map((t,i)=>`<option value="${i}" ${i===ov.ddTeam?"selected":""}>${esc(t.name)}</option>`).join("")}</select></div>
+        <div class="field"><label for="ddWager">Wager (up to ${max})</label><input id="ddWager" type="number" min="0" max="${max}" step="50" value="${val}"></div>
+        <button class="btn primary" id="ddGo">Show the clue</button>
+      </div><p class="hint">Teams may wager up to their score, or up to 500 if their score is lower.</p></div>`);
+    $("ddTeam").onchange=e=>{ov.ddTeam=+e.target.value;renderClue()};
+    $("ddGo").onclick=()=>{const m=Math.max(500,state.teams[ov.ddTeam].score);ov.wager=Math.max(0,Math.min(m,Math.round(+$("ddWager").value||0)));ov.stage="clue";renderClue()};
+    $("back").onclick=closeOv; return;
+  }
+  const long=(cl.q||"").length>110||/```/.test(cl.q);
+  let body=`<div class="clue"><div class="q${long?" long":""}">${fmt(cl.q||"(no clue yet — use Edit questions)")}</div>`;
+  if(stage==="answer") body+=`<div class="a">${fmtAns(cl.a||"")}</div>`;
+  body+=`</div>`;
+  let actions;
+  if(stage==="clue"){
+    actions=`<div class="ov-actions"><button class="btn primary" id="reveal">Show answer (Space)</button></div>`;
+  }else if(ov.wager!==null){
+    const t=state.teams[ov.ddTeam], res=ov.results[ov.ddTeam];
+    actions=`<div class="award"><div class="who"><b>${esc(t.name)} wagered ${ov.wager}</b><div>
+      <button class="ok${res==="ok"?" done":""}" data-t="${ov.ddTeam}" data-k="ok">Correct +${ov.wager}</button>
+      <button class="no${res==="no"?" done":""}" data-t="${ov.ddTeam}" data-k="no">Wrong −${ov.wager}</button></div></div></div>`;
+  }else{
+    actions=`<div class="award">${state.teams.map((t,i)=>{const res=ov.results[i];return `<div class="who"><b>${esc(t.name)}</b><div>
+      <button class="ok${res==="ok"?" done":""}" data-t="${i}" data-k="ok">+${val}</button>
+      <button class="no${res==="no"?" done":""}" data-t="${i}" data-k="no">−${val}</button></div></div>`}).join("")}</div>
+      <p class="hint">Click a button again to undo it. Wrong answers subtract; skip the minus if you play without penalties.</p>`;
+  }
+  show(top+body+actions);
+  $("back").onclick=closeOv;
+  if($("reveal")) $("reveal").onclick=()=>{ov.stage="answer";renderClue()};
+  document.querySelectorAll(".award [data-k]").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.t, k=b.dataset.k, amt=ov.wager!==null?ov.wager:val, prev=ov.results[i];
+    if(prev) state.teams[i].score-=prev==="ok"?amt:-amt;          // undo previous
+    if(prev===k){delete ov.results[i]} else {ov.results[i]=k; state.teams[i].score+=k==="ok"?amt:-amt}
+    persist(); renderClue();
+  });
+}
+
+function openFinal(){
+  if(editing){openEditor("final");return}
+  ov={type:"final",stage:"category",wagers:state.teams.map(()=>0),results:{}}; renderFinal();
+}
+function renderFinal(){
+  const f=content.final;
+  const top=`<div class="ov-top"><div class="tag">Final Jeopardy · ${esc(f.category)}</div><button class="btn" id="back">Back to board (Esc)</button></div>`;
+  let html=top;
+  if(ov.stage==="category"){
+    html+=`<div class="clue"><div class="dd" style="font-size:clamp(36px,6vw,80px)">${esc(f.category)}</div>
+      <p class="hint">Each team writes down a secret wager (0 up to their score). Enter wagers, then show the clue.</p>
+      <div class="wagers">${state.teams.map((t,i)=>`<div class="field"><label for="w${i}">${esc(t.name)} (has ${t.score})</label><input id="w${i}" type="number" min="0" step="50" value="${ov.wagers[i]||0}"></div>`).join("")}</div>
+      <button class="btn primary" id="fgo">Show the clue</button></div>`;
+  }else{
+    html+=`<div class="clue"><div class="q long">${fmt(f.q)}</div>${ov.stage==="answer"?`<div class="a">${fmtAns(f.a)}</div>`:""}</div>`;
+    html+=ov.stage==="clue"
+      ?`<div class="ov-actions"><button class="btn primary" id="reveal">Show answer (Space)</button></div>`
+      :`<div class="award">${state.teams.map((t,i)=>{const res=ov.results[i],w=ov.wagers[i];return `<div class="who"><b>${esc(t.name)} · wager ${w}</b><div>
+          <button class="ok${res==="ok"?" done":""}" data-t="${i}" data-k="ok">Correct</button>
+          <button class="no${res==="no"?" done":""}" data-t="${i}" data-k="no">Wrong</button></div></div>`}).join("")}</div>`;
+  }
+  show(html);
+  $("back").onclick=closeOv;
+  if($("fgo")) $("fgo").onclick=()=>{ov.wagers=state.teams.map((t,i)=>Math.max(0,Math.round(+$("w"+i).value||0)));ov.stage="clue";renderFinal()};
+  if($("reveal")) $("reveal").onclick=()=>{ov.stage="answer";renderFinal()};
+  document.querySelectorAll(".award [data-k]").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.t,k=b.dataset.k,amt=ov.wagers[i],prev=ov.results[i];
+    if(prev) state.teams[i].score-=prev==="ok"?amt:-amt;
+    if(prev===k){delete ov.results[i]} else {ov.results[i]=k; state.teams[i].score+=k==="ok"?amt:-amt}
+    persist(); renderFinal();
+  });
+}
+
+/* ---------- editing ---------- */
+function openEditor(c,r){
+  ov={type:"edit"};
+  let fields, heading;
+  if(c==="final"){
+    heading="Final Jeopardy";
+    fields=`<div class="field"><label for="eCat">Category</label><input id="eCat" value="${esc(content.final.category)}"></div>
+      <div class="field"><label for="eQ">Clue</label><textarea id="eQ">${esc(content.final.q)}</textarea></div>
+      <div class="field"><label for="eA">Answer</label><textarea id="eA">${esc(content.final.a)}</textarea></div>`;
+  }else if(r===null){
+    heading="Category "+(c+1);
+    fields=`<div class="field"><label for="eCat">Category name</label><input id="eCat" value="${esc(content.categories[c].name)}"></div>`;
+  }else{
+    const cl=content.categories[c].clues[r];
+    heading=esc(content.categories[c].name)+" · "+VALUES[r];
+    fields=`<div class="field"><label for="eQ">Clue</label><textarea id="eQ">${esc(cl.q)}</textarea></div>
+      <div class="field"><label for="eA">Answer</label><textarea id="eA">${esc(cl.a)}</textarea></div>
+      <label class="check"><input type="checkbox" id="eB" ${cl.bonus?"checked":""}> Mark as ★ Bonus clue</label>`;
+  }
+  show(`<div class="ov-top"><div class="tag">Edit · ${heading}</div><button class="btn" id="back">Cancel (Esc)</button></div>
+    <div class="editor">${fields}
+    <p class="note">Answers: put the fallacy name on the first line. Anything on the lines after it shows as the explanation.</p>
+    <div class="row" style="justify-content:flex-start"><button class="btn primary" id="eSave">Save</button></div></div>`);
+  $("back").onclick=closeOv;
+  $("eSave").onclick=()=>{
+    if(c==="final"){content.final={category:$("eCat").value,q:$("eQ").value,a:$("eA").value}}
+    else if(r===null){content.categories[c].name=$("eCat").value}
+    else{content.categories[c].clues[r]={q:$("eQ").value,a:$("eA").value,bonus:$("eB").checked||undefined}}
+    save(CKEY,content); closeOv();
+  };
+  const first=document.querySelector(".editor input, .editor textarea"); if(first) first.focus();
+}
+
+function openData(){
+  ov={type:"data"};
+  show(`<div class="ov-top"><div class="tag">Import / export questions</div><button class="btn" id="back">Close (Esc)</button></div>
+    <div class="editor">
+      <p class="note">Your edits are saved in this browser only. To move them to another computer, copy this text and paste it into the same box there, then click Load.</p>
+      <div class="field"><label for="json">Question set</label><textarea id="json" style="min-height:300px;font-family:var(--f-mono);font-size:13px">${esc(JSON.stringify(content,null,2))}</textarea></div>
+      <div class="row" style="justify-content:flex-start">
+        <button class="btn primary" id="copy">Copy</button>
+        <button class="btn" id="loadJ">Load pasted set</button>
+        <button class="btn warn" id="resetQ">Restore starter questions</button>
+        <span class="note" id="msg" role="status"></span>
+      </div>
+    </div>`);
+  $("back").onclick=closeOv;
+  $("copy").onclick=()=>{const t=$("json");navigator.clipboard?.writeText(t.value).then(()=>$("msg").textContent="Copied.",()=>{t.select();$("msg").textContent="Selected — press Ctrl/Cmd+C."})};
+  $("loadJ").onclick=()=>{
+    try{const d=JSON.parse($("json").value);
+      if(!Array.isArray(d.categories)||d.categories.length!==6||d.categories.some(c=>!Array.isArray(c.clues)||c.clues.length!==5)||!d.final) throw 0;
+      content=d; save(CKEY,content); $("msg").textContent="Loaded. Close to see the board.";
+    }catch(e){$("msg").textContent="That text isn't a valid set: it needs 6 categories with 5 clues each, plus a final."}
+  };
+  let armed=false;
+  $("resetQ").onclick=()=>{
+    if(!armed){armed=true;$("resetQ").textContent="Click again to replace your edits";return}
+    content=clone(STARTER); save(CKEY,content); $("json").value=JSON.stringify(content,null,2); $("resetQ").textContent="Restore starter questions"; armed=false; $("msg").textContent="Starter questions restored.";
+  };
+}
+
+/* ---------- top controls ---------- */
+$("finalBtn").onclick=openFinal;
+$("editBtn").onclick=()=>{editing=!editing; renderBoard()};
+$("dataBtn").onclick=openData;
+let newArmed=null;
+$("newBtn").onclick=()=>{
+  const b=$("newBtn");
+  if(!newArmed){b.textContent="Click again to reset scores";newArmed=setTimeout(()=>{b.textContent="New game";newArmed=null},3000);return}
+  clearTimeout(newArmed); newArmed=null; b.textContent="New game";
+  state=freshState(state.teams.length,state.teams.map(t=>t.name)); persist(); renderBoard(); renderTeams();
+};
+document.addEventListener("keydown",e=>{
+  if(!ov) return;
+  const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName||"");
+  if(e.key==="Escape"){e.preventDefault();closeOv()}
+  else if(e.key===" "&&!typing&&$("reveal")){e.preventDefault();$("reveal").click()}
+});
+
+renderBoard(); renderTeams();
+</script>
+
+</body></html>
