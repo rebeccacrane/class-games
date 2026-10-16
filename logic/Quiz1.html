@@ -249,12 +249,12 @@ const SORTS = [
     {x:["All roses are plants.","Some plants are red things.","Therefore, some roses are red things."], k:"b", why:"Imagine the only red plants were tomatoes. Both premises would still be true, and no rose would be red."}
   ]},
   {title:"Sound or unsound?", a:"Sound", b:"Unsound", cards:[
-    {x:"\"All planets in our solar system orbit the Sun. Mars is a planet in our solar system. So Mars orbits the Sun.\"", k:"a", why:"The structure is valid and both premises are actually true."},
-    {x:"\"No fish are mammals. All whales are mammals. So no whales are fish.\"", k:"a", why:"A whale-fish would be a mammal fish, which the first premise rules out. And the premises are true."},
-    {x:"\"All people are mortal. Aristotle is a person. So Aristotle is mortal.\"", k:"a", why:"Valid structure plus true premises: that’s exactly what sound means."},
-    {x:"\"All teenagers are robots. All robots run on batteries. So all teenagers run on batteries.\"", k:"b", why:"It’s valid, but the first premise is false, so it can’t be sound."},
-    {x:"\"All dogs are animals. All mammals are animals. So all dogs are mammals.\"", k:"b", why:"Trap! Every line is true, but it’s invalid: if dogs were reptiles, both premises would still be true. Sound needs valid."},
-    {x:"\"No homework is fun. All video games are homework. So no video games are fun.\"", k:"b", why:"Valid structure, but video games are not homework, so a premise is false."}
+    {x:["All planets in our solar system are things that orbit the Sun.","Mars is a planet in our solar system.","Therefore, Mars is a thing that orbits the Sun."], k:"a", why:"The structure is valid and both premises are actually true."},
+    {x:["No fish are mammals.","All whales are mammals.","Therefore, no whales are fish."], k:"a", why:"A whale-fish would be a mammal fish, which the first premise rules out. And the premises are true."},
+    {x:["All people are mortal beings.","Aristotle is a person.","Therefore, Aristotle is a mortal being."], k:"a", why:"Valid structure plus true premises: that’s exactly what sound means."},
+    {x:["All teenagers are robots.","All robots are things that run on batteries.","Therefore, all teenagers are things that run on batteries."], k:"b", why:"It’s valid, but the first premise is false, so it can’t be sound."},
+    {x:["All dogs are animals.","All mammals are animals.","Therefore, all dogs are mammals."], k:"b", why:"Trap! Every line is true, but it’s invalid: if dogs were reptiles, both premises would still be true. Sound needs valid."},
+    {x:["No homework is a fun thing.","All video games are homework.","Therefore, no video games are fun things."], k:"b", why:"Valid structure, but video games are not homework, so a premise is false."}
   ]},
   {title:"Does a word switch meanings?", a:"Word switches meaning", b:"Same meaning throughout", cards:[
     {x:"\"Nothing is better than a perfect grade. A pencil is better than nothing. So a pencil is better than a perfect grade.\"", k:"a", why:"\"Nothing\" means \"no thing at all\" first and \"having nothing\" second, so there are really four terms and the conclusion doesn’t follow."},
