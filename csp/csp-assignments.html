@@ -41,7 +41,7 @@ header{display:flex;flex-direction:column;gap:10px;padding-bottom:20px;border-bo
 input[type=date]{font:inherit;font-size:.9rem;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg)}
 select{font:inherit;font-size:.9rem;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg)}
 .list{display:flex;flex-direction:column;border-top:1px solid var(--line)}
-.row{display:grid;grid-template-columns:1fr 7.5rem 7.5rem;gap:4px 16px;align-items:baseline;padding-block:12px;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:1fr 7.5rem;gap:4px 16px;align-items:baseline;padding-block:12px;border-bottom:1px solid var(--line)}
 .row.head{padding-block:8px}
 .row.past .title{color:var(--muted)}
 .main{display:flex;flex-direction:column;gap:4px;min-width:0}
@@ -56,7 +56,7 @@ a.title:hover{text-decoration-thickness:2px}
 .date.sorted{color:var(--fg);font-weight:600}
 .date small{display:none;font-family:var(--body);font-size:.75rem;color:var(--muted);font-weight:400;margin-right:6px}
 @media (max-width:560px){
-  .row{grid-template-columns:1fr 1fr}
+  .row{grid-template-columns:1fr}
   .row.head{display:none}
   .main{grid-column:1/-1}
   .date small{display:inline}
@@ -73,10 +73,10 @@ a.title:hover{text-decoration-thickness:2px}
   </header>
 
   <div class="controls">
-    <span class="label">Sort by</span>
-    <div class="seg" role="group" aria-label="Sort assignments">
-      <button type="button" id="sort-due" aria-pressed="true">Date due</button>
-      <button type="button" id="sort-assigned" aria-pressed="false">Date assigned</button>
+    <span class="label">Due date</span>
+    <div class="seg" role="group" aria-label="Sort by due date">
+      <button type="button" id="sort-asc" aria-pressed="true">Oldest first</button>
+      <button type="button" id="sort-desc" aria-pressed="false">Newest first</button>
     </div>
     <label class="label" for="unit-filter">Unit</label>
     <select id="unit-filter"><option value="">All units</option></select>
@@ -103,7 +103,7 @@ a.title:hover{text-decoration-thickness:2px}
 /* ===== ADD ASSIGNMENTS HERE =====
    One line per assignment. Order doesn't matter; the page sorts them.
    unit:     shown as a tag and used by the Unit filter
-   assigned: date given out, as "YYYY-MM-DD"
+   assigned: optional, not shown on the page (kept in case it comes back)
    due:      due date from Teams, as "YYYY-MM-DD"
    category: grading category (Homework, Notebook, Assessments, or "" for none)
    url:      optional link to the assignment; leave "" for no link
@@ -132,14 +132,14 @@ const ASSIGNMENTS = [
 /* ===== END OF LIST ===== */
 
 const listEl = document.getElementById("list");
-const btnDue = document.getElementById("sort-due");
-const btnAssigned = document.getElementById("sort-assigned");
+const btnAsc = document.getElementById("sort-asc");
+const btnDesc = document.getElementById("sort-desc");
+let dir = 1;
 const unitSel = document.getElementById("unit-filter");
 const dateSel = document.getElementById("date-filter");
 const rangeEl = document.getElementById("range");
 const fromEl = document.getElementById("date-from");
 const toEl = document.getElementById("date-to");
-let sortKey = "due";
 
 const esc = s => String(s || "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const parse = d => { const [y, m, day] = d.split("-").map(Number); return new Date(y, m - 1, day); };
@@ -164,8 +164,8 @@ function render() {
       return true;
     })
     .slice()
-    .sort((a, b) => a[sortKey].localeCompare(b[sortKey]) || a.due.localeCompare(b.due) || a.title.localeCompare(b.title));
-  let html = `<div class="row head"><span class="label">Assignment</span><span class="label">Assigned</span><span class="label">Due</span></div>`;
+    .sort((a, b) => dir * a.due.localeCompare(b.due) || a.title.localeCompare(b.title));
+  let html = `<div class="row head"><span class="label">Assignment</span><span class="label">Due</span></div>`;
   rows.forEach(a => {
     const due = parse(a.due);
     const past = due < today;
@@ -174,29 +174,28 @@ function render() {
     html += `<div class="row${past ? " past" : ""}">
       <div class="main">${a.url ? `<a class="title" href="${esc(a.url)}" target="_blank" rel="noopener">${esc(a.title)} ↗</a>` : `<span class="title">${esc(a.title)}</span>`}
         <span class="meta"><span class="unit">${esc(a.unit)}</span>${a.category ? `<span class="cat">${esc(a.category)}</span>` : ""}${soon}</span></div>
-      <span class="date${sortKey === "assigned" ? " sorted" : ""}"><small>Assigned</small>${fmt(a.assigned)}</span>
-      <span class="date${sortKey === "due" ? " sorted" : ""}"><small>Due</small>${fmt(a.due)}</span>
+      <span class="date sorted"><small>Due</small>${fmt(a.due)}</span>
     </div>`;
   });
   if (!rows.length) html += `<p class="sub" style="padding-block:12px">No assignments match these filters.</p>`;
   listEl.innerHTML = html;
 }
 
-function setSort(key) {
-  sortKey = key;
-  btnDue.setAttribute("aria-pressed", key === "due");
-  btnAssigned.setAttribute("aria-pressed", key === "assigned");
-  try { localStorage.setItem("csp-assign-sort", key); } catch (e) {}
-  render();
-}
-btnDue.addEventListener("click", () => setSort("due"));
-btnAssigned.addEventListener("click", () => setSort("assigned"));
 unitSel.addEventListener("change", render);
 dateSel.addEventListener("change", () => { rangeEl.hidden = dateSel.value !== "range"; render(); });
 fromEl.addEventListener("change", render);
 toEl.addEventListener("change", render);
-let saved = null; try { saved = localStorage.getItem("csp-assign-sort"); } catch (e) {}
-setSort(saved === "assigned" ? "assigned" : "due");
+function setDir(d) {
+  dir = d;
+  btnAsc.setAttribute("aria-pressed", d === 1);
+  btnDesc.setAttribute("aria-pressed", d === -1);
+  try { localStorage.setItem("csp-assign-dir", d === -1 ? "desc" : "asc"); } catch (e) {}
+  render();
+}
+btnAsc.addEventListener("click", () => setDir(1));
+btnDesc.addEventListener("click", () => setDir(-1));
+let saved = null; try { saved = localStorage.getItem("csp-assign-dir"); } catch (e) {}
+setDir(saved === "desc" ? -1 : 1);
 </script>
 </body>
 </html>
