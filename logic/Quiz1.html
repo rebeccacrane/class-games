@@ -1,0 +1,415 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Formal Logic Weeks 1–6 Review Game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#E8EDF1; --card:#FFFFFF; --ink:#1D2833; --muted:#566473; --line:#C6D0DA;
+  --brass:#8E621A; --brass-soft:#F2E4C8;
+  --good:#2B7453; --good-soft:#DAEEE3;
+  --bad:#AD3F37; --bad-soft:#F6DDDA;
+  --sel:#2C5A87; --sel-soft:#D9E5F1;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12181F; --card:#1B242E; --ink:#E3E8ED; --muted:#9BA9B7; --line:#34424F;
+    --brass:#D8A64F; --brass-soft:#3A2F1B;
+    --good:#5DC190; --good-soft:#1B3A2B;
+    --bad:#E27D74; --bad-soft:#442321;
+    --sel:#86B5E3; --sel-soft:#1E3348;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12181F; --card:#1B242E; --ink:#E3E8ED; --muted:#9BA9B7; --line:#34424F;
+  --brass:#D8A64F; --brass-soft:#3A2F1B;
+  --good:#5DC190; --good-soft:#1B3A2B;
+  --bad:#E27D74; --bad-soft:#442321;
+  --sel:#86B5E3; --sel-soft:#1E3348;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:1.05rem;line-height:1.5}
+main{max-width:980px;margin:0 auto;padding:28px 20px 64px}
+h1,h2,h3{font-family:Alegreya,Georgia,"Times New Roman",serif;line-height:1.15;margin:0}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--sel);outline-offset:2px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;
+  padding-bottom:18px;border-bottom:2px solid var(--ink);margin-bottom:22px}
+header.top h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.01em}
+header.top p{margin:6px 0 0;color:var(--muted);max-width:52ch}
+.steps{display:flex;gap:6px;list-style:none;margin:0;padding:0}
+.steps li{padding:6px 12px;border:1.5px solid var(--line);border-radius:999px;font-size:.9rem;color:var(--muted);white-space:nowrap}
+.steps li.on{border-color:var(--brass);background:var(--brass-soft);color:var(--ink);font-weight:700}
+.steps li.done{color:var(--good);border-color:var(--good)}
+
+.intro{margin:0 0 18px;max-width:70ch}
+.intro h2{font-size:1.7rem;margin-bottom:6px}
+.intro p{margin:0;color:var(--muted)}
+
+/* Matching */
+.match{display:grid;grid-template-columns:minmax(180px,1fr) 2.2fr;gap:18px;align-items:start}
+.col h3{font-size:1.15rem;margin-bottom:8px;color:var(--muted);font-weight:700}
+.col .list{display:flex;flex-direction:column;gap:8px}
+.tile{display:block;width:100%;text-align:left;background:var(--card);border:1.5px solid var(--line);
+  border-radius:10px;padding:10px 14px;cursor:pointer;transition:border-color .15s,background .15s}
+.tile:hover{border-color:var(--sel)}
+.tile.term{font-weight:700;font-family:Alegreya,Georgia,serif;font-size:1.15rem}
+.tile.sel{border-color:var(--sel);background:var(--sel-soft);box-shadow:inset 4px 0 0 var(--sel)}
+.tile.ok{border-color:var(--good);background:var(--good-soft);cursor:default}
+.tile.ok .tag{display:inline-block;margin-bottom:4px;font-weight:700;color:var(--good);font-size:.9rem}
+.tile.no{border-color:var(--bad);background:var(--bad-soft)}
+@media (prefers-reduced-motion:no-preference){
+  .tile.no{animation:shake .35s}
+  @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+}
+.status{min-height:1.6em;margin:14px 0;font-weight:700}
+.status.good{color:var(--good)} .status.bad{color:var(--bad)}
+
+/* Sorting */
+.sortwrap{display:grid;gap:18px}
+.cardstage{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:22px 22px 20px;
+  display:grid;gap:16px}
+.cardstage .count{color:var(--muted);font-size:.95rem}
+.cardstage .stmt{font-family:Alegreya,Georgia,serif;font-size:clamp(1.3rem,3vw,1.7rem);font-weight:700;line-height:1.3}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.choice{padding:14px;border-radius:10px;border:2px solid var(--brass);background:var(--brass-soft);
+  font-weight:700;cursor:pointer;font-size:1.05rem}
+.choice:hover:not(:disabled){filter:brightness(.97)}
+.choice:disabled{opacity:.55;cursor:default}
+.feedback{border-radius:10px;padding:12px 14px;display:none}
+.feedback.show{display:block}
+.feedback.good{background:var(--good-soft);border:1.5px solid var(--good)}
+.feedback.bad{background:var(--bad-soft);border:1.5px solid var(--bad)}
+.feedback strong{display:block}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bin{border:1.5px dashed var(--line);border-radius:12px;padding:12px;min-height:90px}
+.bin h3{font-size:1.1rem;margin-bottom:8px}
+.bin ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.bin li{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:.93rem}
+.bin li.missed{border-left:4px solid var(--bad)}
+
+.primary{display:inline-block;padding:12px 20px;border-radius:10px;border:none;background:var(--ink);color:var(--bg);
+  font-weight:700;cursor:pointer;font-size:1.05rem}
+.primary:hover{filter:brightness(1.15)}
+.hidden{display:none !important}
+
+/* Finish */
+.finish{background:var(--card);border:2px solid var(--ink);border-radius:14px;padding:26px;max-width:640px}
+.finish h2{font-size:2rem;margin-bottom:8px}
+.finish label{display:block;font-weight:700;margin:16px 0 6px}
+.finish input{width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.scorebox{margin:18px 0;padding:16px;border-radius:10px;background:var(--brass-soft);border:1.5px solid var(--brass)}
+.scorebox .big{font-family:Alegreya,Georgia,serif;font-size:2.6rem;font-weight:800;line-height:1}
+.scorebox .who{font-weight:700;font-size:1.2rem;min-height:1.4em}
+.scorebox p{margin:6px 0 0}
+.note{color:var(--muted)}
+
+@media (max-width:680px){
+  .match{grid-template-columns:1fr}
+  .col.terms .list{flex-direction:row;flex-wrap:wrap}
+  .col.terms .tile{width:auto}
+  .choices,.bins{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div>
+      <h1>Weeks 1–6 Review</h1>
+      <p>Everything so far: terms, propositions, syllogisms, valid and sound, slippery words, and a few double negatives. Work through both parts, then screenshot your score.</p>
+    </div>
+    <ol class="steps" aria-label="Progress">
+      <li id="st1" class="on">1. Match</li>
+      <li id="st2">2. Sort</li>
+      <li id="st3">3. Finish</li>
+    </ol>
+  </header>
+
+  <!-- PART 1 -->
+  <section id="part1">
+    <div class="intro">
+      <h2>Match each term to its definition</h2>
+      <p>Tap a term, then tap the definition that goes with it. You can also start with the definition.</p>
+    </div>
+    <div class="match">
+      <div class="col terms"><h3>Terms</h3><div class="list" id="terms"></div></div>
+      <div class="col"><h3>Definitions</h3><div class="list" id="defs"></div></div>
+    </div>
+    <div class="status" id="mstatus" aria-live="polite"></div>
+    <button class="primary hidden" id="toPart2">Go to part 2: Sort</button>
+  </section>
+
+  <!-- PART 2 -->
+  <section id="part2" class="hidden">
+    <div class="intro">
+      <h2 id="sortTitle"></h2>
+      <p>Read each card and choose where it belongs. Read the explanation, then go to the next card.</p>
+    </div>
+    <div class="sortwrap">
+      <div class="cardstage">
+        <div class="count" id="sortCount"></div>
+        <div class="stmt" id="sortStmt"></div>
+        <div class="choices">
+          <button class="choice" id="choiceA"></button>
+          <button class="choice" id="choiceB"></button>
+        </div>
+        <div class="feedback" id="sortFb" aria-live="polite"></div>
+        <div><button class="primary hidden" id="sortNext">Next card</button></div>
+      </div>
+      <div class="bins">
+        <div class="bin"><h3 id="binAName"></h3><ul id="binA"></ul></div>
+        <div class="bin"><h3 id="binBName"></h3><ul id="binB"></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINISH -->
+  <section id="part3" class="hidden">
+    <div class="finish">
+      <h2>You finished the review</h2>
+      <p class="note">Type your name, then take a screenshot of this box and post it in the Teams assignment.</p>
+      <label for="name">Your name</label>
+      <input id="name" autocomplete="name" placeholder="First and last name">
+      <div class="scorebox">
+        <div class="who" id="who"></div>
+        <div class="big" id="total"></div>
+        <p id="breakdown"></p>
+        <p class="note" id="when"></p>
+      </div>
+      <button class="primary" id="again">Play again</button>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ===================== GAME CONTENT: EDIT ONLY THIS BLOCK =====================
+   Weeks 1–6 review. 10 pairs; 8 sort sets of 6 cards (3 per side).
+================================================================================ */
+const PAIRS = [
+  {t:"Term", d:"A word or phrase that represents a class of related things."},
+  {t:"Proposition", d:"A declaration or report of fact that can be proven true or false. It always either affirms or denies an idea."},
+  {t:"Truth-value", d:"Whether a statement is correct or incorrect. Every proposition has one, even if nobody knows which."},
+  {t:"Syllogism", d:"A deductive formal argument consisting of two premises followed by a conclusion."},
+  {t:"Premise", d:"A reason given that leads to the arguer’s conclusion."},
+  {t:"Conclusion", d:"The point of persuasion: the last statement in an argument, which the speaker hopes the audience will believe."},
+  {t:"Valid", d:"Describes a deductive argument that is structured properly, so that if the premises are true, the conclusion must be true."},
+  {t:"Sound", d:"Describes a syllogism that is both true and valid."},
+  {t:"Equivocation", d:"A fallacy in which a word used in two different ways is presented as being used in only one way."},
+  {t:"Genus", d:"The larger category to which a term belongs."}
+];
+
+const SORTS = [
+  {title:"Deductive or inductive?", a:"Deductive", b:"Inductive", cards:[
+    {x:"Judged as valid or invalid", k:"a", why:"Deduction is black or white: the conclusion either follows from the premises or it doesn’t."},
+    {x:"Judged as strong or weak", k:"b", why:"Induction deals in shades of gray, so an argument can be more or less convincing."},
+    {x:"Deals with certainty, as long as the premises are true", k:"a", why:"In a valid deductive argument, true premises guarantee a true conclusion."},
+    {x:"Deals with probability", k:"b", why:"Conclusions drawn from observations are likely, never guaranteed."},
+    {x:"\"All triangles have three sides. This shape is a triangle. So this shape has three sides.\"", k:"a", why:"If both premises are true, the conclusion cannot be false."},
+    {x:"\"Every batch of Grandpa’s chili has been too spicy, so tonight’s will probably be too spicy too.\"", k:"b", why:"It moves from past observations to a probable guess about the next case."}
+  ]},
+  {title:"Proposition or not?", a:"Proposition", b:"Not a proposition", cards:[
+    {x:"\"The number of stars in the universe is even.\"", k:"a", why:"Nobody can check it, but it is either true or false. Having a truth-value and knowing it are different things."},
+    {x:"\"The sun revolves around the earth.\"", k:"a", why:"It’s false, but a false statement is still a proposition."},
+    {x:"\"Aristotle ate breakfast on his tenth birthday.\"", k:"a", why:"We’ll never know the answer, but it still has a truth-value."},
+    {x:"\"Buy me a bagel!\"", k:"b", why:"A command tells someone to do something; it can’t be true or false."},
+    {x:"\"Photo run leaf coaster on Tuesday for lobsters.\"", k:"b", why:"It looks like a sentence, but it’s nonsense, so there is nothing to be true or false."},
+    {x:"\"I think that movie stinks.\"", k:"b", why:"It’s a self-report of a personal feeling. We take people at their word about their feelings, so we don’t argue over it."}
+  ]},
+  {title:"Term or not a term?", a:"Term", b:"Not a term", cards:[
+    {x:"\"ethics\"", k:"a", why:"It names a class of things: a field of study."},
+    {x:"\"The tiger who had just caught her prey for dinner\"", k:"a", why:"It’s long, but it only names something. It doesn’t say anything true or false."},
+    {x:"\"The Democratic Republic of the Congo\"", k:"a", why:"A class with only one member is still a class."},
+    {x:"\"Aristotle was a philosopher.\"", k:"b", why:"It makes a claim that is true or false, so it’s a proposition, not a term."},
+    {x:"\"Penguins can’t fly.\"", k:"b", why:"It says something about penguins that is true or false, so it’s a proposition."},
+    {x:"\"I think, therefore I am.\"", k:"b", why:"It’s two propositions joined into an argument."}
+  ]},
+  {title:"Valid or invalid? Pretend the premises are true.", a:"Valid", b:"Invalid", cards:[
+    {x:"\"All colors are pretty things. All pretty things are snakes. So all colors are snakes.\"", k:"a", why:"Silly premises, but if they were true, the conclusion would have to be true."},
+    {x:"\"All men are elephants. Santa Claus is a man. So Santa Claus is an elephant.\"", k:"a", why:"Pretend the premises are true and Santa has nowhere to go but the elephant group. Valid, even though it’s false."},
+    {x:"\"All cats can fly. All flying things are birds. So all cats are birds.\"", k:"a", why:"If cats flew and every flier were a bird, cats would have to be birds."},
+    {x:"\"All cats are mammals. All dogs are mammals. So all cats are dogs.\"", k:"b", why:"Two groups can both fit inside mammals without being the same group."},
+    {x:"\"All pizzas are round. All coins are round. So all pizzas are coins.\"", k:"b", why:"Lots of different things are round; sharing a shape doesn’t make them each other."},
+    {x:"\"All roses are plants. Some plants are red. So some roses are red.\"", k:"b", why:"Imagine the only red plants were tomatoes. Both premises would still be true, and no rose would be red."}
+  ]},
+  {title:"Sound or unsound?", a:"Sound", b:"Unsound", cards:[
+    {x:"\"All planets in our solar system orbit the Sun. Mars is a planet in our solar system. So Mars orbits the Sun.\"", k:"a", why:"The structure is valid and both premises are actually true."},
+    {x:"\"No fish are mammals. All whales are mammals. So no whales are fish.\"", k:"a", why:"A whale-fish would be a mammal fish, which the first premise rules out. And the premises are true."},
+    {x:"\"All people are mortal. Aristotle is a person. So Aristotle is mortal.\"", k:"a", why:"Valid structure plus true premises: that’s exactly what sound means."},
+    {x:"\"All teenagers are robots. All robots run on batteries. So all teenagers run on batteries.\"", k:"b", why:"It’s valid, but the first premise is false, so it can’t be sound."},
+    {x:"\"All dogs are animals. All mammals are animals. So all dogs are mammals.\"", k:"b", why:"Trap! Every line is true, but it’s invalid: if dogs were reptiles, both premises would still be true. Sound needs valid."},
+    {x:"\"No homework is fun. All video games are homework. So no video games are fun.\"", k:"b", why:"Valid structure, but video games are not homework, so a premise is false."}
+  ]},
+  {title:"Does a word switch meanings?", a:"Word switches meaning", b:"Same meaning throughout", cards:[
+    {x:"\"Nothing is better than a perfect grade. A pencil is better than nothing. So a pencil is better than a perfect grade.\"", k:"a", why:"\"Nothing\" means \"no thing at all\" first and \"having nothing\" second, so there are really four terms and the conclusion doesn’t follow."},
+    {x:"\"All killing is morally wrong. This assignment is killing me. So this assignment is morally wrong.\"", k:"a", why:"\"Killing\" means taking a life first and wearing you out second. Four terms, so it’s invalid."},
+    {x:"\"All rulers are measuring tools. The queen is a ruler. So the queen is a measuring tool.\"", k:"a", why:"\"Ruler\" is a measuring stick in one premise and a monarch in the other. Four terms, so it’s invalid."},
+    {x:"\"All whales are mammals. Moby Dick is a whale. So Moby Dick is a mammal.\"", k:"b", why:"\"Whale\" means the same animal both times, so there are only three terms."},
+    {x:"\"All bakers get up early. Ana is a baker. So Ana gets up early.\"", k:"b", why:"\"Baker\" means a person who bakes for a living in both premises. No switch."},
+    {x:"\"All squares have four sides. This tile is a square. So this tile has four sides.\"", k:"b", why:"\"Square\" names the same shape both times."}
+  ]},
+  {title:"Vague or ambiguous?", a:"Vague", b:"Ambiguous", cards:[
+    {x:"\"bald\"", k:"a", why:"One meaning, but no exact cutoff for how much hair someone can lose before they count as bald."},
+    {x:"\"tall\"", k:"a", why:"There are borderline cases: is 5 feet 10 inches tall? It depends where you draw the line."},
+    {x:"\"heap\"", k:"a", why:"Removing one grain never turns a heap into a non-heap, so the edge is fuzzy."},
+    {x:"\"bank\"", k:"b", why:"It can name two different kinds of things: a place that holds money and the side of a river."},
+    {x:"\"star\"", k:"b", why:"It can mean a ball of burning gas in space or a famous performer."},
+    {x:"\"pipe\"", k:"b", why:"It can mean a tube for water or something people smoke tobacco in."}
+  ]},
+  {title:"Does it affirm or deny? Count the nots.", a:"Affirms (positive)", b:"Denies (negative)", cards:[
+    {x:"\"Socrates is wise.\"", k:"a", why:"No negation at all, so it affirms something about Socrates."},
+    {x:"\"It’s not the case that it’s not the case that logic is fun.\"", k:"a", why:"Two negations result in an affirmation: logic is fun."},
+    {x:"\"Pizza is not not a food.\"", k:"a", why:"Two nots cancel out, leaving \"Pizza is a food.\""},
+    {x:"\"My cat is not fluffy.\"", k:"b", why:"One \"not\" in the predicate, so it denies fluffiness of the cat."},
+    {x:"\"It’s not the case that Europe is a continent.\"", k:"b", why:"One negation in front denies the whole statement (and it’s false, but it’s still negative)."},
+    {x:"\"It’s not the case that it’s not the case that it’s not the case that the sky is green.\"", k:"b", why:"Three negations: two cancel, one is left, so it denies that the sky is green."}
+  ]}
+];
+/* ===================== END OF GAME CONTENT ===================== */
+
+const $ = id => document.getElementById(id);
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+let selT=null, selD=null, matched=0, missed=new Set();
+let sortScore=0, sortTotal=0, si=0, ci=0, queue=[];
+
+function startMatch(){
+  selT=null; selD=null; matched=0; missed=new Set();
+  const terms=$("terms"), defs=$("defs");
+  terms.innerHTML=""; defs.innerHTML="";
+  shuffle(PAIRS.map((p,i)=>i)).forEach(i=>{
+    const b=document.createElement("button");
+    b.className="tile term"; b.textContent=PAIRS[i].t; b.dataset.i=i;
+    b.onclick=()=>pick("t",i,b); terms.appendChild(b);
+  });
+  shuffle(PAIRS.map((p,i)=>i)).forEach(i=>{
+    const b=document.createElement("button");
+    b.className="tile def"; b.dataset.i=i;
+    b.innerHTML='<span class="tag hidden"></span><span class="txt"></span>';
+    b.querySelector(".txt").textContent=PAIRS[i].d;
+    b.onclick=()=>pick("d",i,b); defs.appendChild(b);
+  });
+  $("mstatus").textContent=""; $("mstatus").className="status";
+  $("toPart2").classList.add("hidden");
+}
+
+function pick(kind,i,el){
+  if(el.classList.contains("ok")) return;
+  const listSel = kind==="t" ? "#terms .tile" : "#defs .tile";
+  document.querySelectorAll(listSel).forEach(x=>x.classList.remove("sel","no"));
+  el.classList.add("sel");
+  if(kind==="t") selT={i,el}; else selD={i,el};
+  if(selT && selD) check();
+}
+
+function check(){
+  const st=$("mstatus");
+  if(selT.i===selD.i){
+    selT.el.classList.remove("sel"); selD.el.classList.remove("sel");
+    selT.el.classList.add("ok"); selD.el.classList.add("ok");
+    const tag=selD.el.querySelector(".tag"); tag.textContent=PAIRS[selT.i].t; tag.classList.remove("hidden");
+    selT.el.disabled=true; selD.el.disabled=true;
+    matched++;
+    st.className="status good";
+    st.textContent = matched===PAIRS.length ? "All matched. Nice work." : "Match! "+(PAIRS.length-matched)+" to go.";
+    if(matched===PAIRS.length) $("toPart2").classList.remove("hidden");
+  } else {
+    missed.add(selT.i);
+    const d=selD.el; d.classList.remove("sel"); void d.offsetWidth; d.classList.add("no");
+    st.className="status bad";
+    st.textContent="Not a match. \""+PAIRS[selT.i].t+"\" is still selected, so try another definition.";
+    selD=null; return;
+  }
+  selT=null; selD=null;
+}
+
+function setStep(n){
+  ["st1","st2","st3"].forEach((id,k)=>{
+    const li=$(id); li.classList.remove("on","done");
+    if(k+1<n) li.classList.add("done"); if(k+1===n) li.classList.add("on");
+  });
+  $("part1").classList.toggle("hidden",n!==1);
+  $("part2").classList.toggle("hidden",n!==2);
+  $("part3").classList.toggle("hidden",n!==3);
+  window.scrollTo({top:0});
+}
+
+function startSortSet(){
+  const s=SORTS[si];
+  queue=shuffle(s.cards); ci=0;
+  $("sortTitle").textContent="Set "+(si+1)+" of "+SORTS.length+": "+s.title;
+  $("choiceA").textContent=s.a; $("choiceB").textContent=s.b;
+  $("binAName").textContent=s.a; $("binBName").textContent=s.b;
+  $("binA").innerHTML=""; $("binB").innerHTML="";
+  showCard();
+}
+
+function showCard(){
+  const c=queue[ci];
+  $("sortCount").textContent="Card "+(ci+1)+" of "+queue.length;
+  $("sortStmt").textContent=c.x;
+  $("choiceA").disabled=false; $("choiceB").disabled=false;
+  $("sortFb").className="feedback"; $("sortFb").innerHTML="";
+  $("sortNext").classList.add("hidden");
+}
+
+function answer(k){
+  const s=SORTS[si], c=queue[ci], right=k===c.k;
+  sortTotal++; if(right) sortScore++;
+  $("choiceA").disabled=true; $("choiceB").disabled=true;
+  const fb=$("sortFb");
+  fb.className="feedback show "+(right?"good":"bad");
+  const head=document.createElement("strong");
+  head.textContent = right ? "Correct." : "Not quite. This one belongs in "+(c.k==="a"?s.a:s.b)+".";
+  const why=document.createElement("span"); why.textContent=c.why;
+  fb.innerHTML=""; fb.append(head,why);
+  const li=document.createElement("li"); li.textContent=c.x; if(!right) li.classList.add("missed");
+  $(c.k==="a"?"binA":"binB").appendChild(li);
+  const btn=$("sortNext");
+  const lastCard = ci===queue.length-1, lastSet = si===SORTS.length-1;
+  btn.textContent = !lastCard ? "Next card" : (lastSet ? "See my score" : "Next set");
+  btn.classList.remove("hidden"); btn.focus();
+}
+
+$("choiceA").onclick=()=>answer("a");
+$("choiceB").onclick=()=>answer("b");
+$("sortNext").onclick=()=>{
+  if(ci<queue.length-1){ ci++; showCard(); }
+  else if(si<SORTS.length-1){ si++; startSortSet(); window.scrollTo({top:0}); }
+  else finish();
+};
+
+$("toPart2").onclick=()=>{ si=0; sortScore=0; sortTotal=0; setStep(2); startSortSet(); };
+
+function finish(){
+  setStep(3);
+  const m=PAIRS.length-missed.size, mt=PAIRS.length;
+  const total=m+sortScore, max=mt+sortTotal;
+  $("total").textContent=total+" / "+max;
+  $("breakdown").textContent="Matching: "+m+" of "+mt+" on the first try. Sorting: "+sortScore+" of "+sortTotal+" correct.";
+  $("when").textContent="Completed "+new Date().toLocaleString([], {dateStyle:"medium", timeStyle:"short"});
+  updateName();
+}
+function updateName(){ $("who").textContent=$("name").value.trim() || "Type your name above"; }
+$("name").addEventListener("input",updateName);
+
+$("again").onclick=()=>{ startMatch(); setStep(1); };
+
+startMatch();
+</script>
+</body>
+</html>
+
+</body></html>
