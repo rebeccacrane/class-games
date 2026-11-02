@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pixel Picture Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#E8EDF1;--card:#fff;--ink:#1D2833;--muted:#566473;--line:#C6D0DA;--sel:#2C5A87}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12181F;--card:#1B242E;--ink:#E3E8ED;--muted:#9BA9B7;--line:#34424F;--sel:#86B5E3}}
+:root[data-theme="dark"]{--bg:#12181F;--card:#1B242E;--ink:#E3E8ED;--muted:#9BA9B7;--line:#34424F;--sel:#86B5E3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.5}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 64px}
+h1,h2{font-family:Alegreya,Georgia,serif;margin:0 0 6px}
+h1{font-size:clamp(1.8rem,4vw,2.6rem)}
+p.lead{color:var(--muted);margin:0 0 20px;max-width:70ch}
+.layout{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:24px;align-items:start}
+.panel{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:12px}
+.board{display:grid;gap:1px;background:#c3cdd6;border:1px solid #c3cdd6;touch-action:none;user-select:none;width:100%}
+.board div{aspect-ratio:1/1;cursor:crosshair}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+label{font-weight:700}
+input[type=number]{width:70px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+button{font:inherit;padding:8px 14px;border-radius:9px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;font-weight:700}
+button.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.sw{display:flex;align-items:center;gap:6px;padding:4px 8px 4px 4px;border:2px solid var(--line);border-radius:10px;cursor:pointer;background:var(--bg)}
+.sw.on{border-color:var(--sel);box-shadow:0 0 0 2px var(--sel)}
+.sw input[type=color]{width:34px;height:30px;border:none;padding:0;background:none;cursor:pointer}
+.sw code{font-size:.9rem;color:var(--muted)}
+textarea{width:100%;min-height:260px;font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;padding:10px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.note{color:var(--muted);font-size:.95rem;margin:0}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:14px;display:grid;gap:10px;transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--sel);background:var(--bg)}
+.drop h2{font-size:1.25rem;margin:0}
+.drop img{max-width:72px;max-height:72px;border-radius:6px;object-fit:cover}
+input[type=range]{width:140px}
+select{padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+@media (max-width:760px){.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Pixel Picture Maker</h1>
+  <p class="lead">Draw a picture for a pixel-art game, or start from a photo and touch it up. Pick a color, then click or drag on the grid. The first color is the background. When you're done, copy the code on the right and paste it over the PICTURE block in a game file.</p>
+  <div class="layout">
+    <div class="panel">
+      <div class="row">
+        <label for="w">Width</label><input type="number" id="w" min="4" max="40" value="16">
+        <label for="h">Height</label><input type="number" id="h" min="4" max="40" value="16">
+        <button id="resize">New blank grid</button>
+      </div>
+      <div class="drop" id="drop">
+        <h2>Start from a photo</h2>
+        <div class="row">
+          <label class="dark" style="padding:8px 14px;border-radius:9px;background:var(--ink);color:var(--bg);cursor:pointer">Choose a photo<input type="file" id="photo" accept="image/*" hidden></label>
+          <span class="note">or drag one onto this box</span>
+          <img id="preview" alt="" hidden>
+        </div>
+        <div class="row">
+          <label for="ncol">Colors</label><input type="range" id="ncol" min="2" max="12" value="6"><span id="ncolv">6</span>
+          <label for="crop">Shape</label>
+          <select id="crop"><option value="fill">Crop to fit the grid</option><option value="fit">Show the whole photo</option></select>
+        </div>
+        <p class="note">Uses the Width and Height above. Simple photos with a clear subject and plain background work best. Fewer colors make a cleaner picture; you can touch up any pixel afterward.</p>
+      </div>
+      <div class="swatches" id="swatches"></div>
+      <div class="row">
+        <button id="add">+ Add a color</button>
+        <button id="fill">Fill tool: off</button>
+      </div>
+      <div class="board" id="board"></div>
+      <p class="note">Tip: a 16 × 16 grid splits nicely among 16–25 questions. Bigger grids reveal smaller pieces per answer.</p>
+    </div>
+    <div class="panel">
+      <h2>Picture code</h2>
+      <textarea id="out" spellcheck="false" aria-label="Picture code"></textarea>
+      <div class="row">
+        <button class="dark" id="copy">Copy code</button>
+        <button id="load">Load code from the box</button>
+      </div>
+      <p class="note" id="msg">To edit an existing picture, paste its PICTURE block into the box and press Load.</p>
+    </div>
+  </div>
+</main>
+<script>
+const KEYS = ".kabcdefghijlmnopqrstuvwxyz0123456789";
+let palette = [{k:".",c:"#BFE3EA"},{k:"k",c:"#1D2833"},{k:"a",c:"#E2B23C"},{k:"b",c:"#C0503A"},{k:"c",c:"#3E8A5F"},{k:"d",c:"#FFFFFF"}];
+let W=16, H=16, grid=[], cur=1, painting=false, fillMode=false;
+const $=id=>document.getElementById(id);
+
+function blank(){ grid=[...Array(H)].map(()=>Array(W).fill(palette[0].k)); }
+function colorOf(k){ const p=palette.find(p=>p.k===k); return p?p.c:"transparent"; }
+
+function drawSwatches(){
+  const s=$("swatches"); s.innerHTML="";
+  palette.forEach((p,i)=>{
+    const d=document.createElement("div"); d.className="sw"+(i===cur?" on":"");
+    const ci=document.createElement("input"); ci.type="color"; ci.value=p.c; ci.title="Change this color";
+    ci.oninput=()=>{ p.c=ci.value; drawBoard(); output(); };
+    const code=document.createElement("code"); code.textContent=i===0?"background":p.k;
+    d.append(ci,code); d.onclick=e=>{ cur=i; drawSwatches(); };
+    s.appendChild(d);
+  });
+}
+
+function drawBoard(){
+  const b=$("board"); b.innerHTML=""; b.style.gridTemplateColumns="repeat("+W+",1fr)";
+  for(let r=0;r<H;r++) for(let c=0;c<W;c++){
+    const d=document.createElement("div"); d.style.background=colorOf(grid[r][c]);
+    d.dataset.r=r; d.dataset.c=c; b.appendChild(d);
+  }
+}
+
+function paint(r,c){
+  const k=palette[cur].k;
+  if(fillMode){ flood(r,c,grid[r][c],k); drawBoard(); }
+  else { if(grid[r][c]===k) return; grid[r][c]=k; $("board").children[r*W+c].style.background=colorOf(k); }
+  output();
+}
+function flood(r,c,from,to){
+  if(from===to) return; const st=[[r,c]];
+  while(st.length){ const [y,x]=st.pop(); if(y<0||x<0||y>=H||x>=W||grid[y][x]!==from) continue; grid[y][x]=to; st.push([y+1,x],[y-1,x],[y,x+1],[y,x-1]); }
+}
+function cellAt(e){ const t=document.elementFromPoint(e.clientX,e.clientY); return t&&t.parentNode===$("board")?t:null; }
+$("board").addEventListener("pointerdown",e=>{ const t=cellAt(e); if(!t) return; painting=!fillMode; paint(+t.dataset.r,+t.dataset.c); });
+$("board").addEventListener("pointermove",e=>{ if(!painting) return; const t=cellAt(e); if(t) paint(+t.dataset.r,+t.dataset.c); });
+window.addEventListener("pointerup",()=>painting=false);
+
+function output(){
+  const used=new Set(grid.flat());
+  const pal=palette.filter((p,i)=>i===0||used.has(p.k)).map(p=>JSON.stringify(p.k)+":"+JSON.stringify(p.c)).join(", ");
+  $("out").value="const PICTURE = {\n  palette: {"+pal+"},\n  rows: [\n"+grid.map(r=>"    "+JSON.stringify(r.join(""))).join(",\n")+"\n  ]\n};";
+}
+
+$("resize").onclick=()=>{ W=Math.max(4,Math.min(40,+$("w").value||16)); H=Math.max(4,Math.min(40,+$("h").value||16)); blank(); drawBoard(); output(); };
+$("add").onclick=()=>{ const k=[...KEYS].find(k=>!palette.some(p=>p.k===k)); if(!k) return; palette.push({k,c:"#888888"}); cur=palette.length-1; drawSwatches(); };
+$("fill").onclick=()=>{ fillMode=!fillMode; $("fill").textContent="Fill tool: "+(fillMode?"on":"off"); };
+$("copy").onclick=async()=>{ try{ await navigator.clipboard.writeText($("out").value); $("msg").textContent="Copied. Paste it over the PICTURE block in your game file."; }catch(e){ $("out").select(); $("msg").textContent="Select-all is on; press Ctrl/Cmd+C to copy."; } };
+$("load").onclick=()=>{
+  try{
+    const txt=$("out").value;
+    const pal=JSON.parse(txt.match(/palette\s*:\s*(\{[^}]*\})/)[1].replace(/([{,]\s*)'([^']*)'\s*:/g,'$1"$2":').replace(/:\s*'([^']*)'/g,':"$1"'));
+    const rows=JSON.parse(txt.match(/rows\s*:\s*(\[[\s\S]*?\])/)[1].replace(/'/g,'"').replace(/,\s*\]/,"]"));
+    palette=Object.entries(pal).map(([k,c])=>({k,c}));
+    const bg=palette.findIndex(p=>p.k==="."); if(bg>0) palette.unshift(palette.splice(bg,1)[0]);
+    H=rows.length; W=rows[0].length; $("w").value=W; $("h").value=H;
+    grid=rows.map(r=>[...r.padEnd(W,palette[0].k)].slice(0,W)); cur=Math.min(1,palette.length-1);
+    drawSwatches(); drawBoard(); output(); $("msg").textContent="Loaded.";
+  }catch(e){ $("msg").textContent="Couldn't read that. Paste the whole PICTURE block, from 'const PICTURE' to the closing '};'."; }
+};
+
+/* ---------- Photo import: average each grid cell, then reduce to N colors ---------- */
+let photoImg=null;
+const hex=c=>"#"+c.map(v=>Math.round(v).toString(16).padStart(2,"0")).join("");
+const d2=(a,b)=>(a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2;
+
+function samplePhoto(img, mode){
+  const S=8, cw=W*S, ch=H*S, cv=document.createElement("canvas"); cv.width=cw; cv.height=ch;
+  const x=cv.getContext("2d"); x.imageSmoothingQuality="high";
+  const iw=img.naturalWidth, ih=img.naturalHeight, gridR=cw/ch, imgR=iw/ih;
+  let px=[];
+  if(mode==="fill"){
+    let sw=iw, sh=ih, sx=0, sy=0;
+    if(imgR>gridR){ sw=ih*gridR; sx=(iw-sw)/2; } else { sh=iw/gridR; sy=(ih-sh)/2; }
+    x.drawImage(img,sx,sy,sw,sh,0,0,cw,ch);
+  } else {
+    let dw=cw, dh=ch;
+    if(imgR>gridR) dh=cw/imgR; else dw=ch*imgR;
+    x.drawImage(img,(cw-dw)/2,(ch-dh)/2,dw,dh);
+  }
+  const data=x.getImageData(0,0,cw,ch).data;
+  for(let r=0;r<H;r++) for(let c=0;c<W;c++){
+    let s=[0,0,0], a=0;
+    for(let yy=0;yy<S;yy++) for(let xx=0;xx<S;xx++){
+      const i=((r*S+yy)*cw+(c*S+xx))*4, al=data[i+3]/255;
+      s[0]+=data[i]*al; s[1]+=data[i+1]*al; s[2]+=data[i+2]*al; a+=al;
+    }
+    px.push(a/(S*S)<0.5 ? null : s.map(v=>v/a));   // null = empty (outside the photo)
+  }
+  return px;
+}
+
+function kmeans(points, k){
+  const pts=points.filter(Boolean); if(!pts.length) return [];
+  k=Math.min(k, pts.length);
+  const cents=[pts[0].slice()];                  // deterministic k-means++ (farthest point)
+  while(cents.length<k){
+    let best=null, bd=-1;
+    for(const p of pts){ const d=Math.min(...cents.map(c=>d2(p,c))); if(d>bd){bd=d;best=p;} }
+    if(bd<=0) break; cents.push(best.slice());
+  }
+  for(let it=0;it<20;it++){
+    const sum=cents.map(()=>[0,0,0,0]);
+    for(const p of pts){ let bi=0,bd=Infinity; cents.forEach((c,i)=>{const d=d2(p,c); if(d<bd){bd=d;bi=i;}}); const s=sum[bi]; s[0]+=p[0];s[1]+=p[1];s[2]+=p[2];s[3]++; }
+    sum.forEach((s,i)=>{ if(s[3]) cents[i]=[s[0]/s[3],s[1]/s[3],s[2]/s[3]]; });
+  }
+  return cents;
+}
+
+function convertPhoto(){
+  if(!photoImg) return;
+  W=Math.max(4,Math.min(40,+$("w").value||16)); H=Math.max(4,Math.min(40,+$("h").value||16));
+  const px=samplePhoto(photoImg,$("crop").value);
+  const k=+$("ncol").value, hasEmpty=px.some(p=>!p);
+  const cents=kmeans(px, hasEmpty?k-1:k);
+  const idx=px.map(p=>{ if(!p) return -1; let bi=0,bd=Infinity; cents.forEach((c,i)=>{const d=d2(p,c); if(d<bd){bd=d;bi=i;}}); return bi; });
+  // Background "." = the most common color (or the empty margin when the whole photo is shown)
+  const counts=cents.map((_,i)=>idx.filter(v=>v===i).length);
+  const order=[...cents.keys()].sort((a,b)=>counts[b]-counts[a]).filter(i=>counts[i]>0);
+  const keys=[...KEYS];
+  palette=[]; const keyOf={};
+  if(hasEmpty){ palette.push({k:".",c:"#FFFFFF"}); keyOf[-1]="."; }
+  order.forEach(i=>{ const key=keys[palette.length]; palette.push({k:key,c:hex(cents[i])}); keyOf[i]=key; });
+  grid=[...Array(H)].map((_,r)=>[...Array(W)].map((_,c)=>keyOf[idx[r*W+c]]));
+  cur=Math.min(1,palette.length-1);
+  drawSwatches(); drawBoard(); output();
+  $("msg").textContent="Photo converted. Click a color swatch to adjust it, or paint over any pixel.";
+}
+
+function loadPhoto(file){
+  if(!file || !file.type.startsWith("image/")){ $("msg").textContent="That file isn't an image. Try a JPG or PNG."; return; }
+  const url=URL.createObjectURL(file), img=new Image();
+  img.onload=()=>{ photoImg=img; $("preview").src=url; $("preview").hidden=false; convertPhoto(); };
+  img.onerror=()=>{ $("msg").textContent="Couldn't open that image. Try a JPG or PNG."; };
+  img.src=url;
+}
+$("photo").onchange=e=>loadPhoto(e.target.files[0]);
+const drop=$("drop");
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop",e=>loadPhoto(e.dataTransfer.files[0]));
+window.addEventListener("dragover",e=>e.preventDefault());
+window.addEventListener("drop",e=>{ e.preventDefault(); if(e.target.closest && !e.target.closest("#drop")) loadPhoto(e.dataTransfer.files[0]); });
+$("ncol").oninput=()=>{ $("ncolv").textContent=$("ncol").value; convertPhoto(); };
+$("crop").onchange=convertPhoto;
+$("w").onchange=$("h").onchange=()=>{ if(photoImg) convertPhoto(); };
+
+blank(); drawSwatches(); drawBoard(); output();
+</script>
+</body>
+</html>
