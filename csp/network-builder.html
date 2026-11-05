@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Network Builder</title>
+<style>
+  :root{
+    --bg:#f6f3ec; --card:#ffffff; --ink:#1f2430; --muted:#5b6272; --line:#ddd6c8;
+    --accent:#b8322a; --blue:#2563eb; --ok:#17793f; --okbg:#e5f4ea; --bad:#b42318; --badbg:#fbe9e7;
+    --node:#ffffff; --nodeline:#1f2430; --cable:#3b4252; --sel:#f59e0b; --lit:#2563eb;
+    --slow:#d97706; --fast:#2563eb; --grid:#ebe5d8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#16181d; --card:#1f232b; --ink:#e8e9ec; --muted:#a3a9b6; --line:#343a46;
+      --accent:#f07167; --blue:#7aa2ff; --ok:#5fd38d; --okbg:#173325; --bad:#ff8a7a; --badbg:#3a1d1a;
+      --node:#2a2f3a; --nodeline:#e8e9ec; --cable:#c7ccd6; --sel:#fbbf24; --lit:#7aa2ff;
+      --slow:#f59e0b; --fast:#7aa2ff; --grid:#22262f;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16181d; --card:#1f232b; --ink:#e8e9ec; --muted:#a3a9b6; --line:#343a46;
+    --accent:#f07167; --blue:#7aa2ff; --ok:#5fd38d; --okbg:#173325; --bad:#ff8a7a; --badbg:#3a1d1a;
+    --node:#2a2f3a; --nodeline:#e8e9ec; --cable:#c7ccd6; --sel:#fbbf24; --lit:#7aa2ff;
+    --slow:#f59e0b; --fast:#7aa2ff; --grid:#22262f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header,main{max-width:1000px;margin:0 auto;padding:0 16px}
+  header{padding-top:24px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:2rem;margin:0}
+  .sub{color:var(--muted);margin:2px 0 12px}
+  h2{font-family:Georgia,"Times New Roman",serif;margin:0 0 4px;font-size:1.4rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600}
+  dl{margin:8px 0 0}
+  dt{font-weight:700;color:var(--accent)}
+  dd{margin:0 0 6px 0}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+  .tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;cursor:pointer}
+  .tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .tabs button .chk{color:var(--ok);font-weight:700}
+  .tabs button.on .chk{color:var(--bg)}
+  .layout{display:grid;grid-template-columns:1fr 280px;gap:16px;align-items:start}
+  @media (max-width:760px){.layout{grid-template-columns:1fr}}
+  .modes{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+  .modes button,.btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+  .modes button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .help{color:var(--muted);font-size:.95rem;margin:4px 0 8px;min-height:1.5em}
+  .board{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--bg);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+  svg{display:block;width:100%;height:auto;touch-action:manipulation;user-select:none}
+  .cable{stroke:var(--cable);stroke-width:5;stroke-linecap:round}
+  .cable.cut{stroke:var(--bad);stroke-dasharray:6 8;stroke-width:4}
+  .cable.lit{stroke:var(--lit);stroke-width:8}
+  .cable.slow{stroke:var(--slow);stroke-width:3}
+  .cable.fast{stroke:var(--fast);stroke-width:9;opacity:.75}
+  .cable.slow.lit,.cable.fast.lit{stroke:var(--sel);opacity:1}
+  .hit{stroke:transparent;stroke-width:22;cursor:pointer}
+  .node{cursor:pointer}
+  .node circle{fill:var(--node);stroke:var(--nodeline);stroke-width:3}
+  .node text{font:700 20px Georgia,serif;fill:var(--ink);text-anchor:middle;pointer-events:none}
+  .node.sel circle{stroke:var(--sel);stroke-width:6}
+  .node.onroute circle{stroke:var(--sel);stroke-width:5}
+  .packet{fill:var(--accent);stroke:#fff;stroke-width:2}
+  .bw rect{fill:var(--card);stroke:var(--line)}
+  .bw text{font:600 12px system-ui,sans-serif;fill:var(--ink);text-anchor:middle}
+  .status{margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line);min-height:2.6em}
+  .status.good{background:var(--okbg);border-color:var(--ok)}
+  .status.bad{background:var(--badbg);border-color:var(--bad)}
+  .side h3{margin:0 0 6px;font-size:1rem}
+  .count{font-size:1.6rem;font-weight:700}
+  .count.over{color:var(--bad)}
+  ul.goals{list-style:none;padding:0;margin:8px 0}
+  ul.goals li{display:flex;gap:8px;margin:6px 0;align-items:flex-start}
+  ul.goals .mark{flex:0 0 1.4em;font-weight:700}
+  ul.goals li.ok .mark{color:var(--ok)}
+  ul.goals li.no .mark{color:var(--bad)}
+  ul.goals small{display:block;color:var(--muted)}
+  .done{background:var(--okbg);border:1px solid var(--ok);border-radius:8px;padding:10px;margin-top:10px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  table{border-collapse:collapse;width:100%;font-size:.9rem;margin-top:6px}
+  td,th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.9rem;color:var(--muted);margin-top:6px}
+  .sw{display:inline-block;width:28px;vertical-align:middle;margin-right:4px;border-radius:4px}
+  label{font-weight:600;display:block;margin-top:12px}
+  textarea,input[type=text]{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+  textarea{min-height:70px}
+  footer{max-width:1000px;margin:0 auto;padding:8px 16px 32px;color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>Network Builder</h1>
+  <p class="sub">CSP Unit 2 · Lesson 2: Building a Network</p>
+</header>
+<main>
+  <div class="card">
+    <p style="margin-top:0">You're a network designer. Cable costs money, and messages need to get through fast and reliably. Beat all 5 levels, then answer the questions at the bottom and paste your answers into Teams.</p>
+    <details>
+      <summary>Words to know</summary>
+      <dl>
+        <dt>Computing device</dt><dd>A physical machine that can run a program: a laptop, phone, server or router.</dd>
+        <dt>Computer network</dt><dd>A group of connected computing devices that can send and receive data.</dd>
+        <dt>Path</dt><dd>The chain of connected devices a message travels through from sender to receiver.</dd>
+        <dt>Routing</dt><dd>Choosing which path a message takes.</dd>
+        <dt>Hop</dt><dd>One trip across one cable. A&nbsp;→&nbsp;B&nbsp;→&nbsp;C is 2 hops.</dd>
+        <dt>Bandwidth</dt><dd>The most data a connection can carry in a set amount of time, measured in bits per second (Mbps = millions of bits per second).</dd>
+      </dl>
+    </details>
+  </div>
+
+  <nav class="tabs" id="tabs" aria-label="Levels"></nav>
+
+  <section class="card">
+    <h2 id="title"></h2>
+    <p id="story" style="margin:4px 0"></p>
+    <div class="layout">
+      <div>
+        <div class="modes" id="modes"></div>
+        <div class="help" id="help"></div>
+        <div class="board"><svg id="svg" viewBox="0 0 600 380" role="img" aria-label="Network board"></svg></div>
+        <div class="legend" id="legend" hidden>
+          <span><span class="sw" style="height:4px;background:var(--slow)"></span>Slow cable: 10 Mbps</span>
+          <span><span class="sw" style="height:9px;background:var(--fast)"></span>Fast cable: 100 Mbps</span>
+          <span>Each hop also adds 0.5 s for the computer to forward the message</span>
+        </div>
+        <div class="status" id="status" aria-live="polite"></div>
+      </div>
+      <aside class="side" id="side"></aside>
+    </div>
+    <div class="row">
+      <button class="btn" id="reset">Start this level over</button>
+      <button class="btn" id="hint">Hint</button>
+      <button class="btn primary" id="next" disabled>Next level →</button>
+    </div>
+  </section>
+
+  <section class="card" id="reflect">
+    <h2>Think about it</h2>
+    <p style="margin:4px 0">Answer in complete sentences, then click <b>Copy my answers</b> and paste into the Teams assignment.</p>
+    <label for="name">Your name</label>
+    <input type="text" id="name" autocomplete="name">
+    <div id="questions"></div>
+    <div class="row">
+      <button class="btn primary" id="copy">Copy my answers</button>
+    </div>
+    <textarea id="fallback" hidden readonly style="margin-top:10px;min-height:160px"></textarea>
+    <div class="help" id="copyMsg"></div>
+  </section>
+</main>
+<footer>Your work saves in this browser automatically.</footer>
+
+<script>
+(function(){
+  const NS = 'http://www.w3.org/2000/svg';
+  const IDS = ['A','B','C','D','E','F'];
+  const POS = {A:{x:100,y:90},B:{x:300,y:55},C:{x:500,y:90},D:{x:510,y:285},E:{x:300,y:325},F:{x:90,y:285}};
+  const POS5 = {A:{x:70,y:190},B:{x:300,y:70},C:{x:170,y:300},D:{x:300,y:335},E:{x:430,y:300},F:{x:530,y:190}};
+  const SLOW = 10, FAST = 100, DELAY = 0.5;
+  const L5_EDGES = [['A','B',SLOW],['B','F',SLOW],['A','C',FAST],['C','D',FAST],['D','E',FAST],['E','F',FAST],['B','E',FAST]];
+  const TASKS = [
+    {label:'Task 1: 100 Mb video', size:100, limit:10, text:'Send a 100 Mb video from A to F in under 10 seconds.'},
+    {label:'Task 2: 1 Mb text', size:1, limit:1.5, text:'Send a 1 Mb text message from A to F in under 1.5 seconds.'}
+  ];
+
+  const LEVELS = [
+    {title:'Level 1: Connect everyone', type:'build', budget:5, goals:['connected','budget'],
+     story:'Six computers need to talk to each other. Cable is expensive, so you only get 5 cables. Connect them so every computer can send a message to every other computer.',
+     hint:'You don\'t need a cable between every pair. A message can pass through other computers on the way.',
+     why:'5 cables is the fewest that can connect 6 computers. With exactly 5, there\'s only one path between any two computers. That\'s cheap, but what happens if one cable breaks?'},
+    {title:'Level 2: Speed it up', type:'build', budget:5, goals:['connected','budget',{maxHops:2}],
+     story:'Messages are slow when they pass through lots of computers. Still with 5 cables, make sure any two computers are at most 2 hops apart.',
+     hint:'What if one computer were in the middle of everything?',
+     why:'Running everything through one central computer keeps every path short. But now the whole network depends on that one computer and its cables. Try the Cut tool and see.'},
+    {title:'Level 3: Cut-proof', type:'build', budget:6, goals:['connected','budget','survives'],
+     story:'Cables get cut by construction crews, storms and curious squirrels. With 6 cables, build a network that still connects everyone if any ONE cable is cut. Use the Cut tool to test it.',
+     hint:'Every computer needs a second way out. Think about shapes that loop back on themselves.',
+     why:'Having more than one path is called redundancy. One extra cable made the network reliable, but check the longest trip now. Some messages take more hops than in Level 2.'},
+    {title:'Level 4: Fast AND cut-proof', type:'build', budget:8, goals:['connected','budget','survives',{maxHops:2}],
+     story:'Now you want both: survive any one cut, AND any two computers at most 2 hops apart. You have 8 cables.',
+     hint:'One "hub" computer is a weak spot. What about two hubs?',
+     why:'You can have speed and reliability together, but it costs more cable. Real network designers are always trading off cost, speed and reliability.'},
+    {title:'Level 5: Bandwidth', type:'route',
+     story:'This network is already built. Some cables are slow (10 Mbps) and some are fast (100 Mbps). Plan a route from A to F by clicking computers in order. Complete both tasks.',
+     hint:'Time on each cable = message size ÷ bandwidth, plus 0.5 s per hop. For a big file, bandwidth matters most. For a tiny message, the number of hops matters most.',
+     why:'Fewer hops isn\'t always faster. Big files should go over high-bandwidth connections even if the path is longer, but small messages are faster with fewer hops.'}
+  ];
+
+  const QUESTIONS = [
+    'Level 1: What is the fewest number of cables needed to connect 6 computers? Why can\'t you do it with fewer?',
+    'Level 2: Your network kept every trip short. What happens if the computer in the middle breaks, or one of its cables is cut?',
+    'Levels 3 and 4: Adding cables made the network more reliable. What is the downside? Describe the tradeoff a real network designer faces.',
+    'Level 5: Why was the route with more hops faster for the video but slower for the text message? Use the word bandwidth in your answer.'
+  ];
+
+  const KEY = 'csp-network-builder-v1';
+  let state = {
+    level:0, mode:'build',
+    levels: LEVELS.map(()=>({edges:[], done:false})),
+    route:['A'], task:0, tasksDone:[false,false],
+    answers: QUESTIONS.map(()=> ''), name:''
+  };
+  let sel = null, lit = new Set(), anim = null, packet = null, lastResult = null;
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved && saved.levels && saved.levels.length === LEVELS.length) {
+      state = Object.assign(state, saved);
+      state.route = ['A'];
+    }
+  } catch(e) {}
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {} }
+
+  const $ = id => document.getElementById(id);
+  const svg = $('svg');
+  const key = (a,b) => a < b ? a+'-'+b : b+'-'+a;
+
+  // ---------- graph helpers ----------
+  function adjOf(edges, skipCut){
+    const m = {}; IDS.forEach(i => m[i] = []);
+    edges.forEach(e => { if (skipCut && e.cut) return; m[e.a].push(e.b); m[e.b].push(e.a); });
+    return m;
+  }
+  function bfs(adj, s){
+    const dist = {[s]:0}, prev = {}, q = [s];
+    while (q.length){ const u = q.shift(); for (const v of adj[u]) if (!(v in dist)) { dist[v] = dist[u]+1; prev[v] = u; q.push(v); } }
+    return {dist, prev};
+  }
+  function connected(edges){ const d = bfs(adjOf(edges), 'A').dist; return IDS.every(i => i in d); }
+  function diameter(edges){
+    const adj = adjOf(edges); let d = 0;
+    for (const s of IDS){ const r = bfs(adj, s).dist; for (const t of IDS){ if (!(t in r)) return Infinity; d = Math.max(d, r[t]); } }
+    return d;
+  }
+  function weakCable(edges){
+    for (let i = 0; i < edges.length; i++){ if (!connected(edges.filter((_,j) => j !== i))) return edges[i]; }
+    return null;
+  }
+  function evalGoals(lvl, edges){
+    const conn = connected(edges), out = [];
+    for (const g of lvl.goals){
+      if (g === 'connected') out.push({ok:conn, text:'Every computer can reach every other computer'});
+      else if (g === 'budget') out.push({ok:edges.length > 0 && edges.length <= lvl.budget, text:`Use ${lvl.budget} cables or fewer`});
+      else if (g === 'survives'){
+        const w = conn ? weakCable(edges) : null;
+        out.push({ok:conn && !w, text:'Still connected if any one cable is cut',
+          detail: !conn ? 'Connect everyone first' : (w ? `Weak spot: cutting ${w.a}–${w.b} splits the network` : '')});
+      } else if (g.maxHops){
+        const d = diameter(edges);
+        out.push({ok:d <= g.maxHops, text:`Any two computers are at most ${g.maxHops} hops apart`,
+          detail: conn ? `Longest trip right now: ${d} hop${d === 1 ? '' : 's'}` : ''});
+      }
+    }
+    return out;
+  }
+
+  // ---------- status / animation ----------
+  function setStatus(msg, kind){ const s = $('status'); s.innerHTML = msg; s.className = 'status' + (kind ? ' ' + kind : ''); }
+  function stopAnim(){ if (anim) cancelAnimationFrame(anim); anim = null; if (packet) packet.remove(); packet = null; }
+  function animatePath(path, pos, durations, done){
+    stopAnim();
+    packet = document.createElementNS(NS, 'circle');
+    packet.setAttribute('r', 10); packet.setAttribute('class', 'packet');
+    packet.setAttribute('cx', pos[path[0]].x); packet.setAttribute('cy', pos[path[0]].y);
+    svg.appendChild(packet);
+    let seg = 0, start = null;
+    function step(ts){
+      if (start === null) start = ts;
+      let t = (ts - start) / durations[seg];
+      if (t >= 1){
+        seg++; start = ts; t = 0;
+        if (seg >= path.length - 1){
+          const end = pos[path[path.length-1]];
+          packet.setAttribute('cx', end.x); packet.setAttribute('cy', end.y);
+          anim = null; const p = packet; setTimeout(() => { if (p) p.remove(); }, 700); packet = null;
+          if (done) done();
+          return;
+        }
+      }
+      const a = pos[path[seg]], b = pos[path[seg+1]];
+      packet.setAttribute('cx', a.x + (b.x - a.x) * t);
+      packet.setAttribute('cy', a.y + (b.y - a.y) * t);
+      anim = requestAnimationFrame(step);
+    }
+    anim = requestAnimationFrame(step);
+  }
+
+  // ---------- rendering ----------
+  function renderTabs(){
+    $('tabs').innerHTML = LEVELS.map((l,i) =>
+      `<button data-lvl="${i}" class="${i === state.level ? 'on' : ''}">Level ${i+1}${state.levels[i].done ? ' <span class="chk">✓</span>' : ''}</button>`).join('');
+  }
+  function nodeSvg(id, p, cls){
+    return `<g class="node ${cls}" data-node="${id}" transform="translate(${p.x} ${p.y})"><circle r="26"/><text dy="0.35em">${id}</text></g>`;
+  }
+  function render(){
+    stopAnim();
+    const lvl = LEVELS[state.level], ls = state.levels[state.level];
+    renderTabs();
+    $('title').textContent = lvl.title;
+    $('story').textContent = lvl.story;
+    $('next').disabled = !ls.done || state.level === LEVELS.length - 1;
+    $('next').textContent = state.level === LEVELS.length - 1 ? 'Last level' : 'Next level →';
+    if (lvl.type === 'build') renderBuild(lvl, ls); else renderRoute(lvl, ls);
+  }
+
+  function renderBuild(lvl, ls){
+    $('legend').hidden = true;
+    const modes = [['build','Build cables'],['send','Send a message'],['cut','Cut a cable']];
+    $('modes').innerHTML = modes.map(([m,t]) => `<button data-mode="${m}" class="${state.mode === m ? 'on' : ''}">${t}</button>`).join('');
+    $('help').textContent = {
+      build:'Click one computer, then another, to run a cable between them. Click a cable to remove it.',
+      send:'Click the sender, then the receiver. The message takes the shortest path that isn\'t cut.',
+      cut:'Click a cable to cut it (click again to repair). Then use Send a message to see what still works.'
+    }[state.mode];
+
+    let h = '';
+    ls.edges.forEach(e => {
+      const p = POS[e.a], q = POS[e.b], k = key(e.a, e.b);
+      h += `<line class="cable${e.cut ? ' cut' : ''}${lit.has(k) ? ' lit' : ''}" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}"/>`;
+    });
+    ls.edges.forEach(e => {
+      const p = POS[e.a], q = POS[e.b];
+      h += `<line class="hit" data-edge="${key(e.a, e.b)}" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}"/>`;
+    });
+    IDS.forEach(id => { h += nodeSvg(id, POS[id], sel === id ? 'sel' : ''); });
+    svg.innerHTML = h;
+
+    const goals = evalGoals(lvl, ls.edges);
+    const all = goals.every(g => g.ok);
+    if (all && !ls.done){ ls.done = true; save(); renderTabs(); $('next').disabled = state.level === LEVELS.length - 1;
+      setStatus('<b>Level complete!</b> Read the note on the right, then go on to the next level.', 'good'); }
+    const n = ls.edges.length;
+    $('side').innerHTML = `
+      <h3>Cables used</h3>
+      <div class="count ${n > lvl.budget ? 'over' : ''}">${n} / ${lvl.budget}</div>
+      ${n > lvl.budget ? '<small style="color:var(--bad)">Over budget! Remove some cable.</small>' : ''}
+      <h3 style="margin-top:12px">Goals</h3>
+      <ul class="goals">${goals.map(g => `<li class="${g.ok ? 'ok' : 'no'}"><span class="mark">${g.ok ? '✓' : '✗'}</span><span>${g.text}${g.detail ? `<small>${g.detail}</small>` : ''}</span></li>`).join('')}</ul>
+      ${ls.done ? `<div class="done"><b>Why it matters:</b> ${lvl.why}</div>` : ''}`;
+  }
+
+  function l5Edge(a, b){ return L5_EDGES.find(e => key(e[0], e[1]) === key(a, b)); }
+  function renderRoute(lvl, ls){
+    $('legend').hidden = false;
+    $('modes').innerHTML = TASKS.map((t,i) =>
+      `<button data-task="${i}" class="${state.task === i ? 'on' : ''}">${t.label}${state.tasksDone[i] ? ' ✓' : ''}</button>`).join('');
+    $('help').textContent = TASKS[state.task].text + ' Click computers in order starting from A. Click the last computer again to undo.';
+    const r = state.route, routeKeys = new Set();
+    for (let i = 0; i < r.length - 1; i++) routeKeys.add(key(r[i], r[i+1]));
+    let h = '';
+    L5_EDGES.forEach(([a,b,bw]) => {
+      const p = POS5[a], q = POS5[b];
+      h += `<line class="cable ${bw === SLOW ? 'slow' : 'fast'}${routeKeys.has(key(a,b)) ? ' lit' : ''}" x1="${p.x}" y1="${p.y}" x2="${q.x}" y2="${q.y}"/>`;
+    });
+    L5_EDGES.forEach(([a,b,bw]) => {
+      const p = POS5[a], q = POS5[b], mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
+      h += `<g class="bw" transform="translate(${mx} ${my})"><rect x="-30" y="-11" width="60" height="22" rx="6"/><text dy="0.35em">${bw} Mbps</text></g>`;
+    });
+    IDS.forEach(id => { h += nodeSvg(id, POS5[id], r.includes(id) ? 'onroute' : ''); });
+    svg.innerHTML = h;
+
+    let table = '';
+    if (lastResult){
+      table = `<h3 style="margin-top:12px">Last trip: ${lastResult.size} Mb</h3><table><tr><th>Cable</th><th>Time</th></tr>${
+        lastResult.rows.map(x => `<tr><td>${x.a}→${x.b} (${x.bw} Mbps)</td><td>${x.size}÷${x.bw} + ${DELAY} = ${x.t.toFixed(2)} s</td></tr>`).join('')
+      }<tr><th>Total (${lastResult.rows.length} hops)</th><th>${lastResult.total.toFixed(2)} s</th></tr></table>`;
+    }
+    $('side').innerHTML = `
+      <h3>Route</h3>
+      <div style="font-size:1.2rem;font-weight:700">${r.join(' → ')}</div>
+      <div class="row"><button class="btn" id="clearRoute">Clear route</button></div>
+      ${table}
+      <h3 style="margin-top:12px">Tasks</h3>
+      <ul class="goals">${TASKS.map((t,i) => `<li class="${state.tasksDone[i] ? 'ok' : 'no'}"><span class="mark">${state.tasksDone[i] ? '✓' : '✗'}</span><span>${t.text}</span></li>`).join('')}</ul>
+      ${ls.done ? `<div class="done"><b>Why it matters:</b> ${lvl.why}</div>` : ''}`;
+    $('clearRoute').onclick = () => { state.route = ['A']; lastResult = null; setStatus(''); render(); };
+  }
+
+  function sendRoute(){
+    const t = TASKS[state.task], r = state.route.slice(), rows = [];
+    for (let i = 0; i < r.length - 1; i++){
+      const bw = l5Edge(r[i], r[i+1])[2];
+      rows.push({a:r[i], b:r[i+1], bw, size:t.size, t: t.size / bw + DELAY});
+    }
+    const total = rows.reduce((s,x) => s + x.t, 0);
+    lastResult = {size:t.size, rows, total};
+    render();
+    setStatus('Sending…');
+    animatePath(r, POS5, rows.map(x => Math.min(2200, Math.max(350, x.t * 220))), () => {
+      if (total <= t.limit){
+        state.tasksDone[state.task] = true;
+        let msg = `<b>Delivered in ${total.toFixed(2)} s.</b> That beats the ${t.limit} s goal!`;
+        if (state.tasksDone.every(Boolean) && !state.levels[4].done){
+          state.levels[4].done = true; msg += ' <b>Level complete!</b> Now answer the questions below.';
+        } else if (!state.tasksDone.every(Boolean)) msg += ' Now try the other task.';
+        save(); render(); setStatus(msg, 'good');
+      } else {
+        setStatus(`<b>Delivered in ${total.toFixed(2)} s.</b> Too slow: the goal is under ${t.limit} s. Clear the route and try another path.`, 'bad');
+      }
+    });
+  }
+
+  // ---------- events ----------
+  svg.addEventListener('click', ev => {
+    const lvl = LEVELS[state.level], ls = state.levels[state.level];
+    const nodeEl = ev.target.closest('[data-node]'), edgeEl = ev.target.closest('[data-edge]');
+    if (lvl.type === 'route'){
+      if (!nodeEl || anim) return;
+      const id = nodeEl.dataset.node, r = state.route, last = r[r.length-1];
+      if (id === last && r.length > 1){ r.pop(); lastResult = null; setStatus(''); render(); return; }
+      if (last === 'F'){ setStatus('This route already reached F. Click F to undo, or clear the route to try another.'); return; }
+      if (r.includes(id)){ setStatus(`${id} is already on your route.`); return; }
+      if (!l5Edge(last, id)){ setStatus(`There's no cable between ${last} and ${id}.`, 'bad'); return; }
+      r.push(id); setStatus(''); render();
+      if (id === 'F') sendRoute();
+      return;
+    }
+
+    if (state.mode === 'build'){
+      if (edgeEl){
+        const k = edgeEl.dataset.edge;
+        ls.edges = ls.edges.filter(e => key(e.a, e.b) !== k);
+        setStatus(`Removed cable ${k.replace('-', '–')}.`); lit.clear(); save(); render(); return;
+      }
+      if (!nodeEl) { sel = null; render(); return; }
+      const id = nodeEl.dataset.node;
+      if (!sel || sel === id){ sel = sel === id ? null : id; setStatus(sel ? `Now click another computer to connect to ${sel}.` : ''); render(); return; }
+      const k = key(sel, id), exists = ls.edges.find(e => key(e.a, e.b) === k);
+      if (exists){ ls.edges = ls.edges.filter(e => e !== exists); setStatus(`Removed cable ${sel}–${id}.`); }
+      else {
+        ls.edges.push({a:sel, b:id, cut:false});
+        setStatus(ls.edges.length > lvl.budget ? `Added ${sel}–${id}, but that's over your budget of ${lvl.budget}.` : `Added cable ${sel}–${id}.`, ls.edges.length > lvl.budget ? 'bad' : '');
+      }
+      sel = null; lit.clear(); save(); render(); return;
+    }
+
+    if (state.mode === 'cut'){
+      if (!edgeEl) return;
+      const e = ls.edges.find(x => key(x.a, x.b) === edgeEl.dataset.edge);
+      e.cut = !e.cut; lit.clear(); save(); render();
+      setStatus(e.cut ? `Cut cable ${e.a}–${e.b}. Try sending a message now.` : `Repaired cable ${e.a}–${e.b}.`);
+      return;
+    }
+
+    if (state.mode === 'send'){
+      if (!nodeEl || anim) return;
+      const id = nodeEl.dataset.node;
+      if (!sel || sel === id){ sel = sel === id ? null : id; lit.clear(); setStatus(sel ? `Sender is ${sel}. Now click the receiver.` : ''); render(); return; }
+      const from = sel; sel = null;
+      const {dist, prev} = bfs(adjOf(ls.edges, true), from);
+      if (!(id in dist)){ lit.clear(); render(); setStatus(`<b>No path!</b> A message from ${from} can't reach ${id}.`, 'bad'); return; }
+      const path = [id]; while (path[0] !== from) path.unshift(prev[path[0]]);
+      lit = new Set(); for (let i = 0; i < path.length - 1; i++) lit.add(key(path[i], path[i+1]));
+      render();
+      animatePath(path, POS, path.slice(1).map(() => 450), () => {
+        setStatus(`<b>Delivered!</b> ${path.join(' → ')}: ${path.length - 1} hop${path.length === 2 ? '' : 's'}.`, 'good');
+      });
+    }
+  });
+
+  $('modes').addEventListener('click', ev => {
+    const b = ev.target.closest('button'); if (!b) return;
+    if (b.dataset.mode){ state.mode = b.dataset.mode; sel = null; lit.clear(); setStatus(''); render(); }
+    if (b.dataset.task){ state.task = +b.dataset.task; state.route = ['A']; lastResult = null; setStatus(''); save(); render(); }
+  });
+  $('tabs').addEventListener('click', ev => {
+    const b = ev.target.closest('button'); if (!b) return;
+    goLevel(+b.dataset.lvl);
+  });
+  function goLevel(i){
+    state.level = i; state.mode = 'build'; sel = null; lit.clear(); lastResult = null; state.route = ['A'];
+    setStatus(''); save(); render(); window.scrollTo({top: $('tabs').offsetTop - 8, behavior:'smooth'});
+  }
+  $('next').onclick = () => { if (state.level < LEVELS.length - 1) goLevel(state.level + 1); };
+  $('reset').onclick = () => {
+    const ls = state.levels[state.level];
+    if (LEVELS[state.level].type === 'route'){ state.route = ['A']; state.tasksDone = [false,false]; }
+    else ls.edges = [];
+    ls.done = false; sel = null; lit.clear(); lastResult = null; setStatus(''); save(); render();
+  };
+  $('hint').onclick = () => setStatus('<b>Hint:</b> ' + LEVELS[state.level].hint);
+
+  // ---------- reflection ----------
+  $('questions').innerHTML = QUESTIONS.map((q,i) => `<label for="q${i}">${i+1}. ${q}</label><textarea id="q${i}"></textarea>`).join('');
+  QUESTIONS.forEach((_,i) => {
+    const ta = $('q' + i); ta.value = state.answers[i] || '';
+    ta.addEventListener('input', () => { state.answers[i] = ta.value; save(); });
+  });
+  $('name').value = state.name || '';
+  $('name').addEventListener('input', e => { state.name = e.target.value; save(); });
+
+  $('copy').onclick = async () => {
+    const lines = [
+      'Network Builder (CSP Unit 2 Lesson 2)',
+      'Name: ' + (state.name || '(no name)'),
+      'Levels completed: ' + LEVELS.map((_,i) => `${i+1}${state.levels[i].done ? ' ✓' : ' ✗'}`).join(', '),
+      ''
+    ];
+    QUESTIONS.forEach((q,i) => { lines.push(`${i+1}. ${q}`); lines.push(state.answers[i] || '(no answer)'); lines.push(''); });
+    const text = lines.join('\n');
+    try { await navigator.clipboard.writeText(text); $('copyMsg').textContent = 'Copied! Paste it into the Teams assignment.'; $('fallback').hidden = true; }
+    catch(e){ const f = $('fallback'); f.hidden = false; f.value = text; f.focus(); f.select(); $('copyMsg').textContent = 'Copy the text in the box above (Ctrl+C or ⌘+C), then paste it into Teams.'; }
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
