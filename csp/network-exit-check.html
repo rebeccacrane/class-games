@@ -55,6 +55,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .score{background:var(--surface);border:2px solid var(--accent);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px}
 .big{font-family:var(--display);font-size:2rem;font-weight:700}
 .msg{color:var(--muted);font-size:.95rem}
+.who{font-family:var(--display);font-size:1.3rem;font-weight:700}
+.stamp{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
 textarea{width:100%;min-height:120px;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg)}
 [hidden]{display:none!important}
 </style>
@@ -77,6 +79,7 @@ textarea{width:100%;min-height:120px;font:inherit;padding:8px;border:1px solid v
   </div>
 
   <div class="score" id="score" hidden>
+    <div class="who" id="scoreName" hidden></div>
     <div class="big" id="scoreNum"></div>
     <p id="scoreMsg"></p>
     <div class="row">
@@ -161,6 +164,8 @@ document.getElementById("check").onclick = () => {
     ex.hidden = false;
   });
   document.getElementById("check").disabled = true;
+  const nm = document.getElementById("name").value.trim(), who = document.getElementById("scoreName");
+  who.textContent = nm; who.hidden = !nm;
   document.getElementById("scoreNum").textContent = `${right} / ${QUESTIONS.length}`;
   document.getElementById("scoreMsg").textContent = right === 5 ? "Perfect! You've got networks down." : right >= 3 ? "Nice work. Read the explanations for the ones you missed." : "Read through the explanations, then try again.";
   const s = document.getElementById("score"); s.hidden = false; s.scrollIntoView({ behavior: "smooth", block: "center" });
