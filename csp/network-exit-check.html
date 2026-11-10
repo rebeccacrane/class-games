@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Network Exit Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Work+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#f3f6f8; --surface:#ffffff; --fg:#14212b; --muted:#56656f; --line:#d5dee4;
+  --accent:#1f5fbf; --accent-soft:#e3ecfa;
+  --ok:#17793f; --okbg:#e5f4ea; --bad:#b42318; --badbg:#fbe9e7;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"Work Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f161c; --surface:#16212a; --fg:#e4ecf2; --muted:#93a4b1; --line:#26343f;
+  --accent:#7aa8f0; --accent-soft:#1b2b40; --ok:#5fd38d; --okbg:#173325; --bad:#ff8a7a; --badbg:#3a1d1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161c; --surface:#16212a; --fg:#e4ecf2; --muted:#93a4b1; --line:#26343f;
+  --accent:#7aa8f0; --accent-soft:#1b2b40; --ok:#5fd38d; --okbg:#173325; --bad:#ff8a7a; --badbg:#3a1d1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;margin:0;padding-inline:16px;padding-block:28px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1{font-family:var(--display);font-weight:700;margin:0;line-height:1.1;font-size:clamp(2rem,6vw,2.6rem)}
+p{margin:0}
+.back{font-family:var(--mono);font-size:.8rem;color:var(--accent);text-decoration:none}
+header{display:flex;flex-direction:column;gap:8px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.sub{color:var(--muted)}
+label.name{font-weight:600;display:flex;flex-direction:column;gap:6px}
+input[type=text]{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg);max-width:320px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.q.right{border-color:var(--ok)}
+.q.wrong{border-color:var(--bad)}
+.qnum{font-family:var(--mono);font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.prompt{font-weight:600}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:9px 10px;border:1px solid var(--line);border-radius:8px;cursor:pointer}
+.opt:hover{background:var(--accent-soft)}
+.opt input{margin-top:5px;accent-color:var(--accent)}
+.opt.correct{background:var(--okbg);border-color:var(--ok)}
+.opt.picked-wrong{background:var(--badbg);border-color:var(--bad)}
+.locked .opt{cursor:default}
+.locked .opt:hover{background:transparent}
+.locked .opt.correct:hover{background:var(--okbg)}
+.locked .opt.picked-wrong:hover{background:var(--badbg)}
+.explain{font-size:.95rem;padding:10px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line)}
+.explain b.ok{color:var(--ok)} .explain b.no{color:var(--bad)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:inherit;font-weight:600;border-radius:8px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--fg)}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button:disabled{opacity:.5;cursor:not-allowed}
+.score{background:var(--surface);border:2px solid var(--accent);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.big{font-family:var(--display);font-size:2rem;font-weight:700}
+.msg{color:var(--muted);font-size:.95rem}
+textarea{width:100%;min-height:120px;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--fg)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="csp-resources.html">← CSP resources</a>
+    <h1>Building a Network: Exit Check</h1>
+    <p class="sub">Unit 2 · Lesson 2. Answer all five, then click Check my answers. When you're done, show me your score or copy your results into Teams.</p>
+  </header>
+
+  <label class="name">Your name <input type="text" id="name" autocomplete="name"></label>
+
+  <div id="quiz" style="display:flex;flex-direction:column;gap:14px"></div>
+
+  <div class="row">
+    <button class="primary" id="check">Check my answers</button>
+    <span class="msg" id="need"></span>
+  </div>
+
+  <div class="score" id="score" hidden>
+    <div class="big" id="scoreNum"></div>
+    <p id="scoreMsg"></p>
+    <div class="row">
+      <button id="copy">Copy my results</button>
+      <button id="retry">Try again</button>
+    </div>
+    <p class="msg" id="copyMsg"></p>
+    <textarea id="fallback" hidden readonly></textarea>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  { prompt: "Which of the following best describes the bandwidth of a network connection?",
+    options: ["The maximum amount of data that can be sent in a fixed amount of time",
+              "The number of devices connected to the network",
+              "The number of hops a message takes from sender to receiver",
+              "The physical length of the cable between two devices"],
+    answer: 0,
+    explain: "Bandwidth is the most data a connection can carry in a set amount of time, usually measured in bits per second (like 100 Mbps)." },
+  { prompt: "A network has these connections: A–B, A–C, B–C, B–D, C–D. What is the minimum number of connections that would have to fail to make it impossible for A and D to communicate?",
+    options: ["1", "2", "3", "4"],
+    answer: 1,
+    explain: "No single failure can do it, because A can reach D through B or through C. Breaking A–B and A–C cuts A off completely, and so does breaking B–D and C–D. So the answer is 2." },
+  { prompt: "In a network, every device is connected only to one central device. What is the biggest weakness of this design?",
+    options: ["Messages between devices have to take many hops",
+              "It uses more cable than any other design",
+              "If the central device fails, no devices can communicate with each other",
+              "Devices can only send small messages"],
+    answer: 2,
+    explain: "A hub design keeps paths short (at most 2 hops) and uses few cables, but the central device is a single point of failure. Remember Level 2 of Network Builder." },
+  { prompt: "Which of the following is true about adding redundant connections to a network?",
+    options: ["It always reduces the number of hops between every pair of devices",
+              "It increases the bandwidth of each existing connection",
+              "It makes the network more fault tolerant, but adds cost",
+              "It guarantees that messages are never lost"],
+    answer: 2,
+    explain: "Redundancy means there's more than one path, so the network keeps working when a connection fails. That's fault tolerance. The tradeoff is more cable and equipment, which costs more." },
+  { prompt: "A large video file needs to go from A to F. Route X takes 2 hops over 10 Mbps connections. Route Y takes 4 hops over 100 Mbps connections. Which route is likely faster, and why?",
+    options: ["Route X, because fewer hops is always faster",
+              "Route Y, because higher bandwidth matters most for a large file",
+              "They take the same time because both reach F",
+              "Route X, because slower connections lose fewer bits"],
+    answer: 1,
+    explain: "For a big file, most of the time is spent pushing data through each connection, so 10× the bandwidth easily makes up for 2 extra hops. For a tiny message, fewer hops might win instead." }
+];
+const L = ["A","B","C","D"];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const quiz = document.getElementById("quiz");
+let results = [];
+
+function build(){
+  quiz.innerHTML = QUESTIONS.map((q,i) => `
+    <fieldset class="q" id="q${i}" style="margin:0">
+      <legend class="qnum" style="padding:0">Question ${i+1}</legend>
+      <div class="prompt">${esc(q.prompt)}</div>
+      <div class="opts">${q.options.map((o,j) => `
+        <label class="opt"><input type="radio" name="q${i}" value="${j}"><span><b>${L[j]}.</b> ${esc(o)}</span></label>`).join("")}
+      </div>
+      <div class="explain" hidden></div>
+    </fieldset>`).join("");
+}
+
+document.getElementById("check").onclick = () => {
+  const picks = QUESTIONS.map((_,i) => { const c = document.querySelector(`input[name=q${i}]:checked`); return c ? +c.value : null; });
+  const missing = picks.map((p,i) => p === null ? i+1 : null).filter(Boolean);
+  if (missing.length){ document.getElementById("need").textContent = `Answer question${missing.length > 1 ? "s" : ""} ${missing.join(", ")} first.`; return; }
+  document.getElementById("need").textContent = "";
+  results = picks;
+  let right = 0;
+  QUESTIONS.forEach((q,i) => {
+    const box = document.getElementById("q"+i), ok = picks[i] === q.answer;
+    if (ok) right++;
+    box.classList.add(ok ? "right" : "wrong", "locked");
+    box.querySelectorAll(".opt").forEach((el,j) => {
+      el.querySelector("input").disabled = true;
+      if (j === q.answer) el.classList.add("correct");
+      else if (j === picks[i]) el.classList.add("picked-wrong");
+    });
+    const ex = box.querySelector(".explain");
+    ex.innerHTML = `<b class="${ok ? "ok" : "no"}">${ok ? "Correct." : `Not quite. The answer is ${L[q.answer]}.`}</b> ${esc(q.explain)}`;
+    ex.hidden = false;
+  });
+  document.getElementById("check").disabled = true;
+  document.getElementById("scoreNum").textContent = `${right} / ${QUESTIONS.length}`;
+  document.getElementById("scoreMsg").textContent = right === 5 ? "Perfect! You've got networks down." : right >= 3 ? "Nice work. Read the explanations for the ones you missed." : "Read through the explanations, then try again.";
+  const s = document.getElementById("score"); s.hidden = false; s.scrollIntoView({ behavior: "smooth", block: "center" });
+};
+
+document.getElementById("retry").onclick = () => {
+  build(); results = [];
+  document.getElementById("check").disabled = false;
+  document.getElementById("score").hidden = true;
+  document.getElementById("fallback").hidden = true;
+  document.getElementById("copyMsg").textContent = "";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+document.getElementById("copy").onclick = async () => {
+  const name = document.getElementById("name").value.trim() || "(no name)";
+  const right = results.filter((p,i) => p === QUESTIONS[i].answer).length;
+  const text = [`Building a Network Exit Check (CSP Unit 2 Lesson 2)`, `Name: ${name}`, `Score: ${right} / ${QUESTIONS.length}`,
+    ...results.map((p,i) => `Q${i+1}: ${L[p]} ${p === QUESTIONS[i].answer ? "✓" : `✗ (answer: ${L[QUESTIONS[i].answer]})`}`)].join("\n");
+  try { await navigator.clipboard.writeText(text); document.getElementById("copyMsg").textContent = "Copied! Paste it into the Teams assignment."; }
+  catch(e){ const f = document.getElementById("fallback"); f.hidden = false; f.value = text; f.select(); document.getElementById("copyMsg").textContent = "Copy the text in the box (Ctrl+C or ⌘+C), then paste it into Teams."; }
+};
+
+build();
+</script>
+</body>
+</html>
