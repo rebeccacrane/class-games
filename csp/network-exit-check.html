@@ -83,11 +83,9 @@ textarea{width:100%;min-height:120px;font:inherit;padding:8px;border:1px solid v
     <div class="big" id="scoreNum"></div>
     <p id="scoreMsg"></p>
     <div class="row">
-      <button id="copy">Copy my results</button>
       <button id="retry">Try again</button>
     </div>
-    <p class="msg" id="copyMsg"></p>
-    <textarea id="fallback" hidden readonly></textarea>
+    <p class="msg">Take a screenshot of this box and upload it to the assignment in Teams.</p>
   </div>
 </div>
 
@@ -175,19 +173,9 @@ document.getElementById("retry").onclick = () => {
   build(); results = [];
   document.getElementById("check").disabled = false;
   document.getElementById("score").hidden = true;
-  document.getElementById("fallback").hidden = true;
-  document.getElementById("copyMsg").textContent = "";
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
-document.getElementById("copy").onclick = async () => {
-  const name = document.getElementById("name").value.trim() || "(no name)";
-  const right = results.filter((p,i) => p === QUESTIONS[i].answer).length;
-  const text = [`Building a Network Exit Check (CSP Unit 2 Lesson 2)`, `Name: ${name}`, `Score: ${right} / ${QUESTIONS.length}`,
-    ...results.map((p,i) => `Q${i+1}: ${L[p]} ${p === QUESTIONS[i].answer ? "✓" : `✗ (answer: ${L[QUESTIONS[i].answer]})`}`)].join("\n");
-  try { await navigator.clipboard.writeText(text); document.getElementById("copyMsg").textContent = "Copied! Paste it into the Teams assignment."; }
-  catch(e){ const f = document.getElementById("fallback"); f.hidden = false; f.value = text; f.select(); document.getElementById("copyMsg").textContent = "Copy the text in the box (Ctrl+C or ⌘+C), then paste it into Teams."; }
-};
 
 build();
 </script>
