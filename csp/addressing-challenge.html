@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Addressing Challenge</title>
+<style>
+  :root{
+    --bg:#f6f3ec; --card:#ffffff; --ink:#1f2430; --muted:#5b6272; --line:#ddd6c8;
+    --accent:#b8322a; --blue:#2563eb; --ok:#17793f; --okbg:#e5f4ea; --bad:#b42318; --badbg:#fbe9e7;
+    --mine:#eef3ff; --tome:#fff6e0; --sel:#f59e0b;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#16181d; --card:#1f232b; --ink:#e8e9ec; --muted:#a3a9b6; --line:#343a46;
+      --accent:#f07167; --blue:#7aa2ff; --ok:#5fd38d; --okbg:#173325; --bad:#ff8a7a; --badbg:#3a1d1a;
+      --mine:#1e2a45; --tome:#3a3020; --sel:#fbbf24;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16181d; --card:#1f232b; --ink:#e8e9ec; --muted:#a3a9b6; --line:#343a46;
+    --accent:#f07167; --blue:#7aa2ff; --ok:#5fd38d; --okbg:#173325; --bad:#ff8a7a; --badbg:#3a1d1a;
+    --mine:#1e2a45; --tome:#3a3020; --sel:#fbbf24;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header,main{max-width:1000px;margin:0 auto;padding:0 16px}
+  header{padding-top:24px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:2rem;margin:0}
+  .sub{color:var(--muted);margin:2px 0 12px}
+  h2{font-family:Georgia,"Times New Roman",serif;margin:0 0 4px;font-size:1.4rem}
+  h3{margin:0 0 6px;font-size:1rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin:12px 0}
+  .inner{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0}
+  details summary{cursor:pointer;font-weight:600}
+  dl{margin:8px 0 0}
+  dt{font-weight:700;color:var(--accent)}
+  dd{margin:0 0 6px 0}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0}
+  .tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;cursor:pointer}
+  .tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .tabs button .chk{color:var(--ok);font-weight:700}
+  .tabs button.on .chk{color:var(--bg)}
+  .layout{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start;margin-top:10px}
+  @media (max-width:760px){.layout{grid-template-columns:1fr}}
+  .btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .help{color:var(--muted);font-size:.95rem;margin:4px 0 8px;min-height:1.5em}
+  .status{margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--bg);border:1px solid var(--line);min-height:2.6em}
+  .status:empty{display:none}
+  .status.good{background:var(--okbg);border-color:var(--ok)}
+  .status.bad{background:var(--badbg);border-color:var(--bad)}
+  .chat{height:340px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:8px}
+  .msg{padding:6px 9px;border-radius:8px;margin:5px 0;background:var(--card);border:1px solid var(--line)}
+  .msg.mine{background:var(--mine);border-color:var(--blue)}
+  .msg.tome{background:var(--tome);border-color:var(--sel)}
+  .msg .name{display:block;font-weight:700;font-size:.82rem;color:var(--accent)}
+  .at{color:var(--blue);font-weight:600}
+  .msg .who{font-size:.75rem;color:var(--muted);display:block}
+  .typing{color:var(--muted);font-style:italic;font-size:.88rem;min-height:1.4em;margin:4px 2px 0}
+  .note{color:var(--muted);font-style:italic;font-size:.9rem;margin:6px 4px}
+  .empty{color:var(--muted);text-align:center;margin-top:120px}
+  .chip{display:inline-block;padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:.85rem;margin:2px 4px 2px 0;background:var(--bg)}
+  .chip b{font-weight:700}
+  .composer{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-top:10px}
+  .composer .f{display:flex;flex-direction:column;font-size:.85rem;font-weight:600}
+  select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+  select:disabled{opacity:.4}
+  .inline{display:inline-flex;align-items:center;gap:6px;font-weight:400;font-size:.9rem;color:var(--muted);margin:0 0 6px}
+  table{border-collapse:collapse;width:100%;font-size:.95rem}
+  td,th{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:middle}
+  .sched select{width:100%}
+  .busy{color:var(--muted);font-style:italic}
+  ul.goals{list-style:none;padding:0;margin:8px 0}
+  ul.goals li{display:flex;gap:8px;margin:6px 0;align-items:flex-start;font-size:.92rem}
+  ul.goals .mark{flex:0 0 1.2em;font-weight:700}
+  ul.goals li.ok .mark{color:var(--ok)}
+  ul.goals li.no .mark{color:var(--bad)}
+  .done{background:var(--okbg);border:1px solid var(--ok);border-radius:8px;padding:10px;margin-top:12px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .fieldpick{display:flex;flex-wrap:wrap;gap:6px 18px;margin:8px 0}
+  .fieldpick label{display:inline-flex;align-items:center;gap:6px;font-weight:400;margin:0}
+  .bits{font-family:ui-monospace,Menlo,Consolas,monospace;letter-spacing:.04em}
+  .pkt{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:1.05rem;white-space:nowrap}
+  .pkt span{display:inline-block;padding:0 3px;border-radius:4px}
+  .pkt .f1{background:var(--mine)} .pkt .f2{background:var(--tome)}
+  .keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:10px 0}
+  .keys table{font-size:.88rem}
+  .pkts td{padding:6px 4px}
+  .pkts select{font-size:.88rem;padding:4px}
+  .res{font-weight:700;width:1.4em}
+  .res.ok{color:var(--ok)} .res.no{color:var(--bad)}
+  .scroll{overflow-x:auto}
+  label.q{font-weight:600;display:block;margin-top:12px}
+  textarea,input[type=text],input[type=number]{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+  input[type=number]{width:120px}
+  textarea{min-height:70px}
+  .qrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
+  .calc{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .big{font-size:1.15rem;font-weight:700;word-break:break-all}
+  footer{max-width:1000px;margin:0 auto;padding:8px 16px 32px;color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+  <h1>Addressing Challenge</h1>
+  <p class="sub">CSP Unit 2 · Lesson 3: The Need for Addressing</p>
+</header>
+<main>
+  <div class="card">
+    <p style="margin-top:0">You and five classmates (Ana, Ben, Cara, Dev and Eli) each need to meet with every other person once this week. Everyone talks on one shared group channel, and you're busy one day. Your job: get a meeting with all 5 classmates on your schedule.</p>
+    <p>You'll play four weeks. Each week, the rules for sending messages change. Finish all four, then answer the questions at the bottom and turn them in on Teams.</p>
+    <details>
+      <summary>Words to know</summary>
+      <dl>
+        <dt>Broadcast</dt><dd>Sending one message to everyone on a network at the same time.</dd>
+        <dt>Protocol</dt><dd>An agreed-upon set of rules for how computers send and receive messages.</dd>
+        <dt>IP address</dt><dd>A unique number given to every device on the Internet. Computers store it in binary.</dd>
+        <dt>Internet Protocol (IP)</dt><dd>The shared rules every Internet device follows for addressing messages, including where the sender's and receiver's IP addresses go.</dd>
+      </dl>
+    </details>
+  </div>
+
+  <nav class="tabs" id="tabs" aria-label="Weeks"></nav>
+
+  <section class="card">
+    <h2 id="title"></h2>
+    <p id="story" style="margin:4px 0"></p>
+    <div id="play"></div>
+    <div class="status" id="status" aria-live="polite"></div>
+    <div id="why"></div>
+    <div class="row">
+      <button class="btn" id="reset">Start this week over</button>
+      <button class="btn" id="hint">Hint</button>
+      <button class="btn primary" id="next" disabled>Next week →</button>
+    </div>
+  </section>
+
+  <section class="card" id="reflect">
+    <h2>Think about it</h2>
+    <p style="margin:4px 0">Answer in complete sentences. Then take a screenshot, or copy your answers into a document and attach it to the Teams assignment.</p>
+    <label class="q" for="name">Your name</label>
+    <input type="text" id="name" autocomplete="name">
+    <div id="questions"></div>
+    <div class="row"><button class="btn primary" id="copy">Copy my answers</button></div>
+    <textarea id="fallback" hidden readonly style="margin-top:10px;min-height:160px"></textarea>
+    <div class="help" id="copyMsg"></div>
+  </section>
+</main>
+<footer>Your work saves in this browser automatically.</footer>
+
+<script>
+(function(){
+  const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat'];
+  const FULL = {Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday',Sat:'Saturday'};
+  const BOTS = ['Ana','Ben','Cara','Dev','Eli'];
+  const ADDR = {Ana:'001',Ben:'010',You:'011',Cara:'100',Dev:'101',Eli:'110'};
+  const DAYBITS = {Mon:'001',Tue:'010',Wed:'011',Thu:'100',Fri:'101',Sat:'110'};
+  const TYPEBITS = {ASK:'00',YES:'01',NO:'10'};
+  const MOODS = ['😀','😎','🤔','😴','🥳','😬'];
+  const FIELDS = [
+    {id:'from', label:'From (who sent it)'},
+    {id:'to',   label:'To (an @mention, or Everyone)'},
+    {id:'day',  label:'Day(s)'},
+    {id:'ans',  label:'Type (FREE, ASK, YES or NO)'},
+    {id:'time', label:'Time sent'},
+    {id:'mood', label:'Mood emoji'},
+    {id:'len',  label:'Message length'}
+  ];
+  const NEEDED = ['from','to','day','ans'];
+
+  const WEEKS = [
+    {title:'Week 1: A normal group chat', type:'chat',
+     story:'This week works like the group chats you use every day. The app shows who sent each message, and you can @mention someone when a message is just for them. Post when you\'re free, read when everyone else is free, then @mention each classmate to lock in a day. Put each "yes" on your schedule, then click Check with the group.',
+     hint:'Post your free days first so everyone shares theirs. Find a day you and a classmate are both free, then @mention them with that day. Watch for updates: your classmates are booking each other, so their free days shrink as the week fills up.',
+     why:'That felt easy because the app did two jobs for you. It stuck your name on every message (the sender), and your @mention said who the message was for (the receiver). You never had to think about either one. Next week, the app stops doing that.'},
+    {title:'Week 2: The app breaks', type:'chat',
+     story:'Uh oh. The app stopped showing names, and @mentions don\'t work anymore. Every message goes to the whole group with no name attached. Messages can only list days ("Free: Tue, Thu") or answer ("Yes!" / "Can\'t"). Your classmates are still booking each other in the same chat. Try to fill your schedule anyway, then check with the group.',
+     hint:'It\'s supposed to be frustrating! Do your best, click Check with the group, then write down what went wrong and what rules would fix it.',
+     why:'Without names, you couldn\'t tell whose free days were whose. Without @mentions, nobody knew which "Yes!" answered which question, and everyone else\'s plans got mixed in with yours. Keep your list of problems and fixes. You\'ll use it next week.'},
+    {title:'Week 3: Invent a protocol', type:'chat',
+     story:'The app is still broken, but your group can agree on a protocol: a format every message must follow. Choose the fields every message will include. Then schedule all 5 meetings using your protocol. If it doesn\'t work, change it and try again.',
+     hint:'Look back at your Week 2 problems. What did the app used to add to every message for you? What did an @mention do?',
+     why:''},
+    {title:'Week 4: Binary addresses', type:'binary',
+     story:'Real computers don\'t have names like "Ben". They have addresses, which are numbers stored in binary. Every packet starts with the sender\'s and receiver\'s addresses, in the same order, every time. Your address is 011. Decode the inbox, then figure out how many bits an address needs.',
+     hint:'Split each packet into fields: 3 bits for From, 3 bits for To, 3 bits for Day, 2 bits for Type. Look at the To field first. If it isn\'t 011, the packet isn\'t for you.',
+     why:'Every device on the Internet gets a unique IP address, and every packet carries the sender\'s and receiver\'s addresses in the same format. That shared, open format is the Internet Protocol. Because everyone uses the same rules, any device can talk to any other device. More devices need more bits: IPv4 uses 32-bit addresses, and IPv6 uses 128 bits.'}
+  ];
+
+  const QUESTIONS = [
+    'Week 2: What went wrong when the app stopped showing names and @mentions? Describe at least two specific problems.',
+    'Week 3: Which fields did your protocol need in order to work? Were any fields unnecessary? Some messages went to Everyone and some went to one person. Which were which, and why?',
+    'Why must every device on the Internet use the SAME protocol? What would happen if the rules were secret, or different for each company?',
+    'Week 4: Why does every device need a unique IP address? Why did the Internet need to move from 32-bit addresses (IPv4) to 128-bit addresses (IPv6)?'
+  ];
+
+  const BITQS = [
+    {id:'b1', q:'With 3 bits, how many different addresses are possible?', type:'num', a:8,
+     ok:'Right: 2 × 2 × 2 = 8. We used 6 of them.'},
+    {id:'b2', q:'Your class has 15 students. What is the fewest bits that gives every student a unique address?', type:'num', a:4,
+     ok:'Right: 3 bits gives only 8 addresses, and 4 bits gives 16.'},
+    {id:'b3', q:'A school has 1,000 devices. What is the fewest bits that gives every device a unique address?', type:'num', a:10,
+     ok:'Right: 9 bits gives 512 addresses, and 10 bits gives 1,024.'},
+    {id:'b4', q:'IPv4 addresses are 32 bits. About how many addresses is that?', type:'mc',
+     opts:['32','64','about 4.3 million','about 4.3 billion'], a:'about 4.3 billion',
+     ok:'Right: 2³² = 4,294,967,296.'},
+    {id:'b5', q:'About 8 billion people live on Earth, and many have a phone, a laptop and more. Can every device have its own IPv4 address?', type:'mc',
+     opts:['Yes, there are plenty','No, there aren\'t enough'], a:'No, there aren\'t enough',
+     ok:'Right. That\'s why IPv6 uses 128 bits: about 340 undecillion (3.4 × 10³⁸) addresses.'}
+  ];
+
+  const KEY = 'csp-addressing-challenge-v2';
+  const $ = id => document.getElementById(id);
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const dayList = ds => ds.map(d => FULL[d]).join(', ');
+
+  // ---------- world ----------
+  function genWorld(){
+    const busy = pick(DAYS);
+    const free = DAYS.filter(d => d !== busy);
+    const perm = shuffle(free);
+    const bots = {};
+    BOTS.forEach((b, i) => {
+      const extra = shuffle(DAYS.filter(d => d !== perm[i])).slice(0, 1 + Math.floor(Math.random() * 2));
+      const fr = [perm[i]].concat(extra).sort((x, y) => DAYS.indexOf(x) - DAYS.indexOf(y));
+      bots[b] = {free: fr, sol: perm[i], commit: null, knowsSender: true, forMe: true, yesDays: []};
+    });
+    return {busy, bots, log: [], schedule: {}, checked: false, results: null, clock: 0, notes: {}};
+  }
+  function genPackets(){
+    const forMe = shuffle(BOTS).slice(0, 4).map(f => ({from: f, to: 'You', day: pick(DAYS), ans: pick(['ASK','YES','NO'])}));
+    const notMe = [0,1,2,3].map(() => {
+      const f = pick(BOTS); const t = pick(BOTS.filter(b => b !== f));
+      return {from: f, to: t, day: pick(DAYS), ans: pick(['ASK','YES','NO'])};
+    });
+    return shuffle(forMe.concat(notMe));
+  }
+  function freshWeek(i){
+    if (i === 3) return {done: false, packets: genPackets(), pAns: Array.from({length: 8}, () => ({forMe:'', from:'', day:'', ans:''})), pChecked: false, bAns: {}, bChecked: false};
+    const w = {done: false, world: genWorld()};
+    if (i === 1){ w.problems = ''; w.fixes = ''; }
+    if (i === 2){ w.protocol = []; w.locked = false; }
+    return w;
+  }
+
+  let state = {week: 0, weeks: [0,1,2,3].map(freshWeek), answers: QUESTIONS.map(() => ''), name: ''};
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (saved && saved.weeks && saved.weeks.length === 4) state = Object.assign(state, saved);
+  } catch(e) {}
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {} }
+
+  let pending = false, onlyMe = false;
+
+  function protocolFor(i){
+    if (i === 0) return ['from','to','day','ans'];
+    if (i === 1) return ['day','ans'];
+    return state.weeks[2].protocol;
+  }
+
+  // ---------- messages ----------
+  const listDays = ds => ds && ds.length ? ds.join(', ') : 'nothing left';
+  const hasToFor = i => protocolFor(i).includes('to');
+  const at = n => `<span class="at">@${n}</span>`;
+  const TYPE_NOTE = 'Nobody answered. Without a Type field, no one can tell whether a message is a list of free days, a question or an answer.';
+  function plain(m){
+    if (m.ans === 'FREE') return (m.update ? 'Update: now I\'m free ' : 'I\'m free ') + listDays(m.days) + '.';
+    if (m.ans === 'ASK') return `${at(m.to)} ${FULL[m.day]}?`;
+    if (m.ans === 'YES') return `${at(m.to)} Yes, ${FULL[m.day]} works!` + (m.moved ? ` (Moving us from ${FULL[m.moved]}.)` : '');
+    return `${at(m.to)} Sorry, I can't do ${FULL[m.day]}.`;
+  }
+  function short(m){
+    if (m.ans === 'FREE') return 'Free: ' + listDays(m.days);
+    if (m.ans === 'ASK') return `${FULL[m.day]}?`;
+    return m.ans === 'YES' ? 'Yes!' : 'Can\'t';
+  }
+  function clockStr(t){ const mins = 15 * 60 + 2 + t; const h = Math.floor(mins / 60), mm = mins % 60; return `${h > 12 ? h - 12 : h}:${String(mm).padStart(2, '0')} pm`; }
+  function chips(m, P){
+    const out = [];
+    FIELDS.forEach(f => {
+      if (!P.includes(f.id)) return;
+      if (f.id === 'from') out.push(`<span class="chip">From: <b>${m.from}</b></span>`);
+      if (f.id === 'to') out.push(`<span class="chip">To: <b>${m.to === 'all' ? 'Everyone' : (m.to || '???')}</b></span>`);
+      if (f.id === 'day') out.push(m.days ? `<span class="chip">Days: <b>${listDays(m.days)}</b></span>` : `<span class="chip">Day: <b>${m.day}</b></span>`);
+      if (f.id === 'ans') out.push(`<span class="chip">Type: <b>${m.ans}</b></span>`);
+      if (f.id === 'time') out.push(`<span class="chip">Time: ${clockStr(m.t)}</span>`);
+      if (f.id === 'mood') out.push(`<span class="chip">Mood: ${m.mood}</span>`);
+      if (f.id === 'len') out.push(`<span class="chip">Length: ${m.len}</span>`);
+    });
+    return out.length ? out.join('') : '<span class="chip">(empty message)</span>';
+  }
+  function msgHtml(m, i){
+    if (m.kind === 'note') return `<div class="note">${m.text}</div>`;
+    const P = protocolFor(i), mine = m.from === 'You';
+    if (onlyMe && !mine && m.to !== 'You' && m.to !== 'all') return '';
+    let cls = mine ? 'mine' : '', head = mine && i !== 0 ? '<span class="who">you sent this</span>' : '', body;
+    if (i === 0){
+      head = `<span class="name">${m.from}</span>`; body = plain(m);
+      if (m.to === 'You') cls = 'tome';
+    } else if (i === 1){
+      body = short(m);
+    } else {
+      body = chips(m, P);
+      if (m.to === 'You' && P.includes('to')) cls = 'tome';
+    }
+    return `<div class="msg ${cls}">${head}${body}</div>`;
+  }
+  function renderLog(){
+    const el = $('chat'); if (!el) return;
+    const W = state.weeks[state.week].world;
+    const html = W.log.map(m => msgHtml(m, state.week)).join('');
+    el.innerHTML = html || '<div class="empty">No messages yet. Post your free days to get started.</div>';
+    el.scrollTop = el.scrollHeight;
+  }
+  function stamp(m, W){ W.clock++; m.t = W.clock; m.mood = pick(MOODS); m.len = 18 + Math.floor(Math.random() * 30); return m; }
+
+  // Classmates booking each other in the background. They never give away
+  // the day they need for you (sol) or a day they already agreed on with you.
+  function chatter(i, W){
+    const hasTo = hasToFor(i), out = [];
+    const give = (x, d) => { const bt = W.bots[x]; return bt.free.includes(d) && d !== bt.sol && d !== bt.commit; };
+    const cands = [];
+    BOTS.forEach(a => BOTS.forEach(b => { if (a !== b) DAYS.forEach(d => { if (give(a, d) && give(b, d)) cands.push([a, b, d]); }); }));
+    if (cands.length && Math.random() < 0.7){
+      const [a, b, d] = pick(cands);
+      out.push({kind:'msg', from:a, to: hasTo ? b : null, day:d, ans:'ASK'});
+      out.push({kind:'msg', from:b, to: hasTo ? a : null, day:d, ans:'YES', chatYes:b, book:[a, b, d]});
+      out.push({kind:'update', who: pick([a, b])});
+    } else {
+      const a = pick(BOTS), b = pick(BOTS.filter(x => x !== a));
+      const no = DAYS.filter(x => !W.bots[b].free.includes(x));
+      const d = no.length ? pick(no) : pick(DAYS);
+      out.push({kind:'msg', from:a, to: hasTo ? b : null, day:d, ans:'ASK'});
+      out.push({kind:'msg', from:b, to: hasTo ? a : null, day:d, ans:'NO'});
+    }
+    return out;
+  }
+  function setBtns(dis){ ['send','postFree'].forEach(id => { const b = $(id); if (b) b.disabled = dis; }); }
+  // Replies trickle in at random times, like a real chat. Students can keep
+  // sending while replies are still arriving.
+  let active = 0, qid = 0;
+  const typers = new Map();
+  function typerName(i, m){
+    const who = m.from || m.who;
+    if (!who || m.kind === 'note') return null;
+    return (i === 0 || (i === 2 && protocolFor(i).includes('from'))) ? who : 'Someone';
+  }
+  function renderTyping(){
+    const el = $('typing'); if (!el) return;
+    const names = [...new Set(typers.values())];
+    el.textContent = !names.length ? '' : names.length === 1 ? `${names[0]} is typing…` : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} are typing…`;
+  }
+  function setBusy(){ document.body.dataset.busy = active; }
+  function runQueue(i, W, queue){
+    renderLog(); active++; setBusy();
+    const id = ++qid;
+    let n = 0;
+    const finish = () => { active = Math.max(0, active - 1); setBusy(); typers.delete(id); renderTyping(); save(); };
+    (function step(){
+      if (state.week !== i) return finish();
+      if (n >= queue.length) return finish();
+      const next = queue[n];
+      const name = typerName(i, next);
+      if (name) typers.set(id, name); else typers.delete(id);
+      renderTyping();
+      const delay = next.kind === 'note' ? 700 : 900 + Math.random() * 2600;
+      setTimeout(() => {
+        if (state.week !== i) return finish();
+        n++;
+        let m = next;
+        if (m.kind === 'free' || m.kind === 'update')
+          m = {kind:'msg', from:m.who, to: hasToFor(i) ? 'all' : null, days: W.bots[m.who].free.slice(), ans:'FREE', update: m.kind === 'update'};
+        if (m.book){ const [a, b, d] = m.book; [a, b].forEach(x => { W.bots[x].free = W.bots[x].free.filter(y => y !== d); }); }
+        if (m.chatYes && i === 1){ const bb = W.bots[m.chatYes]; if (!bb.yesDays.includes(m.day)) bb.yesDays.push(m.day); }
+        W.log.push(m.kind === 'msg' ? stamp(m, W) : m);
+        typers.delete(id);
+        renderLog(); renderTyping();
+        step();
+      }, delay);
+    })();
+  }
+  function fromNote(i, W, q){
+    if (i === 2 && !protocolFor(i).includes('from') && !W.notes.from){
+      W.notes.from = 1;
+      q.push({kind:'note', text:'No From field, so messages don\'t say who sent them. No one can tell whose message is whose, or reply to the right person.'});
+    }
+  }
+
+  function postFree(){
+    const i = state.week, W = state.weeks[i].world, P = protocolFor(i), has = f => P.includes(f);
+    const mine = {kind:'msg', from:'You', to: has('to') ? 'all' : null, days: has('day') ? DAYS.filter(d => d !== W.busy) : null, ans: has('ans') ? 'FREE' : null};
+    const q = [];
+    if (i === 2 && !has('day')) q.push({kind:'note', text:'Nobody replied. Your post didn\'t include any days, so no one knows when you\'re free.'});
+    else if (i === 2 && !has('ans')) q.push({kind:'note', text:TYPE_NOTE});
+    else { fromNote(i, W, q); shuffle(BOTS).forEach(b => q.push({kind:'free', who:b})); }
+    q.push(...chatter(i, W));
+    W.log.push(stamp(mine, W));
+    runQueue(i, W, q);
+  }
+
+  function send(){
+    const i = state.week, W = state.weeks[i].world, P = protocolFor(i), has = f => P.includes(f);
+    const to = $('cTo') ? $('cTo').value : null;
+    const day = $('cDay') ? $('cDay').value : null;
+    const mine = {kind:'msg', from:'You', to: has('to') ? to : null, day: has('day') ? day : null, ans: has('ans') ? 'ASK' : null};
+    const q = [];
+    const ch = chatter(i, W);
+    if (i === 2 && !has('day')) q.push({kind:'note', text:'Nobody answered. Your message didn\'t say which day, so no one knows what you\'re asking about.'});
+    else if (i === 2 && !has('ans')) q.push({kind:'note', text:TYPE_NOTE});
+    else {
+      const recips = has('to') ? [to] : shuffle(BOTS);
+      if (i === 2 && !has('to') && !W.notes.to){ W.notes.to = 1; q.push({kind:'note', text:'No To field, so every classmate thought your question was for them.'}); }
+      fromNote(i, W, q);
+      recips.forEach((b, k) => {
+        const bot = W.bots[b], free = bot.free.includes(day);
+        const rep = {kind:'msg', from:b, to: has('from') ? 'You' : null, day, ans: free ? 'YES' : 'NO'};
+        if (free){
+          if (i === 1){ if (!bot.yesDays.includes(day)) bot.yesDays.push(day); }
+          else {
+            if (bot.commit && bot.commit !== day && i === 0) rep.moved = bot.commit;
+            bot.commit = day; bot.knowsSender = has('from'); bot.forMe = has('to');
+          }
+        }
+        q.push(rep);
+        if (k === 0) q.push(ch.shift());
+      });
+    }
+    q.push(...ch);
+    W.log.push(stamp(mine, W));
+    runQueue(i, W, q);
+  }
+
+  // ---------- checking ----------
+  function check(){
+    const i = state.week, Wk = state.weeks[i], W = Wk.world, P = protocolFor(i);
+    const res = [];
+    BOTS.forEach(b => {
+      const days = DAYS.filter(d => W.schedule[d] === b), bot = W.bots[b];
+      let ok = false, say;
+      if (!days.length) say = `You didn't put ${b} on your schedule.`;
+      else if (days.length > 1) say = `You put ${b} on ${days.length} days. Pick one.`;
+      else {
+        const d = days[0];
+        if (i === 1){
+          if (bot.yesDays.includes(d)){
+            const others = bot.yesDays.filter(x => x !== d);
+            say = `"I said yes to a '${FULL[d]}?' message, but it didn't say who sent it${others.length ? `. I also said yes to ${dayList(others)} messages` : ''}. I have no idea if I'm meeting you."`;
+          } else say = `"I never said yes to ${FULL[d]}. Whatever 'Yes' you saw, it wasn't from me."`;
+        } else if (bot.commit === d){
+          if (!bot.knowsSender) say = `"I said yes to a ${FULL[d]} message, but it didn't say who it was from. Am I meeting… someone?"`;
+          else if (!bot.forMe) say = `"I answered a ${FULL[d]} message, but it didn't say who it was for. I've been answering everybody's messages, so I'm not sure this meeting is mine."`;
+          else { ok = true; say = `"Yes! See you ${FULL[d]}."`; }
+        } else if (bot.commit && i === 0 || (bot.commit && bot.knowsSender && bot.forMe)) say = `"We agreed on ${FULL[bot.commit]}, not ${FULL[d]}."`;
+        else if (!bot.free.includes(d)) say = `"I can't do ${FULL[d]}. I'm busy."`;
+        else say = `"We never agreed on ${FULL[d]}. Send me a message and ask!"`;
+      }
+      res.push({b, ok, say});
+    });
+    W.results = res; W.checked = true;
+    const n = res.filter(r => r.ok).length;
+    if (i === 1){
+      setStatus(`<b>${n} of 5 meetings confirmed.</b> Now fill in the problems and fixes below.`, 'bad');
+      evalWeek2();
+    } else if (n === 5){
+      Wk.done = true;
+      setStatus('<b>All 5 meetings confirmed!</b> Read the note below, then go on to the next week.', 'good');
+    } else {
+      let msg = `<b>${n} of 5 meetings confirmed.</b> Read what your classmates said on the right.`;
+      if (i === 2){
+        const missing = NEEDED.filter(f => !P.includes(f));
+        if (missing.length) msg += ` Something about your protocol might be the problem. You can change it with the button above the channel.`;
+      }
+      setStatus(msg, 'bad');
+    }
+    save(); render(true);
+  }
+  function evalWeek2(){
+    const Wk = state.weeks[1];
+    const was = Wk.done;
+    Wk.done = !!(Wk.world.checked && Wk.problems.trim() && Wk.fixes.trim());
+    if (Wk.done !== was){ save(); renderTabs(); updateNext(); renderWhy(); }
+  }
+
+  // ---------- rendering ----------
+  function setStatus(msg, kind){ const s = $('status'); s.innerHTML = msg || ''; s.className = 'status' + (kind ? ' ' + kind : ''); }
+  function renderTabs(){
+    $('tabs').innerHTML = WEEKS.map((w, i) =>
+      `<button data-wk="${i}" class="${i === state.week ? 'on' : ''}">Week ${i + 1}${state.weeks[i].done ? ' <span class="chk">✓</span>' : ''}</button>`).join('');
+  }
+  function updateNext(){
+    $('next').disabled = !state.weeks[state.week].done || state.week === 3;
+    $('next').textContent = state.week === 3 ? 'Last week' : 'Next week →';
+  }
+  function week3Why(){
+    const P = state.weeks[2].protocol, extras = P.filter(f => !NEEDED.includes(f));
+    let s = 'Your protocol works because every message says who it\'s from and who it\'s for, the two jobs the app used to do for you. That\'s exactly what the Internet Protocol does: every packet carries the sender\'s address and the receiver\'s address. Notice that free-day posts went To: Everyone (a broadcast), while questions and answers went to one person. Real networks use both kinds of messages.';
+    if (extras.length) s += ` You also included ${extras.map(f => FIELDS.find(x => x.id === f).label.toLowerCase()).join(', ')}. ${extras.length > 1 ? 'Those didn\'t' : 'That didn\'t'} help anyone schedule, and ${extras.length > 1 ? 'they make' : 'it makes'} every message longer. Real protocols keep the header small.`;
+    else s += ' And you didn\'t add any extra fields, so every message stays as short as possible. Real protocols keep the header small, too.';
+    return s;
+  }
+  function renderWhy(){
+    const Wk = state.weeks[state.week];
+    const why = state.week === 2 ? week3Why() : WEEKS[state.week].why;
+    $('why').innerHTML = Wk.done ? `<div class="done"><b>Why it matters:</b> ${why}</div>` : '';
+  }
+
+  function render(keepStatus){
+    const i = state.week, w = WEEKS[i], Wk = state.weeks[i];
+    renderTabs();
+    $('title').textContent = w.title;
+    $('story').textContent = w.story;
+    if (!keepStatus) setStatus('');
+    updateNext(); renderWhy();
+    if (w.type === 'binary') return renderBinary();
+    if (i === 2 && !Wk.locked) return renderBuilder();
+    renderChat();
+  }
+
+  function renderBuilder(){
+    const Wk = state.weeks[2], w2 = state.weeks[1];
+    const notes = (w2.problems || w2.fixes) ? `<div class="help"><b>Your Week 2 notes.</b> Problems: ${esc(w2.problems || '(none)')}<br>Fixes: ${esc(w2.fixes || '(none)')}</div>` : '';
+    $('play').innerHTML = `
+      <div class="inner">
+        <h3>Design your protocol</h3>
+        <p style="margin:0">Check the fields that every message must include. Everyone in your group agrees to follow this format.</p>
+        ${notes}
+        <div class="fieldpick">${FIELDS.map(f => `<label><input type="checkbox" data-field="${f.id}" ${Wk.protocol.includes(f.id) ? 'checked' : ''}> ${f.label}</label>`).join('')}</div>
+        <button class="btn primary" id="lock">Use this protocol</button>
+      </div>`;
+  }
+
+  function renderChat(){
+    const i = state.week, Wk = state.weeks[i], W = Wk.world, P = protocolFor(i);
+    const canFilter = i === 0 || (i === 2 && P.includes('to'));
+    if (!canFilter) onlyMe = false;
+    const showTo = P.includes('to'), showDay = P.includes('day');
+    const proto = i === 2 ? `
+      <div class="inner" style="margin-top:0">
+        <b>Your protocol:</b> ${FIELDS.filter(f => P.includes(f.id)).map(f => `<span class="chip">${f.label}</span>`).join('') || '(no fields)'}
+        <button class="btn" id="unlock" style="margin-left:6px">Change protocol (starts the week over)</button>
+      </div>` : '';
+    const sched = DAYS.map(d => d === W.busy
+      ? `<tr><th>${FULL[d]}</th><td class="busy">You're busy</td></tr>`
+      : `<tr><th>${FULL[d]}</th><td><select data-day="${d}"><option value="">—</option>${BOTS.map(b => `<option ${W.schedule[d] === b ? 'selected' : ''}>${b}</option>`).join('')}</select></td></tr>`).join('');
+    const results = W.results ? `<ul class="goals">${W.results.map(r => `<li class="${r.ok ? 'ok' : 'no'}"><span class="mark">${r.ok ? '✓' : '✗'}</span><span><b>${r.b}:</b> ${r.say}</span></li>`).join('')}</ul>` : '';
+    const w2box = i === 1 ? `
+      <div class="inner">
+        <h3>What went wrong?</h3>
+        <label class="q" for="probs" style="margin-top:4px">Problems you ran into this week</label>
+        <textarea id="probs" placeholder="Example: I got three Yes answers and couldn't tell who sent them.">${esc(Wk.problems)}</textarea>
+        <label class="q" for="fixes">Rules that would fix them</label>
+        <textarea id="fixes">${esc(Wk.fixes)}</textarea>
+        <div class="help">${W.checked ? '' : 'Click <b>Check with the group</b> first, then fill these in to finish the week.'}</div>
+      </div>` : '';
+    $('play').innerHTML = `
+      ${proto}
+      <div class="layout">
+        <div>
+          <h3>Group channel</h3>
+          ${canFilter ? `<label class="inline"><input type="checkbox" id="onlyMe" ${onlyMe ? 'checked' : ''}> Hide messages meant for other people</label>` : ''}
+          <div class="chat" id="chat"></div>
+          <div class="typing" id="typing" aria-live="polite"></div>
+          <div class="composer">
+            <button class="btn" id="postFree">Post my free days</button>
+            ${showTo ? `<div class="f">To<select id="cTo">${BOTS.map(b => `<option value="${b}">@${b}</option>`).join('')}</select></div>` : ''}
+            ${showDay ? `<div class="f">Day<select id="cDay">${DAYS.map(d => `<option value="${d}">${FULL[d]}</option>`).join('')}</select></div>` : ''}
+            <button class="btn primary" id="send">${i === 0 ? 'Send @mention' : showTo ? 'Send question' : 'Ask everyone'}</button>
+          </div>
+          <div class="help">${i === 0 ? 'Post your free days, then @mention a classmate with a day, like "@Ben Thursday?"' : i === 1 ? 'No names and no @mentions. Your question will say only the day, like "Thursday?"' : 'Your messages will include only the fields in your protocol.'}</div>
+        </div>
+        <aside>
+          <h3>Your schedule</h3>
+          <table class="sched">${sched}</table>
+          <div class="row"><button class="btn primary" id="check">Check with the group</button></div>
+          ${results}
+        </aside>
+      </div>
+      ${w2box}`;
+    renderLog();
+  }
+
+  function renderBinary(){
+    const Wk = state.weeks[3];
+    const keyNames = ['Ana','Ben','You','Cara','Dev','Eli'];
+    const sel = (cls, idx, opts, val, dis) => `<select data-p="${idx}" data-k="${cls}" ${dis ? 'disabled' : ''}><option value="">—</option>${opts.map(o => `<option value="${o[0]}" ${val === o[0] ? 'selected' : ''}>${o[1]}</option>`).join('')}</select>`;
+    const rows = Wk.packets.map((p, k) => {
+      const a = Wk.pAns[k], dis = a.forMe !== 'yes';
+      let mark = '';
+      if (Wk.pChecked){ const ok = packetOk(p, a); mark = `<span class="res ${ok ? 'ok' : 'no'}">${ok ? '✓' : '✗'}</span>`; }
+      return `<tr>
+        <td>${k + 1}</td>
+        <td class="pkt"><span class="f1">${ADDR[p.from]}</span> <span class="f2">${ADDR[p.to]}</span> <span>${DAYBITS[p.day]}</span> <span>${TYPEBITS[p.ans]}</span></td>
+        <td>${sel('forMe', k, [['yes','Yes, for me'],['no','No, ignore']], a.forMe, false)}</td>
+        <td>${sel('from', k, BOTS.map(b => [b, b]), a.from, dis)}</td>
+        <td>${sel('day', k, DAYS.map(d => [d, d]), a.day, dis)}</td>
+        <td>${sel('ans', k, [['ASK','ASK'],['YES','YES'],['NO','NO']], a.ans, dis)}</td>
+        <td>${mark}</td></tr>`;
+    }).join('');
+    const bq = BITQS.map(q => {
+      const v = Wk.bAns[q.id] ?? '';
+      let fb = '';
+      if (Wk.bChecked){ const ok = String(v) === String(q.a); fb = `<span class="res ${ok ? 'ok' : 'no'}">${ok ? '✓' : '✗'}</span>${ok ? `<span class="help" style="margin:0">${q.ok}</span>` : ''}`; }
+      const input = q.type === 'num'
+        ? `<input type="number" min="0" data-b="${q.id}" value="${esc(v)}">`
+        : `<select data-b="${q.id}"><option value="">—</option>${q.opts.map(o => `<option ${v === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+      return `<label class="q">${q.q}</label><div class="qrow">${input}${fb}</div>`;
+    }).join('');
+    $('play').innerHTML = `
+      <div class="keys">
+        <div><h3>Addresses</h3><table>${keyNames.map(n => `<tr><td>${n === 'You' ? '<b>You</b>' : n}</td><td class="bits">${n === 'You' ? '<b>011</b>' : ADDR[n]}</td></tr>`).join('')}</table></div>
+        <div><h3>Day codes</h3><table>${DAYS.map(d => `<tr><td>${FULL[d]}</td><td class="bits">${DAYBITS[d]}</td></tr>`).join('')}</table></div>
+        <div><h3>Type codes</h3><table>${Object.keys(TYPEBITS).map(t => `<tr><td>${t}</td><td class="bits">${TYPEBITS[t]}</td></tr>`).join('')}</table>
+          <h3 style="margin-top:10px">Packet format</h3>
+          <div class="pkt"><span class="f1">From</span> <span class="f2">To</span> Day Type</div>
+          <div class="help">3 + 3 + 3 + 2 = 11 bits</div></div>
+      </div>
+      <h3>Your inbox</h3>
+      <p class="help" style="margin-top:0">Every packet on the channel arrives at your computer. For each one, decide whether it's for you. If it is, decode who sent it, the day and the type.</p>
+      <div class="scroll"><table class="pkts">
+        <tr><th>#</th><th>Packet</th><th>For me?</th><th>From</th><th>Day</th><th>Type</th><th></th></tr>
+        ${rows}
+      </table></div>
+      <div class="row"><button class="btn primary" id="checkPk">Check my inbox</button></div>
+      <div class="inner" style="margin-top:16px">
+        <h3>How many bits does an address need?</h3>
+        <p style="margin:0">Each extra bit doubles the number of possible addresses. Try it:</p>
+        <div class="calc" style="margin-top:8px">
+          <input type="number" id="calcBits" min="1" max="128" value="3"> <span>bits →</span>
+          <span class="big" id="calcOut"></span>
+        </div>
+        ${bq}
+        <div class="row"><button class="btn primary" id="checkBits">Check my answers</button></div>
+      </div>`;
+    updateCalc();
+  }
+  function packetOk(p, a){
+    if (p.to !== 'You') return a.forMe === 'no';
+    return a.forMe === 'yes' && a.from === p.from && a.day === p.day && a.ans === p.ans;
+  }
+  function updateCalc(){
+    const el = $('calcBits'); if (!el) return;
+    let n = Math.max(1, Math.min(128, parseInt(el.value, 10) || 1));
+    const v = (2n ** BigInt(n)).toLocaleString('en-US');
+    $('calcOut').textContent = `${v} addresses`;
+  }
+  function evalWeek4(){
+    const Wk = state.weeks[3];
+    const pk = Wk.packets.every((p, k) => packetOk(p, Wk.pAns[k]));
+    const bits = BITQS.every(q => String(Wk.bAns[q.id] ?? '') === String(q.a));
+    const pkN = Wk.packets.filter((p, k) => packetOk(p, Wk.pAns[k])).length;
+    const bN = BITQS.filter(q => String(Wk.bAns[q.id] ?? '') === String(q.a)).length;
+    Wk.done = pk && bits && Wk.pChecked && Wk.bChecked;
+    return {pkN, bN, pk, bits};
+  }
+
+  // ---------- events ----------
+  const play = $('play');
+  play.addEventListener('click', ev => {
+    const t = ev.target;
+    if (t.id === 'send') send();
+    else if (t.id === 'postFree') postFree();
+    else if (t.id === 'check') check();
+    else if (t.id === 'lock'){
+      const Wk = state.weeks[2];
+      const P = [...play.querySelectorAll('[data-field]')].filter(c => c.checked).map(c => c.dataset.field);
+      if (!P.length){ setStatus('Pick at least one field.', 'bad'); return; }
+      Wk.protocol = P; Wk.locked = true; Wk.world = genWorld(); Wk.done = false;
+      save(); render();
+      setStatus('Protocol set. Now schedule your meetings. Watch what the messages look like.');
+    }
+    else if (t.id === 'unlock'){
+      const Wk = state.weeks[2]; Wk.locked = false; Wk.done = false; Wk.world = genWorld(); pending = false; save(); render();
+    }
+    else if (t.id === 'checkPk'){
+      const Wk = state.weeks[3]; Wk.pChecked = true;
+      const r = evalWeek4(); save(); render(true);
+      if (Wk.done) setStatus('<b>Week 4 complete!</b> Now answer the questions at the bottom of the page.', 'good');
+      else setStatus(r.pk ? `<b>Inbox: 8 of 8 correct!</b>${Wk.bChecked ? '' : ' Now answer the bits questions.'}` : `<b>Inbox: ${r.pkN} of 8 correct.</b> Fix the rows marked ✗ and check again.`, r.pk ? 'good' : 'bad');
+    }
+    else if (t.id === 'checkBits'){
+      const Wk = state.weeks[3]; Wk.bChecked = true;
+      const r = evalWeek4(); save(); render(true);
+      if (Wk.done) setStatus('<b>Week 4 complete!</b> Now answer the questions at the bottom of the page.', 'good');
+      else setStatus(r.bits ? `<b>Bits questions: 5 of 5 correct!</b>${Wk.pChecked ? '' : ' Now check your inbox.'}` : `<b>Bits questions: ${r.bN} of 5 correct.</b> Use the calculator and try again.`, r.bits ? 'good' : 'bad');
+    }
+  });
+  play.addEventListener('change', ev => {
+    const t = ev.target, Wk = state.weeks[state.week];
+    if (t.dataset.day){ Wk.world.schedule[t.dataset.day] = t.value; save(); }
+    else if (t.id === 'onlyMe'){ onlyMe = t.checked; renderLog(); }
+    else if (t.dataset.p !== undefined){
+      const a = Wk.pAns[+t.dataset.p]; a[t.dataset.k] = t.value;
+      if (t.dataset.k === 'forMe'){ save(); render(true); return; }
+      save();
+    }
+    else if (t.dataset.b){ Wk.bAns[t.dataset.b] = t.value; save(); }
+  });
+  play.addEventListener('input', ev => {
+    const t = ev.target, Wk = state.weeks[state.week];
+    if (t.id === 'probs'){ Wk.problems = t.value; save(); evalWeek2(); }
+    else if (t.id === 'fixes'){ Wk.fixes = t.value; save(); evalWeek2(); }
+    else if (t.id === 'calcBits') updateCalc();
+    else if (t.dataset.b && t.type === 'number'){ Wk.bAns[t.dataset.b] = t.value; save(); }
+  });
+
+  $('tabs').addEventListener('click', ev => { const b = ev.target.closest('button'); if (b) goWeek(+b.dataset.wk); });
+  function goWeek(i){
+    state.week = i; pending = false; typers.clear(); onlyMe = false; save(); render();
+    window.scrollTo({top: $('tabs').offsetTop - 8, behavior: 'smooth'});
+  }
+  $('next').onclick = () => { if (state.week < 3) goWeek(state.week + 1); };
+  $('reset').onclick = () => {
+    const i = state.week, old = state.weeks[i];
+    const fresh = freshWeek(i);
+    if (i === 1){ fresh.problems = old.problems; fresh.fixes = old.fixes; }
+    state.weeks[i] = fresh; pending = false; save(); render();
+  };
+  $('hint').onclick = () => setStatus('<b>Hint:</b> ' + WEEKS[state.week].hint);
+
+  // ---------- reflection ----------
+  $('questions').innerHTML = QUESTIONS.map((q, i) => `<label class="q" for="q${i}">${i + 1}. ${q}</label><textarea id="q${i}"></textarea>`).join('');
+  QUESTIONS.forEach((_, i) => {
+    const ta = $('q' + i); ta.value = state.answers[i] || '';
+    ta.addEventListener('input', () => { state.answers[i] = ta.value; save(); });
+  });
+  $('name').value = state.name || '';
+  $('name').addEventListener('input', e => { state.name = e.target.value; save(); });
+
+  $('copy').onclick = async () => {
+    const w2 = state.weeks[1], w3 = state.weeks[2], r4 = evalWeek4();
+    const lines = [
+      'Addressing Challenge (CSP Unit 2 Lesson 3)',
+      'Name: ' + (state.name || '(no name)'),
+      'Weeks completed: ' + WEEKS.map((_, i) => `${i + 1}${state.weeks[i].done ? ' ✓' : ' ✗'}`).join(', '),
+      '',
+      'Week 2 problems: ' + (w2.problems || '(none)'),
+      'Week 2 fixes: ' + (w2.fixes || '(none)'),
+      'Week 3 protocol fields: ' + (w3.protocol.length ? FIELDS.filter(f => w3.protocol.includes(f.id)).map(f => f.label).join(', ') : '(not set)'),
+      `Week 4: inbox ${r4.pkN}/8 correct, bits questions ${r4.bN}/5 correct`,
+      ''
+    ];
+    QUESTIONS.forEach((q, i) => { lines.push(`${i + 1}. ${q}`); lines.push(state.answers[i] || '(no answer)'); lines.push(''); });
+    const text = lines.join('\n');
+    try { await navigator.clipboard.writeText(text); $('copyMsg').textContent = 'Copied! Paste it into a document and attach it to the Teams assignment.'; $('fallback').hidden = true; }
+    catch(e){ const f = $('fallback'); f.hidden = false; f.value = text; f.focus(); f.select(); $('copyMsg').textContent = 'Copy the text in the box above (Ctrl+C or ⌘+C), then paste it into a document and attach it to the Teams assignment.'; }
+  };
+
+  save();
+  render();
+})();
+</script>
+</body>
+</html>
