@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trace the Internet</title>
+<style>
+  :root{
+    --bg:#f6f3ec; --card:#ffffff; --ink:#1f2430; --muted:#5b6272; --line:#ddd6c8;
+    --accent:#b8322a; --blue:#2563eb; --ok:#17793f; --okbg:#e5f4ea;
+    --term:#23272f; --termink:#e6e6e6;
+    --c1:#7dd3fc; --c2:#a7f3d0; --c3:#fcd34d; --c4:#fca5a5; --c5:#f0abfc; --c6:#c4b5fd;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#16181d; --card:#1f232b; --ink:#e8e9ec; --muted:#a3a9b6; --line:#343a46;
+      --accent:#f07167; --blue:#7aa2ff; --ok:#5fd38d; --okbg:#173325; --term:#0f1115;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16181d; --card:#1f232b; --ink:#e8e9ec; --muted:#a3a9b6; --line:#343a46;
+    --accent:#f07167; --blue:#7aa2ff; --ok:#5fd38d; --okbg:#173325; --term:#0f1115;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header,main{max-width:1000px;margin:0 auto;padding:0 16px}
+  header{padding-top:24px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:2rem;margin:0}
+  .sub{color:var(--muted);margin:2px 0 12px}
+  h2{font-family:Georgia,"Times New Roman",serif;margin:0 0 6px;font-size:1.4rem}
+  h3{margin:14px 0 6px;font-size:1.05rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+  .step{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:0 10px;font-size:.85rem;font-weight:700;margin-right:6px;vertical-align:middle}
+  details summary{cursor:pointer;font-weight:600}
+  dl{margin:8px 0 0} dt{font-weight:700;color:var(--accent)} dd{margin:0 0 6px 0}
+  .os{display:flex;gap:6px;margin:8px 0 12px}
+  .os button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer}
+  .os button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  [data-os]{display:none}
+  body.mac [data-os="mac"], body.win [data-os="win"]{display:block}
+  body.mac span[data-os="mac"], body.win span[data-os="win"]{display:inline}
+  .cmd[data-os]{display:none}
+  body.mac .cmd[data-os="mac"], body.win .cmd[data-os="win"]{display:flex}
+  ol li, ul li{margin:4px 0}
+  kbd{font:600 .85rem ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--bg)}
+  code{font:.92rem ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:0 4px}
+  .cmd{display:flex;align-items:center;gap:8px;background:var(--term);color:var(--termink);border-radius:8px;padding:8px 10px;margin:8px 0;font:1rem ui-monospace,Menlo,Consolas,monospace;flex-wrap:wrap}
+  .cmd .p{color:#8b93a5}
+  .cmd .t{flex:1;min-width:200px}
+  .cmd button{border:1px solid #4b5262;background:#323844;color:#fff;border-radius:6px;padding:3px 10px;font:600 .8rem system-ui,sans-serif;cursor:pointer}
+  pre.term{background:var(--term);color:var(--termink);border-radius:10px;padding:12px 14px;overflow-x:auto;font:.82rem/1.5 ui-monospace,Menlo,Consolas,monospace;margin:8px 0}
+  pre.term .g1{color:var(--c1)} pre.term .g2{color:var(--c2)} pre.term .g3{color:var(--c3)}
+  pre.term .g4{color:var(--c4)} pre.term .g5{color:var(--c5)} pre.term .g6{color:var(--c6)}
+  .dim{color:#8b93a5}
+  .key{list-style:none;padding:0;margin:10px 0}
+  .key li{display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+  .sw{flex:0 0 14px;height:14px;border-radius:3px;margin-top:5px;border:1px solid rgba(0,0,0,.2)}
+  .notice{background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:8px;padding:10px 12px;margin:10px 0}
+  .task{border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
+  .task:first-of-type{border-top:0;margin-top:4px;padding-top:0}
+  label.q{font-weight:600;display:block;margin-top:10px}
+  textarea,input[type=text]{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+  textarea{min-height:64px}
+  .btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .help{color:var(--muted);font-size:.93rem;margin:4px 0}
+  .shot{display:inline-block;background:var(--okbg);border:1px solid var(--ok);color:var(--ink);border-radius:6px;padding:1px 8px;font-size:.85rem;font-weight:600}
+  footer{max-width:1000px;margin:0 auto;padding:8px 16px 32px;color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body class="mac">
+<header>
+  <h1>Trace the Internet</h1>
+  <p class="sub">CSP Unit 2 · Lesson 4: Routers and Redundancy</p>
+</header>
+<main>
+  <div class="card">
+    <p style="margin-top:0">When you load a website, your message doesn't go straight there. It hops from router to router, maybe through a dozen of them, sometimes across an ocean. Your computer has a built-in tool called <b>traceroute</b> that shows you every router on the way. Today you'll use it to see the real Internet's routers for yourself.</p>
+    <p><b>How it works:</b> Traceroute sends test messages that are only allowed to go a certain number of hops: 1 hop, then 2, then 3, and so on. When a message runs out of hops, the router holding it sends back a reply: "I'm here, and here's my address." Each line of the output is one of those replies.</p>
+    <p style="margin-bottom:0"><b>Time:</b> about 20–30 minutes. <b>You'll turn in:</b> 4 screenshots and your answers.</p>
+    <details style="margin-top:10px">
+      <summary>Words to know</summary>
+      <dl>
+        <dt>Router</dt><dd>A device that receives a message, reads its destination address, and sends it one step closer to where it's going.</dd>
+        <dt>Hop</dt><dd>One step from one router to the next.</dd>
+        <dt>Round-trip time</dt><dd>How long a message takes to get somewhere and for the reply to come back. Measured in milliseconds (ms). 1,000 ms = 1 second.</dd>
+        <dt>Redundancy</dt><dd>Having more than one path, so there's a backup if one fails.</dd>
+        <dt>Fault tolerant</dt><dd>Able to keep working even when part of the system fails.</dd>
+      </dl>
+    </details>
+  </div>
+
+  <section class="card">
+    <h2><span class="step">Step 1</span>Open your terminal</h2>
+    <p style="margin:0">Which kind of computer are you using?</p>
+    <div class="os" id="osPick">
+      <button data-pick="mac" class="on">Mac</button>
+      <button data-pick="win">Windows</button>
+    </div>
+    <div data-os="mac">
+      <ol>
+        <li>Press <kbd>⌘ Command</kbd> + <kbd>Space</kbd> to open Spotlight.</li>
+        <li>Type <b>Terminal</b> and press <kbd>Return</kbd>.</li>
+        <li>A window opens with a line ending in <code>%</code> or <code>$</code>. That's where you type commands.</li>
+      </ol>
+      <p class="help">To stop a trace early, press <kbd>Control</kbd> + <kbd>C</kbd>. To take a screenshot of the Terminal window, press <kbd>⌘ Command</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd>, then press <kbd>Space</kbd> and click the window.</p>
+    </div>
+    <div data-os="win">
+      <ol>
+        <li>Click the <b>Start</b> button (or press the <kbd>⊞ Windows</kbd> key).</li>
+        <li>Type <b>cmd</b> and click <b>Command Prompt</b>.</li>
+        <li>A black window opens with a line ending in <code>&gt;</code>. That's where you type commands.</li>
+      </ol>
+      <p class="help">To stop a trace early, press <kbd>Ctrl</kbd> + <kbd>C</kbd>. To take a screenshot, press <kbd>⊞ Windows</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> and drag around the window.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">Step 2</span>Learn to read a trace</h2>
+    <p style="margin-top:0">Here's a real trace from a laptop in the Seattle area to <b>www.wide.ad.jp</b>, a website in Tokyo, Japan. The colors match the notes below it.</p>
+<pre class="term"><span class="dim">% traceroute www.wide.ad.jp
+traceroute to www.wide.ad.jp (203.178.139.57), 64 hops max, 40 byte packets</span>
+<span class="g1"> 1  192.168.1.1 (192.168.1.1)  5.784 ms  2.252 ms  4.422 ms</span>
+<span class="g2"> 2  100.92.122.123 (100.92.122.123)  15.506 ms
+    100.92.122.122 (100.92.122.122)  17.038 ms  15.836 ms
+ 3  po-72-rur502.seattle.wa.seattle.comcast.net (68.85.144.121)  16.995 ms
+    po-72-rur501.seattle.wa.seattle.comcast.net (68.85.144.113)  17.701 ms
+    po-72-rur502.seattle.wa.seattle.comcast.net (68.85.144.121)  29.887 ms
+ 4  po-2-rur502.seattle.wa.seattle.comcast.net (96.216.66.42)  12.321 ms
+    po-500-xar02.seattle.wa.seattle.comcast.net (96.216.66.85)  84.975 ms
+    po-2-rur502.seattle.wa.seattle.comcast.net (96.216.66.42)  19.544 ms
+ 5  be-304-arsc1.seattle.wa.seattle.comcast.net (69.139.160.249)  15.748 ms  17.426 ms
+    po-500-xar02.seattle.wa.seattle.comcast.net (96.216.66.85)  12.490 ms
+ 6  be-36131-cs03.seattle.wa.ibone.comcast.net (68.86.93.9)  22.386 ms
+    be-304-arsc1.seattle.wa.seattle.comcast.net (69.139.160.249)  14.824 ms
+    be-36121-cs02.seattle.wa.ibone.comcast.net (68.86.93.5)  16.010 ms
+ 7  be-36131-cs03.seattle.wa.ibone.comcast.net (68.86.93.9)  8.958 ms *
+    be-36141-cs04.seattle.wa.ibone.comcast.net (68.86.93.13)  41.641 ms</span>
+<span class="g3"> 8  ae-9.a02.sttlwa01.us.bb.gin.ntt.net (129.250.66.105)  15.627 ms *  13.491 ms
+ 9  ae-9.a02.sttlwa01.us.bb.gin.ntt.net (129.250.66.105)  23.068 ms *  23.422 ms</span>
+<span class="g4">10  * * *</span>
+<span class="g5">11  ae-1.a05.tokyjp05.jp.bb.gin.ntt.net (129.250.5.191)  152.876 ms *  173.702 ms
+12  ae-1.a05.tokyjp05.jp.bb.gin.ntt.net (129.250.5.191)  115.971 ms
+    ge-1-1-12.a05.tokyjp05.jp.ce.gin.ntt.net (61.213.145.46)  102.889 ms
+    ae-1.a05.tokyjp05.jp.bb.gin.ntt.net (129.250.5.191)  123.198 ms</span>
+<span class="g6">13  ve61.juniper1.otemachi.wide.ad.jp (203.178.136.117)  109.567 ms  120.482 ms
+    ge-1-1-12.a05.tokyjp05.jp.ce.gin.ntt.net (61.213.145.46)  101.761 ms
+14  www.wide.ad.jp (203.178.139.57)  144.829 ms
+    ve61.juniper1.otemachi.wide.ad.jp (203.178.136.117)  108.486 ms
+    www.wide.ad.jp (203.178.139.57)  121.118 ms</span></pre>
+
+    <p class="help">Each numbered line is one hop. Traceroute tests every hop 3 times, so each line has room for 3 results. Each one is either a time in ms (a router replied) or a <code>*</code> (no reply in time).</p>
+
+    <ul class="key">
+      <li><span class="sw" style="background:var(--c1)"></span><span><b>Hop 1: your home router.</b> Every message you send goes here first. Addresses starting with <code>192.168</code> are only used inside home networks. Millions of homes use this same address. Only ~2–5 ms away.</span></li>
+      <li><span class="sw" style="background:var(--c2)"></span><span><b>Hops 2–7: your Internet provider.</b> This home uses Comcast. The router names include <code>seattle.wa</code>, so you can tell where they are. Engineers name their routers, so the names are often clues. Still only ~15 ms.</span></li>
+      <li><span class="sw" style="background:var(--c3)"></span><span><b>Hops 8–9: a handoff to another company.</b> Comcast doesn't go to Japan, so in Seattle (<code>sttlwa01</code>) it hands the message to NTT, a company with a worldwide network. The Internet is a <i>network of networks</i>: companies pass messages to each other.</span></li>
+      <li><span class="sw" style="background:var(--c4)"></span><span><b>Hop 10: <code>* * *</code>, no reply.</b> This router didn't answer any of the 3 tests. Many routers ignore traceroute or answer it last, because forwarding real messages is their actual job. The message still got through. How do we know? Hop 11 answered, and to get there the message had to pass through hop 10.</span></li>
+      <li><span class="sw" style="background:var(--c5)"></span><span><b>Hops 11–12: Tokyo!</b> (<code>tokyjp05</code>) The time jumped from ~23 ms to over 100 ms. That jump is the message crossing the Pacific Ocean through an undersea cable, about 7,700 km.</span></li>
+      <li><span class="sw" style="background:var(--c6)"></span><span><b>Hops 13–14: the destination.</b> The website's own network in Otemachi, a Tokyo neighborhood full of Internet equipment, then the website itself at hop 14.</span></li>
+    </ul>
+
+    <div class="notice">
+      <b>Three more things to notice:</b>
+      <ol style="margin:6px 0 0">
+        <li><b>Some hops show 2 or 3 different routers.</b> Look at hops 3–7 and 12–14. Different tests took different paths! That's <b>redundancy</b>: the network has several routes and spreads messages across them. If one router failed, messages would take another path. That's what makes the Internet <b>fault tolerant</b>.</li>
+        <li><b>Times don't always go up.</b> Hop 11 shows 152 ms, but hop 12 shows 102 ms even though it's farther. Routers answer traceroute after their real work, so one reply can be slow. Look for the overall pattern, not single numbers. (Same with the random 84.975 ms at hop 4.)</li>
+        <li><b>The math checks out.</b> Light in fiber-optic cable travels about 200,000 km per second. Seattle to Tokyo and back is about 15,400 km, so the trip should take at least 77 ms. The trace shows ~100–120 ms, because cables don't run in a straight line and every router adds a little time.</li>
+      </ol>
+    </div>
+
+    <div data-os="win">
+      <h3>On Windows, it looks a little different</h3>
+      <p style="margin:0">Windows lists the 3 times first, then the router. It shows only one router per hop, and <code>* * *</code> appears as <b>Request timed out.</b> A Windows trace starts like this:</p>
+<pre class="term"><span class="dim">C:\&gt; tracert www.wide.ad.jp
+
+Tracing route to www.wide.ad.jp [203.178.139.57]
+over a maximum of 30 hops:</span>
+<span class="g1">  1     5 ms     2 ms     4 ms  192.168.1.1</span>
+<span class="g2">  2    15 ms    17 ms    15 ms  100.92.122.123
+  3    16 ms    17 ms    29 ms  po-72-rur502.seattle.wa.seattle.comcast.net [68.85.144.121]</span>
+<span class="dim">  ...</span>
+<span class="g4"> 10     *        *        *     Request timed out.</span></pre>
+      <p class="help">Windows looks up every router's name, so it's slower. A trace can take a minute or two. Be patient!</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">Step 3</span>Run your own traces</h2>
+    <p style="margin-top:0">Type each command, press <span data-os="mac"><kbd>Return</kbd></span><span data-os="win"><kbd>Enter</kbd></span>, and wait for it to finish. Take a screenshot of each one, then answer the questions. Your answers save in this browser as you type.</p>
+    <div id="tasks"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">Step 4</span>Turn it in</h2>
+    <p style="margin-top:0">Attach your <b>4 screenshots</b> to the Teams assignment. For your answers, take a screenshot, or click <b>Copy my answers</b> and paste them into a document, then attach it to the Teams assignment.</p>
+    <label class="q" for="name">Your name</label>
+    <input type="text" id="name" autocomplete="name">
+    <div class="row"><button class="btn primary" id="copy">Copy my answers</button></div>
+    <textarea id="fallback" hidden readonly style="margin-top:10px;min-height:160px"></textarea>
+    <div class="help" id="copyMsg"></div>
+  </section>
+</main>
+<footer>Your answers save in this browser automatically.</footer>
+
+<script>
+(function(){
+  const TASKS = [
+    {title:'Trace 1: Google', target:'google.com', shot:true,
+     intro:'Start with a site everyone uses.',
+     qs:['How many hops did it take to reach Google?',
+         'What is the address at hop 1? What is that device?',
+         'Look at the router names. At which hop do you first see your Internet provider\'s name? Which company is it? (If the names are only numbers, say so.)']},
+    {title:'Trace 2: Google again', target:'google.com', shot:true,
+     intro:'Wait a minute, then run the exact same command again.',
+     qs:['Compare it to Trace 1. Did your messages take exactly the same path? Describe anything that changed: different routers, a different number of hops, or different times.']},
+    {title:'Trace 3: Wikipedia', target:'wikipedia.org', shot:true,
+     intro:'Now trace a different website.',
+     qs:['Compare it to your Google trace. Which hops were the same? At which hop did the two paths split apart?',
+         'Why do you think the first few hops were the same for both websites?']},
+    {title:'Trace 4: Japan', target:'www.wide.ad.jp', shot:true,
+     intro:'Now the long trip: a website in Tokyo. (Look back at the example in Step 2.)',
+     qs:['Find the big jump in time. Between which two hops did it happen, and about how many ms was it before and after?',
+         'What do you think physically happened to your message during that jump?']},
+    {title:'Wrap up', target:null, shot:false,
+     intro:'Use your own traces as evidence.',
+     qs:['Did any of your traces have a * or "Request timed out"? What does it mean? How can you tell whether your message still reached its destination?',
+         'Why does having many possible paths (redundancy) make the Internet more reliable? Point to something in your traces as evidence: a hop with more than one router, or a path that changed between Trace 1 and Trace 2.']}
+  ];
+  const KEY = 'csp-trace-the-internet-v1';
+  let state = {os: /Win/i.test(navigator.platform || navigator.userAgent) ? 'win' : 'mac', answers:{}, name:''};
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) state = Object.assign(state, s); } catch(e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {} };
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function setOS(os){
+    state.os = os; save();
+    document.body.classList.toggle('mac', os === 'mac');
+    document.body.classList.toggle('win', os === 'win');
+    document.querySelectorAll('#osPick button').forEach(b => b.classList.toggle('on', b.dataset.pick === os));
+  }
+  $('osPick').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setOS(b.dataset.pick); });
+
+  let n = 0;
+  $('tasks').innerHTML = TASKS.map((t, ti) => {
+    const cmd = t.target ? `
+      <div class="cmd" data-os="mac"><span class="p">%</span><span class="t">traceroute ${t.target}</span><button data-copy="traceroute ${t.target}">Copy</button></div>
+      <div class="cmd" data-os="win"><span class="p">&gt;</span><span class="t">tracert ${t.target}</span><button data-copy="tracert ${t.target}">Copy</button></div>` : '';
+    const qs = t.qs.map((q, qi) => { n++; const id = `a${ti}_${qi}`; return `<label class="q" for="${id}">${n}. ${q}</label><textarea id="${id}" data-a="${id}">${esc(state.answers[id] || '')}</textarea>`; }).join('');
+    return `<div class="task"><h3>${t.title} ${t.shot ? '<span class="shot">📸 screenshot</span>' : ''}</h3><p class="help">${t.intro}</p>${cmd}${qs}</div>`;
+  }).join('');
+
+  $('tasks').addEventListener('input', e => { const a = e.target.dataset.a; if (a){ state.answers[a] = e.target.value; save(); } });
+  $('tasks').addEventListener('click', async e => {
+    const b = e.target.closest('[data-copy]'); if (!b) return;
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied!'; }
+    catch(err){ b.textContent = 'Type it'; }
+    setTimeout(() => { b.textContent = 'Copy'; }, 1500);
+  });
+  $('name').value = state.name || '';
+  $('name').addEventListener('input', e => { state.name = e.target.value; save(); });
+
+  $('copy').onclick = async () => {
+    const lines = ['Trace the Internet (CSP Unit 2 Lesson 4)', 'Name: ' + (state.name || '(no name)'), 'Computer: ' + (state.os === 'win' ? 'Windows' : 'Mac'), ''];
+    let k = 0;
+    TASKS.forEach((t, ti) => {
+      lines.push('— ' + t.title + ' —');
+      t.qs.forEach((q, qi) => { k++; lines.push(`${k}. ${q}`); lines.push(state.answers[`a${ti}_${qi}`] || '(no answer)'); lines.push(''); });
+    });
+    const text = lines.join('\n');
+    try { await navigator.clipboard.writeText(text); $('copyMsg').textContent = 'Copied! Paste it into a document and attach it to the Teams assignment with your screenshots.'; $('fallback').hidden = true; }
+    catch(e){ const f = $('fallback'); f.hidden = false; f.value = text; f.focus(); f.select(); $('copyMsg').textContent = 'Copy the text in the box above (Ctrl+C or ⌘+C), then paste it into a document and attach it to the Teams assignment.'; }
+  };
+
+  setOS(state.os);
+})();
+</script>
+</body>
+</html>
