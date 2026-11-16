@@ -118,7 +118,7 @@
 </header>
 <main>
   <div class="card">
-    <p style="margin-top:0">Big messages don't travel across the Internet in one piece. They're chopped into small <b>packets</b>, and each packet finds its own way through the routers. In this activity, each packet holds just <b>8 characters</b>. That's the same limit as Code.org's Internet Simulator. (Real packets hold more, but the problems are the same.) Finish all 3 levels, then answer the questions at the bottom and paste your answers into Teams.</p>
+    <p style="margin-top:0">Big messages don't travel across the Internet in one piece. They're chopped into small <b>packets</b>, and each packet finds its own way through the routers. In this activity, each packet holds just <b>8 characters</b>. That's the same limit as Code.org's Internet Simulator. (Real packets hold more, but the problems are the same.) Finish all 3 levels, then answer the questions at the bottom and turn them in on Teams.</p>
     <details>
       <summary>Words to know</summary>
       <dl>
@@ -158,7 +158,12 @@
 
   <section class="card" id="reflect">
     <h2>Think about it</h2>
-    <p style="margin:4px 0">Answer in complete sentences, then click <b>Copy my answers</b> and paste into the Teams assignment.</p>
+    <p style="margin:4px 0">Answer in complete sentences. Then turn in your answers <b>one</b> of these ways:</p>
+    <ul style="margin:4px 0">
+      <li>Take a screenshot of your answers and attach it to the Teams assignment.</li>
+      <li>Click <b>Copy my answers</b> and paste them into the blank document in the Teams assignment.</li>
+      <li>Paste them into your own document and upload it to the Teams assignment.</li>
+    </ul>
     <label for="name">Your name</label>
     <input type="text" id="name" autocomplete="name">
     <div id="questions"></div>
@@ -186,9 +191,9 @@
      hint:'Keep pressing Send. Watch the order the packets arrive in, and watch for any that never make it.',
      why:'Sending packets with no checking is basically <b>UDP</b>. It\'s simple and fast, but packets can arrive out of order or not at all, and the receiver has no way to know. A person might guess the message from context. A computer can\'t.'},
     {title:'Level 2: Design a protocol', type:'tcp',
-     story:'Now you make the rules. Choose what goes in each packet and what the receiver does, then run all 4 tests. Your protocol has to pass every test with the same settings. Careful: anything you add to a packet takes up some of its 8 characters.',
-     hint:'Try each test with nothing checked first, and read what goes wrong. Each problem needs a different fix. To notice a packet missing from the <i>end</i>, the receiver has to know how many packets to expect.',
-     why:'Your protocol works like <b>TCP</b>: number every packet, include the total, ask for missing packets, and confirm when everything arrived. That\'s why your web pages and email arrive complete. The cost is extra metadata and extra messages going back and forth, which makes TCP slower than UDP. (Real TCP also resends automatically if a "got it" never comes back.)'},
+     story:'Now you make the rules. Answer the 4 questions on the right to build your protocol, then run all 4 tests. To pass a test, the message has to arrive correctly in 3 seconds or less, using no more than 8 packets (counting packets going both ways). Every option has a cost, and some options that sound safe won\'t pass.',
+     hint:'Run the tests with nothing chosen first, and read what goes wrong. Each test breaks in a different way. If the message arrives but the test still fails, look at the time and the packet count.',
+     why:'There\'s more than one way to build a reliable protocol, and every way has a cost: extra metadata in each packet, extra packets on the network, or extra waiting. Real <b>TCP</b> numbers its data, marks the end of the message, and uses replies to confirm what arrived and resend what didn\'t. It sends many packets at a time instead of waiting after each one, so it\'s reliable without being painfully slow. <b>UDP</b> skips all of that to be fast.'},
     {title:'Level 3: Pick the protocol', type:'sort',
      story:'Real apps choose the protocol that fits the job. TCP is reliable but slower. UDP is fast but some packets get lost. For each app, choose TCP or UDP.',
      hint:'Ask yourself: if a few packets went missing, would this be ruined, or would you barely notice? And does it have to happen right now, live?',
@@ -215,17 +220,17 @@
 
   const QUESTIONS = [
     'Level 1: Describe two different things that went wrong when you sent your message with no protocol. Why can\'t the receiving computer fix them on its own?',
-    'Level 2: Which part of your protocol fixed which test? Explain why Test 3 (lost at the end) needed the total number of packets.',
-    'Level 2: Your extra information took space away from the message itself. What was the tradeoff? Use the words packet and metadata in your answer.',
+    'Level 2: Describe your final protocol. Which choice fixed which test? Use the word metadata in your answer.',
+    'Level 2: "Send every packet twice" and "wait for a reply after each packet" both get the message through safely. Why didn\'t they pass? What does that tell you about designing a protocol?',
     'Level 3: Why would a video call use UDP even though some packets get lost? Name one app that should use TCP and explain why.'
   ];
 
-  const KEY = 'csp-packet-puzzle-v1';
+  const KEY = 'csp-packet-puzzle-v2';
   let state = {
     level:0,
     done:[false,false,false],
     udp:{msg:DEFAULT_MSG, runs:0, sawOrder:false, sawDrop:false},
-    proto:{num:false, total:false, ask:false, ack:false},
+    proto:{order:'none', end:'none', loss:'none', confirm:'none'},
     tests:{},
     sort:{},
     answers: QUESTIONS.map(()=>''), name:''
@@ -246,14 +251,17 @@
 
   // ---------- packets ----------
   function chunk(text, n){ const out = []; for (let i = 0; i < text.length; i += n) out.push(text.slice(i, i + n)); return out.length ? out : ['']; }
-  function headerChars(p){ return (p.num ? 1 : 0) + (p.total ? 1 : 0); }
   function makePackets(text, p){
-    const parts = chunk(text, SIZE - headerChars(p));
+    const base = (p.order === 'num' ? 1 : 0) + (p.end === 'total' ? 1 : 0);
+    const size = SIZE - base;
+    const parts = chunk(text, size);
+    if (p.end === 'mark' && parts[parts.length - 1].length === size) parts.push('');
     const N = parts.length;
     return parts.map((d, i) => {
       let h = '';
-      if (p.num) h += String(i + 1);
-      if (p.total) h += String(N);
+      if (p.order === 'num') h += String(i + 1);
+      if (p.end === 'total') h += String(N);
+      if (p.end === 'mark' && i === N - 1) h += '!';
       return {i, h, d};
     });
   }
@@ -439,14 +447,33 @@
   }
 
   // ----- Level 2: TCP -----
+  const LIMIT_TIME = 3, LIMIT_PKTS = 8, BONUS_PKTS = 7;
+  const GROUPS = [
+    {k:'order', q:'1. How will your friend get the packets in the right order?', opts:[
+      ['none','Nothing special',''],
+      ['num','Write a packet number in each packet','Uses 1 of the 8 characters in every packet'],
+      ['wait','Send one packet at a time, and wait for a reply before sending the next','No extra characters, but lots of waiting']]},
+    {k:'end', q:'2. How will your friend know where the message ends?', opts:[
+      ['none','Nothing special',''],
+      ['total','Write the total number of packets in each packet','Uses 1 character in every packet'],
+      ['mark','Put a ! in the last packet','Uses 1 character, only in the last packet']]},
+    {k:'loss', q:'3. What happens if a packet gets lost?', opts:[
+      ['none','Nothing special',''],
+      ['twice','Send every packet twice, just in case',''],
+      ['ask','Your friend asks for the missing packets','']]},
+    {k:'confirm', q:'4. How will the sender know the message arrived?', opts:[
+      ['none','Nothing special',''],
+      ['ack','Your friend sends back "Got it!" when the whole message is there','']]}
+  ];
+  const lab = pk => (pk.h ? pk.h.split('').join('|') + '|' : '') + show(pk.d);
+  const testBtns = () => TESTS.map((t, i) => { const r = state.tests[t.id];
+    return `<button data-test="${i}" class="${r ? (r.pass ? 'pass' : 'fail') : ''}">${t.label}${r ? (r.pass ? ' ✓' : ' ✗') : ''}</button>`; }).join('');
+
   function renderTcp(){
     drawBoard();
     $('msgArea').innerHTML = `<p class="help" style="margin:8px 0 0">Message to send: <b style="font-family:ui-monospace,Menlo,Consolas,monospace">${esc(L2_MSG)}</b></p>`;
-    $('modes').innerHTML = TESTS.map((t, i) => {
-      const r = state.tests[t.id];
-      return `<button data-test="${i}" class="${r === true ? 'pass' : r === false ? 'fail' : ''}">${t.label}${r === true ? ' ✓' : r === false ? ' ✗' : ''}</button>`;
-    }).join('');
-    $('help').textContent = 'Set up your protocol on the right, then click a test to run it.';
+    $('modes').innerHTML = testBtns();
+    $('help').innerHTML = `Choose your protocol on the right, then click a test. Limits for every test: <b>${LIMIT_TIME} seconds</b> and <b>${LIMIT_PKTS} packets</b> (counting packets in both directions).`;
     $('inbox').innerHTML = inboxHtml('What your friend received', '', null);
     setStatus('');
     renderTcpSide();
@@ -454,111 +481,158 @@
   function renderTcpSide(){
     const p = state.proto;
     const pk = makePackets(L2_MSG, p);
-    const hc = headerChars(p);
-    let slots = '<span class="slot r">To/From</span>';
-    if (p.num) slots += '<span class="slot h">#</span>';
-    if (p.total) slots += '<span class="slot h">T</span>';
-    for (let i = 0; i < SIZE - hc; i++) slots += '<span class="slot d"></span>';
-    const opts = [
-      {k:'num', t:'Number each packet', s:'Uses 1 of the 8 characters', dis:false},
-      {k:'total', t:'Include the total number of packets', s:'Uses 1 of the 8 characters', dis:false},
-      {k:'ask', t:'Receiver asks for missing packets', s:'Needs packet numbers, so it can say which one', dis:!p.num},
-      {k:'ack', t:'Receiver sends "Got it!" when the whole message has arrived', s:'Needs the total, so it knows when it has everything', dis:!p.total}
-    ];
-    const passed = TESTS.filter(t => state.tests[t.id] === true).length;
+    const passed = TESTS.filter(t => state.tests[t.id] && state.tests[t.id].pass).length;
+    const bonus = state.done[1] && TESTS.every(t => state.tests[t.id] && state.tests[t.id].pass && state.tests[t.id].traffic <= BONUS_PKTS);
     $('side').innerHTML = `
       <h3>Your protocol</h3>
-      ${opts.map(o => `<label class="opt${o.dis ? ' disabled' : ''}"><input type="checkbox" data-opt="${o.k}" ${p[o.k] && !o.dis ? 'checked' : ''} ${o.dis ? 'disabled' : ''}><span>${o.t}<small>${o.s}</small></span></label>`).join('')}
-      <h3 style="margin-top:12px">Each packet looks like</h3>
-      <div class="slots">${slots}</div>
-      <small class="help" style="display:block">${SIZE - hc} characters of message per packet → <b>${pk.length} packets</b>:</small>
+      ${GROUPS.map(g => `<fieldset style="border:0;padding:0;margin:0 0 10px"><legend style="font-weight:700;font-size:.95rem;padding:0">${g.q}</legend>
+        ${g.opts.map(([v, t, s]) => `<label class="opt"><input type="radio" name="g_${g.k}" data-grp="${g.k}" value="${v}" ${p[g.k] === v ? 'checked' : ''}><span>${t}${s ? `<small>${s}</small>` : ''}</span></label>`).join('')}</fieldset>`).join('')}
+      <h3 style="margin-top:12px">Your packets</h3>
+      <small class="help" style="display:block">This message takes <b>${pk.length} packets</b>:</small>
       <div class="chips" style="margin-top:4px">${pk.map(x => chipHtml(x)).join('')}</div>
       <h3 style="margin-top:12px">Tests passed: ${passed} / 4</h3>
-      <ul class="goals">${TESTS.map(t => { const r = state.tests[t.id]; return `<li class="${r === true ? 'ok' : r === false ? 'no' : 'todo'}"><span class="mark">${r === true ? '✓' : r === false ? '✗' : '○'}</span><span>${t.label.replace(/^Test \d: /, '')}<small>${t.text}</small></span></li>`; }).join('')}</ul>
+      <ul class="goals">${TESTS.map(t => { const r = state.tests[t.id];
+        return `<li class="${r ? (r.pass ? 'ok' : 'no') : 'todo'}"><span class="mark">${r ? (r.pass ? '✓' : '✗') : '○'}</span><span>${t.label.replace(/^Test \d: /, '')}<small>${t.text}${r ? ` · ${r.time.toFixed(1)} s, ${r.traffic} packets` : ''}</small></span></li>`; }).join('')}
+        <li class="${bonus ? 'ok' : 'todo'}"><span class="mark">${bonus ? '⭐' : '☆'}</span><span>Bonus: pass all 4 using ${BONUS_PKTS} packets or fewer in every test</span></li></ul>
       <small class="help" style="display:block">Changing your protocol clears your test results.</small>
       ${state.done[1] ? `<div class="done"><b>Why it matters:</b> ${LEVELS[1].why}</div>` : ''}`;
+  }
+
+  // Works out everything that happens in a test. Returns phases to animate plus the result.
+  function simulate(test, p){
+    const pkts = makePackets(L2_MSG, p), N = pkts.length;
+    const drops = new Set(test.id === 'middle' ? [1] : test.id === 'end' ? [N - 1] : []);
+    const copies = p.loss === 'twice' ? 2 : 1;
+    const phases = [], arrivals = [];
+    let time = 0, traffic = 0, senderKnows = false, detected = [], undetected = false, askFail = false, ackFail = false;
+
+    if (p.order === 'wait'){
+      pkts.forEach((pk, i) => {
+        const fl = [];
+        for (let c = 0; c < copies; c++){
+          const dropped = drops.has(i) && c === 0;
+          fl.push({label:lab(pk), from:'S', route:(i + c) % 3, start:c * 150, dur:900, drop:dropped, deliver:dropped ? null : pk});
+          if (!dropped) arrivals.push(pk);
+          traffic++;
+        }
+        phases.push({flights:fl, note:`Sending packet ${i + 1}, then waiting for a reply…`});
+        time += 0.5;
+        if (drops.has(i) && copies === 1){
+          phases.push({flights:[], pause:900, note:`No reply for packet ${i + 1}. Waiting… then sending it again.`});
+          time += 1.0;
+          phases.push({flights:[{label:lab(pk), from:'S', route:(i + 1) % 3, start:0, dur:900, drop:false, deliver:pk}], note:`Resending packet ${i + 1}…`});
+          arrivals.push(pk); traffic++; time += 0.5;
+        }
+        phases.push({flights:[{label:'OK', ctl:true, from:'R', route:i % 3, start:0, dur:900, drop:false}], note:`Your friend replies OK. Sender can send the next packet.`});
+        traffic++; time += 0.5;
+      });
+      senderKnows = true;
+    } else {
+      const order = test.id === 'scramble' ? (N === 4 ? [2,0,3,1] : N === 5 ? [2,0,4,1,3] : shuffle(range(N))) : range(N);
+      const rank = {}; order.forEach((idx, r) => rank[idx] = r);
+      const fl = [], timed = [];
+      pkts.forEach((pk, i) => {
+        for (let c = 0; c < copies; c++){
+          const k = i * copies + c, dropped = drops.has(i) && c === 0;
+          const arrive = 1000 + (rank[i] * copies + c) * 300, start = k * 120;
+          fl.push({label:lab(pk), from:'S', route:k % 3, start, dur:Math.max(500, arrive - start), drop:dropped, deliver:dropped ? null : pk});
+          if (!dropped) timed.push({arrive, pk});
+          traffic++;
+        }
+      });
+      timed.sort((a, b) => a.arrive - b.arrive).forEach(x => arrivals.push(x.pk));
+      phases.push({flights:fl, note:'Sending all the packets at once…'});
+      time += copies === 2 ? 0.8 : 0.6;
+
+      if (p.order === 'num'){
+        const have = new Set(arrivals.map(x => x.i));
+        const maxSeen = Math.max(...have);
+        let knownEnd;
+        if (p.end === 'total') knownEnd = N;
+        else if (p.end === 'mark') knownEnd = have.has(N - 1) ? N : null;
+        else knownEnd = maxSeen + 1;
+        const gaps = range(knownEnd === null ? maxSeen + 1 : knownEnd).filter(i => !have.has(i));
+        const after = knownEnd === null ? range(N).filter(i => i > maxSeen) : [];
+        detected = gaps.concat(after);
+        undetected = range(N).some(i => !have.has(i) && !detected.includes(i));
+        if (detected.length && p.loss === 'ask'){
+          const req = gaps.map(i => '#' + (i + 1)).concat(after.length ? ['#' + (maxSeen + 2) + '+'] : []).join(',');
+          phases.push({flights:[{label:'SEND ' + req, ctl:true, from:'R', route:1, start:0, dur:1300, drop:false}],
+            note:`Your friend notices something is missing and asks for it…`});
+          phases.push({flights:detected.map((i, k) => ({label:lab(pkts[i]), from:'S', route:(i + 2) % 3, start:k * 150, dur:1300, drop:false, deliver:pkts[i]})),
+            note:'The sender resends the missing packets…'});
+          detected.forEach(i => arrivals.push(pkts[i]));
+          traffic += 1 + detected.length; time += 1.0;
+        }
+      } else if (p.loss === 'ask' && drops.size) askFail = true;
+    }
+
+    const assembled = (p.order === 'num' ? (() => { const seen = new Map(); arrivals.forEach(x => seen.set(x.i, x)); return [...seen.values()].sort((a, b) => a.i - b.i); })() : arrivals).map(x => x.d).join('');
+    const correct = assembled === L2_MSG;
+    if (p.confirm === 'ack'){
+      if (p.end === 'none' && p.order !== 'wait') ackFail = true;
+      else if (correct){
+        phases.push({flights:[{label:'GOT IT!', ctl:true, from:'R', route:1, start:0, dur:1100, drop:false}], note:'Your friend sends back "Got it!"…'});
+        traffic++; time += 0.5; senderKnows = true;
+      }
+    }
+    return {pkts, N, phases, time, traffic, correct, assembled, senderKnows, detected, undetected, askFail, ackFail, copies};
+  }
+
+  function verdict(test, p, r){
+    const got = `Your friend got "${esc(r.assembled)}".`;
+    if (!r.correct){
+      if (p.order !== 'num' && p.order !== 'wait'){
+        let m = `<b>Failed.</b> ${got} With no packet numbers, it glued packets together in the order they arrived`;
+        if (r.copies === 2) m += ', duplicate copies and all';
+        m += '.';
+        if (r.askFail) m += ' It couldn\'t ask for the lost packet either: without numbers, which one would it ask for?';
+        else if (test.id !== 'scramble' && r.copies === 1) m += ' It has no idea a packet is missing.';
+        return m;
+      }
+      if (r.undetected) return `<b>Failed.</b> ${got} Packets 1–${r.N - 1} are all there, so it thinks that's everything. How could it know there should be one more?`;
+      if (r.detected.length) return `<b>Failed.</b> Your friend can tell something is missing, but your protocol gives it no way to get it back.`;
+      return `<b>Failed.</b> ${got}`;
+    }
+    if (test.id === 'confirm' && !r.senderKnows){
+      if (r.ackFail) return `<b>Failed.</b> The message arrived, but your friend couldn't send "Got it!": nothing in your protocol tells it when it has the whole message.`;
+      return '<b>Failed.</b> The message arrived, but the sender has no idea whether it did. Should it send everything again just in case?';
+    }
+    const over = [];
+    if (r.traffic > LIMIT_PKTS) over.push(`sent <b>${r.traffic} packets</b> (limit ${LIMIT_PKTS})` + (r.copies === 2 ? '. Sending everything twice doubles the traffic on the network' : p.order === 'wait' ? '. A reply after every packet adds up fast' : ''));
+    if (r.time > LIMIT_TIME) over.push(`took <b>${r.time.toFixed(1)} seconds</b> (limit ${LIMIT_TIME})` + (p.order === 'wait' ? '. Waiting for a reply after every packet means only one packet is ever on the network at a time' : ''));
+    if (over.length) return `<b>Failed.</b> The message arrived correctly, but your protocol ${over.join(', and it ')}.`;
+    return `<b>Passed!</b> ${got} Time: ${r.time.toFixed(1)} s. Packets: ${r.traffic}.`;
   }
 
   async function runTest(ti){
     if (busy) return;
     const test = TESTS[ti], p = Object.assign({}, state.proto);
-    if (!p.num) p.ask = false;
-    if (!p.total) p.ack = false;
-    const pkts = makePackets(L2_MSG, p);
-    const N = pkts.length;
-    let order = range(N), drops = new Set();
-    if (test.id === 'scramble') order = N === 4 ? [2,0,3,1] : [2,0,4,1,3];
-    if (test.id === 'middle') drops.add(1);
-    if (test.id === 'end') drops.add(N - 1);
-
+    const r = simulate(test, p);
     busy = true; document.querySelectorAll('#modes button, #side input').forEach(b => b.disabled = true);
     const got = [];
-    const ctlChips = [];
-    const redraw = () => {
-      $('chips').innerHTML = got.map(x => chipHtml(x)).join(' ') + ctlChips.join(' ');
-    };
     $('inbox').innerHTML = inboxHtml('What your friend received', '', '');
-    setStatus(`Running ${test.label}…`);
-    await fly(schedule(pkts, order, drops, pk => { got.push(pk); redraw(); }));
-
-    const assembleBy = list => p.num ? list.slice().sort((a, b) => a.i - b.i) : list;
-    const showAsm = () => {
-      const el = $('inbox').querySelector('.assembled');
-      if (!p.num){ el.textContent = got.map(x => x.d).join(''); return; }
-      const have = new Set(got.map(x => x.i));
-      const known = p.total ? N : (got.length ? Math.max(...got.map(x => x.i)) + 1 : 0);
-      el.innerHTML = range(known).map(i => have.has(i) ? esc(pkts[i].d) : `<span class="gap">[#${i+1} missing]</span>`).join('');
+    const redraw = () => {
+      $('chips').innerHTML = got.map(x => chipHtml(x)).join(' ');
+      let shown = got;
+      if (p.order === 'num'){ const m = new Map(); got.forEach(x => m.set(x.i, x)); shown = [...m.values()].sort((a, b) => a.i - b.i); }
+      $('inbox').querySelector('.assembled').textContent = shown.map(x => x.d).join('');
     };
-    showAsm();
-
-    // receiver's view of what's missing
-    const have = new Set(got.map(x => x.i));
-    const knownCount = p.num ? (p.total ? N : Math.max(...got.map(x => x.i)) + 1) : got.length;
-    const missingKnown = p.num ? range(knownCount).filter(i => !have.has(i)) : [];
-    let fixed = false;
-    if (missingKnown.length && p.ask){
-      setStatus(`Your friend notices packet ${missingKnown.map(i => '#' + (i + 1)).join(', ')} is missing and asks for it again…`);
-      await fly(missingKnown.map((i, k) => ({label:`SEND #${i+1}`, ctl:true, from:'R', route:(i + 1) % 3, start:k * 150, dur:1300, drop:false,
-        onArrive: () => {}})));
-      await fly(missingKnown.map((i, k) => ({label:(pkts[i].h ? pkts[i].h.split('').join('|') + '|' : '') + show(pkts[i].d), ctl:false, from:'S', route:(i + 2) % 3, start:k * 150, dur:1300, drop:false,
-        onArrive: () => { got.push(pkts[i]); redraw(); showAsm(); }})));
-      fixed = true;
+    for (const ph of r.phases){
+      setStatus(ph.note);
+      if (ph.pause) await new Promise(res => setTimeout(res, ph.pause));
+      if (ph.flights.length) await fly(ph.flights.map(f => Object.assign({}, f, {onArrive: f.deliver ? () => { got.push(f.deliver); redraw(); } : null})));
     }
-    const complete = got.length === N;
-    const correct = complete && assembleBy(got).map(x => x.d).join('') === L2_MSG;
-    let acked = false;
-    if (correct && p.ack){
-      await fly([{label:'GOT IT!', ctl:true, from:'R', route:1, start:0, dur:1300, drop:false, onArrive: () => {}}]);
-      acked = true;
-    }
-    const asmText = assembleBy(got).map(x => x.d).join('');
-
-    let pass = false, msg = '';
-    if (test.id === 'confirm'){
-      if (acked){ pass = true; msg = '<b>Passed!</b> The message arrived, and your friend sent back "Got it!" Now the sender knows for sure.'; }
-      else if (p.num && !p.total) msg = '<b>Failed.</b> The message arrived, but the sender has no idea. Your friend can\'t send "Got it!" yet: without the total, how would it know it has every packet?';
-      else msg = '<b>Failed.</b> The message arrived, but the sender has no idea whether it did. Should it send everything again just in case? Your friend needs a way to tell the sender.';
-    } else if (correct){
-      pass = true;
-      msg = `<b>Passed!</b> Your friend got "${esc(asmText)}".` + (fixed ? ' The missing packet was noticed, requested and sent again.' : (test.id === 'scramble' ? ' The packet numbers let it put them back in order.' : ''));
-    } else if (!p.num){
-      msg = `<b>Failed.</b> Your friend got "${esc(asmText)}". With nothing to go on, it just glued packets together in the order they arrived` + (got.length < N ? ', and it has no idea one is missing.' : '.');
-    } else if (missingKnown.length && !p.ask){
-      msg = `<b>Failed.</b> Your friend can tell packet ${missingKnown.map(i => '#' + (i + 1)).join(', ')} is missing, but your protocol gives it no way to get it back.`;
-    } else if (!complete && !missingKnown.length){
-      msg = `<b>Failed.</b> Your friend got "${esc(asmText)}" and thinks that's everything. Packets 1–${got.length} are all there, so nothing looks missing. How could it know there should be one more?`;
-    } else {
-      msg = `<b>Failed.</b> Your friend got "${esc(asmText)}".`;
-    }
-    state.tests[test.id] = pass;
-    if (TESTS.every(t => state.tests[t.id] === true) && !state.done[1]){
-      state.done[1] = true; msg += ' <b>All 4 tests passed. Level complete!</b> Read the note on the right.';
+    const pass = r.correct && (test.id !== 'confirm' || r.senderKnows) && r.traffic <= LIMIT_PKTS && r.time <= LIMIT_TIME;
+    let msg = verdict(test, p, r);
+    state.tests[test.id] = {pass, time:r.time, traffic:r.traffic};
+    if (TESTS.every(t => state.tests[t.id] && state.tests[t.id].pass) && !state.done[1]){
+      state.done[1] = true; msg += ' <b>All 4 tests passed. Level complete!</b> Read the note on the right, and try for the bonus star if you haven\'t.';
     }
     save();
     busy = false;
     renderTabs();
-    $('modes').innerHTML = TESTS.map((t, i) => { const r = state.tests[t.id];
-      return `<button data-test="${i}" class="${r === true ? 'pass' : r === false ? 'fail' : ''}">${t.label}${r === true ? ' ✓' : r === false ? ' ✗' : ''}</button>`; }).join('');
+    $('modes').innerHTML = testBtns();
     renderTcpSide();
     $('next').disabled = !state.done[1];
     setStatus(msg, pass ? 'good' : 'bad');
@@ -587,10 +661,8 @@
     runTest(+b.dataset.test);
   });
   $('side').addEventListener('change', e => {
-    const k = e.target.dataset.opt; if (!k || busy) return;
-    state.proto[k] = e.target.checked;
-    if (!state.proto.num) state.proto.ask = false;
-    if (!state.proto.total) state.proto.ack = false;
+    const k = e.target.dataset.grp; if (!k || busy) return;
+    state.proto[k] = e.target.value;
     state.tests = {};
     save(); renderTcp();
   });
@@ -604,7 +676,7 @@
     if (busy) return;
     const t = LEVELS[state.level].type;
     if (t === 'udp') state.udp = {msg:state.udp.msg, runs:0, sawOrder:false, sawDrop:false};
-    if (t === 'tcp'){ state.proto = {num:false, total:false, ask:false, ack:false}; state.tests = {}; }
+    if (t === 'tcp'){ state.proto = {order:'none', end:'none', loss:'none', confirm:'none'}; state.tests = {}; }
     if (t === 'sort') state.sort = {};
     state.done[state.level] = false; setStatus(''); save(); render();
   };
@@ -624,22 +696,18 @@
 
   $('copy').onclick = async () => {
     const p = state.proto;
-    const parts = [];
-    if (p.num) parts.push('packet numbers');
-    if (p.total) parts.push('total count');
-    if (p.ask) parts.push('ask for missing packets');
-    if (p.ack) parts.push('"Got it!" confirmation');
+    const parts = GROUPS.map(g => { const o = g.opts.find(x => x[0] === p[g.k]); return o && o[0] !== 'none' ? o[1] : null; }).filter(Boolean);
     const lines = [
       'Packet Puzzle (CSP Unit 2 Lesson 5)',
       'Name: ' + (state.name || '(no name)'),
       'Levels completed: ' + LEVELS.map((_, i) => `${i+1}${state.done[i] ? ' ✓' : ' ✗'}`).join(', '),
-      'My protocol: ' + (parts.length ? parts.join(', ') : '(nothing chosen)'),
+      'My protocol: ' + (parts.length ? parts.join('; ') : '(nothing chosen)'),
       ''
     ];
     QUESTIONS.forEach((q, i) => { lines.push(`${i+1}. ${q}`); lines.push(state.answers[i] || '(no answer)'); lines.push(''); });
     const text = lines.join('\n');
-    try { await navigator.clipboard.writeText(text); $('copyMsg').textContent = 'Copied! Paste it into the Teams assignment.'; $('fallback').hidden = true; }
-    catch(e){ const f = $('fallback'); f.hidden = false; f.value = text; f.focus(); f.select(); $('copyMsg').textContent = 'Copy the text in the box above (Ctrl+C or ⌘+C), then paste it into Teams.'; }
+    try { await navigator.clipboard.writeText(text); $('copyMsg').textContent = 'Copied! Paste it into the blank document in the Teams assignment, or into your own document.'; $('fallback').hidden = true; }
+    catch(e){ const f = $('fallback'); f.hidden = false; f.value = text; f.focus(); f.select(); $('copyMsg').textContent = 'Copy the text in the box above (Ctrl+C or ⌘+C), then paste it into the blank document in the Teams assignment, or into your own document.'; }
   };
 
   render();
