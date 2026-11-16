@@ -155,9 +155,9 @@ Addresses:  2620:0:863:ed1a::1
     <ul class="key">
       <li><span class="sw" style="background:var(--c1)"></span><span><b>Server:</b> the DNS server your computer asked. It's often your home router (sound familiar? It was hop 1 in Trace the Internet), which passes the question on to bigger DNS servers. The <code>#53</code> on a Mac means it used port 53, the "door" DNS always uses.</span></li>
       <li><span class="sw" style="background:var(--c2)"></span><span><b>Non-authoritative answer:</b> the answer came from a DNS server that remembered it from an earlier lookup, not from the server officially in charge of wikipedia.org. Remembering answers is a big part of why DNS can handle billions of lookups.</span></li>
-      <li><span class="sw" style="background:var(--c3)"></span><span><b>Name and Address:</b> the answer! An address with 4 numbers and dots, like <code>198.35.26.96</code>, is <b>IPv4</b>. A longer one with letters and colons, like <code>2620:0:863:ed1a::1</code>, is <b>IPv6</b>, the newer system with way more addresses. You might see one kind or both.</span></li>
+      <li><span class="sw" style="background:var(--c3)"></span><span><b>Name and Address:</b> the answer! An address with 4 numbers and dots, like <code>198.35.26.96</code>, is <b>IPv4</b>. A longer one with letters and colons, like <code>2620:0:863:ed1a::1</code>, is <b>IPv6</b>, the newer system with way more addresses. On a Mac, a plain <code>nslookup</code> only asks for IPv4 addresses. Windows asks for both. In Look-up 2, everyone asks for IPv6 on purpose.</span></li>
     </ul>
-    <p>Type each command, press <span data-os="mac"><kbd>Return</kbd></span><span data-os="win"><kbd>Enter</kbd></span>, and answer the questions. Do all three in the same window so one screenshot shows them all. Your answers save in this browser as you type.</p>
+    <p>Type each command, press <span data-os="mac"><kbd>Return</kbd></span><span data-os="win"><kbd>Enter</kbd></span>, and answer the questions. Do all four in the same window so you can screenshot them together. Your answers save in this browser as you type.</p>
     <div id="dnsTasks"></div>
   </section>
 
@@ -218,13 +218,16 @@ Addresses:  2620:0:863:ed1a::1
     dnsTasks: [
       {title:'Look-up 1: Wikipedia', cmd:'nslookup wikipedia.org', shot:false,
        intro:'Start with the example site.',
-       qs:['What IP address or addresses did DNS give you for wikipedia.org? If you got both kinds, which one is IPv4 and which is IPv6?',
+       qs:['What IP address or addresses did DNS give you for wikipedia.org?',
            'Look at the Server line. What is the address of the DNS server your computer asked? What device do you think that is?']},
-      {title:'Look-up 2: example.com', cmd:'nslookup example.com', shot:false,
+      {title:'Look-up 2: Wikipedia\'s IPv6 address', cmd:'nslookup -type=AAAA wikipedia.org', shot:false,
+       intro:'The <code>-type=AAAA</code> part tells DNS you want the IPv6 address. (AAAA is DNS\'s name for an IPv6 address record.)',
+       qs:['What address did you get this time? Compare it with your answer to Look-up 1. How are IPv4 and IPv6 addresses different? Why do you think IPv6 was created?']},
+      {title:'Look-up 3: example.com', cmd:'nslookup example.com', shot:false,
        intro:'Look up a second site. You\'ll compare this address to what your browser shows in Step 3, so keep it handy.',
        qs:['What IP address or addresses did DNS give you for example.com?']},
-      {title:'Look-up 3: A site that doesn\'t exist', cmd:'nslookup this-site-does-not-exist-csp.com', shot:true,
-       intro:'Now ask about a name nobody has registered. Then take one screenshot of your terminal showing all three look-ups.',
+      {title:'Look-up 4: A site that doesn\'t exist', cmd:'nslookup this-site-does-not-exist-csp.com', shot:true,
+       intro:'Now ask about a name nobody has registered. Then take a screenshot of your terminal showing all four look-ups. (If they don\'t all fit, take two.)',
        qs:['What did nslookup say? What do you think your browser would show if you typed this name into the address bar? (Try it!)']}
     ],
     httpTasks: [
@@ -236,8 +239,8 @@ Addresses:  2620:0:863:ed1a::1
        intro:'Clear the list first (the circle-with-a-line or trash-can button at the top of the panel), then load Wikipedia. Look at the bottom of the panel for the number of requests, and take a screenshot.',
        qs:['How many requests did it take to load this one page? Look at a few of the rows. What kinds of things was your browser asking for?']},
       {title:'Request 3: A page that doesn\'t exist', url:'https://en.wikipedia.org/wiki/This_page_does_not_exist_CSP', shot:true,
-       intro:'Load a Wikipedia page that doesn\'t exist. Click the first row and take a screenshot of its status.',
-       qs:['What status code did you get this time? What do you think it means? Did the server still send a page back?']}
+       intro:'Load a Wikipedia page that doesn\'t exist. Wikipedia shows a friendly "not found" page, but look at the Network panel instead. Click the first row and take a screenshot of its status.',
+       qs:['What status code did you get? Compare this to Look-up 4, the made-up site name. In that one, which step failed: DNS or HTTP? Which step failed here? How can you tell?']}
     ],
     wrapTasks: [
       {title:'The lock', shot:false,
