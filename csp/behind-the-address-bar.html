@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Behind the Address Bar</title>
+<style>
+  :root{
+    --bg:#f6f3ec; --card:#ffffff; --ink:#1f2430; --muted:#5b6272; --line:#ddd6c8;
+    --accent:#b8322a; --blue:#2563eb; --ok:#17793f; --okbg:#e5f4ea;
+    --term:#23272f; --termink:#e6e6e6;
+    --c1:#7dd3fc; --c2:#a7f3d0; --c3:#fcd34d; --c4:#fca5a5;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#16181d; --card:#1f232b; --ink:#e8e9ec; --muted:#a3a9b6; --line:#343a46;
+      --accent:#f07167; --blue:#7aa2ff; --ok:#5fd38d; --okbg:#173325; --term:#0f1115;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16181d; --card:#1f232b; --ink:#e8e9ec; --muted:#a3a9b6; --line:#343a46;
+    --accent:#f07167; --blue:#7aa2ff; --ok:#5fd38d; --okbg:#173325; --term:#0f1115;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header,main{max-width:1000px;margin:0 auto;padding:0 16px}
+  header{padding-top:24px}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:2rem;margin:0}
+  .sub{color:var(--muted);margin:2px 0 12px}
+  h2{font-family:Georgia,"Times New Roman",serif;margin:0 0 6px;font-size:1.4rem}
+  h3{margin:14px 0 6px;font-size:1.05rem}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:12px 0}
+  .step{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;padding:0 10px;font-size:.85rem;font-weight:700;margin-right:6px;vertical-align:middle}
+  details summary{cursor:pointer;font-weight:600}
+  dl{margin:8px 0 0} dt{font-weight:700;color:var(--accent)} dd{margin:0 0 6px 0}
+  .pick{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+  .pick button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer}
+  .pick button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  [data-os],[data-br]{display:none}
+  body.mac [data-os="mac"], body.win [data-os="win"]{display:block}
+  body.mac span[data-os="mac"], body.win span[data-os="win"]{display:inline}
+  body.chrome [data-br="chrome"], body.firefox [data-br="firefox"], body.safari [data-br="safari"]{display:block}
+  body.chrome span[data-br="chrome"], body.firefox span[data-br="firefox"], body.safari span[data-br="safari"]{display:inline}
+  .cmd[data-os]{display:none}
+  body.mac .cmd[data-os="mac"], body.win .cmd[data-os="win"]{display:flex}
+  ol li, ul li{margin:4px 0}
+  kbd{font:600 .85rem ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--bg)}
+  code{font:.92rem ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:0 4px}
+  .cmd{display:flex;align-items:center;gap:8px;background:var(--term);color:var(--termink);border-radius:8px;padding:8px 10px;margin:8px 0;font:1rem ui-monospace,Menlo,Consolas,monospace;flex-wrap:wrap}
+  .cmd .p{color:#8b93a5}
+  .cmd .t{flex:1;min-width:200px;word-break:break-all}
+  .cmd button{border:1px solid #4b5262;background:#323844;color:#fff;border-radius:6px;padding:3px 10px;font:600 .8rem system-ui,sans-serif;cursor:pointer}
+  pre.term{background:var(--term);color:var(--termink);border-radius:10px;padding:12px 14px;overflow-x:auto;font:.85rem/1.5 ui-monospace,Menlo,Consolas,monospace;margin:8px 0}
+  pre.term .g1{color:var(--c1)} pre.term .g2{color:var(--c2)} pre.term .g3{color:var(--c3)} pre.term .g4{color:var(--c4)}
+  .dim{color:#8b93a5}
+  .key{list-style:none;padding:0;margin:10px 0}
+  .key li{display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+  .sw{flex:0 0 14px;height:14px;border-radius:3px;margin-top:5px;border:1px solid rgba(0,0,0,.2)}
+  .notice{background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--blue);border-radius:8px;padding:10px 12px;margin:10px 0}
+  .flow{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0}
+  .flow span.box{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:6px 10px;font-weight:600}
+  .flow span.arr{color:var(--muted);font-weight:700}
+  .task{border-top:1px solid var(--line);padding-top:12px;margin-top:14px}
+  .task:first-of-type{border-top:0;margin-top:4px;padding-top:0}
+  label.q{font-weight:600;display:block;margin-top:10px}
+  textarea,input[type=text]{width:100%;font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+  textarea{min-height:64px}
+  .btn{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 12px;font:inherit;cursor:pointer}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .help{color:var(--muted);font-size:.93rem;margin:4px 0}
+  .shot{display:inline-block;background:var(--okbg);border:1px solid var(--ok);color:var(--ink);border-radius:6px;padding:1px 8px;font-size:.85rem;font-weight:600}
+  a{color:var(--blue)}
+  footer{max-width:1000px;margin:0 auto;padding:8px 16px 32px;color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body class="mac chrome">
+<header>
+  <h1>Behind the Address Bar</h1>
+  <p class="sub">CSP Unit 2 · Lesson 6: HTTP and DNS</p>
+</header>
+<main>
+  <div class="card">
+    <p style="margin-top:0">When you type <b>wikipedia.org</b> and press Enter, two things happen before you see anything:</p>
+    <div class="flow">
+      <span class="box">1. DNS: "What's the IP address for wikipedia.org?"</span><span class="arr">→</span>
+      <span class="box">2. HTTP: "GET me the page at that address"</span><span class="arr">→</span>
+      <span class="box">3. The page shows up</span>
+    </div>
+    <p>Both happen in a fraction of a second, so you never see them. Today you'll use tools already on your computer to watch each one happen.</p>
+    <p style="margin-bottom:0"><b>Time:</b> about 25–30 minutes. <b>You'll turn in:</b> 4 screenshots and your answers.</p>
+    <details style="margin-top:10px">
+      <summary>Words to know</summary>
+      <dl>
+        <dt>Domain name</dt><dd>An easy-to-remember name for a website, like <code>wikipedia.org</code>.</dd>
+        <dt>DNS (Domain Name System)</dt><dd>The system that translates domain names into IP addresses. It's a huge network of servers, so no single computer has to know every address.</dd>
+        <dt>Scalability</dt><dd>The ability of a system to keep working well as it grows. DNS lets the Internet scale to billions of devices.</dd>
+        <dt>HTTP (HyperText Transfer Protocol)</dt><dd>The protocol your browser uses to request web pages and other files from a server. HTTPS is the secure, encrypted version.</dd>
+        <dt>World Wide Web</dt><dd>The system of linked pages and files you reach with a browser using HTTP. It runs <i>on</i> the Internet, but it isn't the same thing as the Internet.</dd>
+        <dt>Certificate authority</dt><dd>A trusted organization that checks a website is who it says it is, so your browser knows a secure connection goes to the real site.</dd>
+      </dl>
+    </details>
+  </div>
+
+  <section class="card">
+    <h2><span class="step">Step 1</span>Tell us your computer and browser</h2>
+    <p style="margin:0">Which kind of computer are you using?</p>
+    <div class="pick" id="osPick">
+      <button data-pick="mac" class="on">Mac</button>
+      <button data-pick="win">Windows</button>
+    </div>
+    <p style="margin:0">Which browser will you use? (Chrome or Edge is easiest.)</p>
+    <div class="pick" id="brPick">
+      <button data-pick="chrome" class="on">Chrome or Edge</button>
+      <button data-pick="firefox">Firefox</button>
+      <button data-pick="safari">Safari</button>
+    </div>
+    <h3>Open your terminal</h3>
+    <div data-os="mac">
+      <ol>
+        <li>Press <kbd>⌘ Command</kbd> + <kbd>Space</kbd>, type <b>Terminal</b>, and press <kbd>Return</kbd>.</li>
+      </ol>
+      <p class="help">To screenshot a window, press <kbd>⌘ Command</kbd> + <kbd>Shift</kbd> + <kbd>4</kbd>, then press <kbd>Space</kbd> and click the window.</p>
+    </div>
+    <div data-os="win">
+      <ol>
+        <li>Click <b>Start</b>, type <b>cmd</b>, and click <b>Command Prompt</b>.</li>
+      </ol>
+      <p class="help">To take a screenshot, press <kbd>⊞ Windows</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> and drag around the window.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">Step 2</span>Ask DNS for an address</h2>
+    <p style="margin-top:0">The command <b>nslookup</b> ("name server look up") asks DNS the same question your browser asks. Here's what it looks like when you look up wikipedia.org. Yours will look a little different, and that's fine.</p>
+    <div data-os="mac">
+<pre class="term"><span class="dim">% nslookup wikipedia.org</span>
+<span class="g1">Server:		192.168.1.1
+Address:	192.168.1.1#53</span>
+
+<span class="g2">Non-authoritative answer:</span>
+<span class="g3">Name:	wikipedia.org
+Address: 198.35.26.96</span></pre>
+    </div>
+    <div data-os="win">
+<pre class="term"><span class="dim">C:\&gt; nslookup wikipedia.org</span>
+<span class="g1">Server:  UnKnown
+Address:  192.168.1.1</span>
+
+<span class="g2">Non-authoritative answer:</span>
+<span class="g3">Name:    wikipedia.org
+Addresses:  2620:0:863:ed1a::1
+          198.35.26.96</span></pre>
+    </div>
+    <ul class="key">
+      <li><span class="sw" style="background:var(--c1)"></span><span><b>Server:</b> the DNS server your computer asked. It's often your home router (sound familiar? It was hop 1 in Trace the Internet), which passes the question on to bigger DNS servers. The <code>#53</code> on a Mac means it used port 53, the "door" DNS always uses.</span></li>
+      <li><span class="sw" style="background:var(--c2)"></span><span><b>Non-authoritative answer:</b> the answer came from a DNS server that remembered it from an earlier lookup, not from the server officially in charge of wikipedia.org. Remembering answers is a big part of why DNS can handle billions of lookups.</span></li>
+      <li><span class="sw" style="background:var(--c3)"></span><span><b>Name and Address:</b> the answer! An address with 4 numbers and dots, like <code>198.35.26.96</code>, is <b>IPv4</b>. A longer one with letters and colons, like <code>2620:0:863:ed1a::1</code>, is <b>IPv6</b>, the newer system with way more addresses. You might see one kind or both.</span></li>
+    </ul>
+    <p>Type each command, press <span data-os="mac"><kbd>Return</kbd></span><span data-os="win"><kbd>Enter</kbd></span>, and answer the questions. Do all three in the same window so one screenshot shows them all. Your answers save in this browser as you type.</p>
+    <div id="dnsTasks"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">Step 3</span>Watch HTTP in your browser</h2>
+    <p style="margin-top:0">Your browser has hidden developer tools that show every HTTP request it sends. Let's open them.</p>
+    <div data-br="chrome">
+      <ol>
+        <li>Open a new tab in Chrome or Edge.</li>
+        <li>Press <span data-os="mac"><kbd>⌘ Command</kbd> + <kbd>Option</kbd> + <kbd>I</kbd></span><span data-os="win"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd> (or <kbd>F12</kbd>)</span>. A panel opens.</li>
+        <li>Click the <b>Network</b> tab at the top of the panel. (If you don't see it, click <b>»</b> to find it.)</li>
+        <li>Keep the panel open, then type the address into the tab's address bar. Each row that appears is one HTTP request.</li>
+        <li>To see details, click the <b>first row</b> (the page's name), then look at the <b>Headers</b> section. <b>General</b> at the top shows the Request Method, Status Code and Remote Address.</li>
+      </ol>
+    </div>
+    <div data-br="firefox">
+      <ol>
+        <li>Open a new tab in Firefox.</li>
+        <li>Press <span data-os="mac"><kbd>⌘ Command</kbd> + <kbd>Option</kbd> + <kbd>E</kbd></span><span data-os="win"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd></span>. The Network panel opens.</li>
+        <li>Keep the panel open, then type the address into the tab's address bar. Each row that appears is one HTTP request.</li>
+        <li>To see details, click the <b>first row</b>. The <b>Headers</b> tab shows the method (GET), Status and the server's Address.</li>
+      </ol>
+    </div>
+    <div data-br="safari">
+      <ol>
+        <li>First, turn on the developer tools: <b>Safari</b> menu → <b>Settings</b> → <b>Advanced</b> → check <b>Show features for web developers</b>.</li>
+        <li>Open a new tab, then press <kbd>⌘ Command</kbd> + <kbd>Option</kbd> + <kbd>I</kbd> and click the <b>Network</b> tab.</li>
+        <li>Keep the panel open, then type the address into the tab's address bar. Each row that appears is one HTTP request.</li>
+        <li>To see details, click the <b>first row</b> and look at <b>Headers</b> for the method, status and address.</li>
+      </ol>
+      <p class="help">Safari's panel hides some details. If you have Chrome, Edge or Firefox, using one of those is easier.</p>
+    </div>
+    <div class="notice"><b>Already loaded the page before opening the panel?</b> The rows only appear for requests made while the panel is open. Just reload the page.</div>
+    <p class="help">Labels can be a little different in each browser. If you can't find something, write "not shown" and keep going.</p>
+    <div id="httpTasks"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">Step 4</span>Put it together</h2>
+    <div id="wrapTasks"></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="step">Step 5</span>Turn it in</h2>
+    <p style="margin-top:0">Attach your <b>4 screenshots</b> to the Teams assignment. For your answers, take a screenshot, or click <b>Copy my answers</b> and paste them into a document, then attach it to the Teams assignment.</p>
+    <label class="q" for="name">Your name</label>
+    <input type="text" id="name" autocomplete="name">
+    <div class="row"><button class="btn primary" id="copy">Copy my answers</button></div>
+    <textarea id="fallback" hidden readonly style="margin-top:10px;min-height:160px"></textarea>
+    <div class="help" id="copyMsg"></div>
+  </section>
+</main>
+<footer>Your answers save in this browser automatically.</footer>
+
+<script>
+(function(){
+  const GROUPS = {
+    dnsTasks: [
+      {title:'Look-up 1: Wikipedia', cmd:'nslookup wikipedia.org', shot:false,
+       intro:'Start with the example site.',
+       qs:['What IP address or addresses did DNS give you for wikipedia.org? If you got both kinds, which one is IPv4 and which is IPv6?',
+           'Look at the Server line. What is the address of the DNS server your computer asked? What device do you think that is?']},
+      {title:'Look-up 2: example.com', cmd:'nslookup example.com', shot:false,
+       intro:'Look up a second site. You\'ll compare this address to what your browser shows in Step 3, so keep it handy.',
+       qs:['What IP address or addresses did DNS give you for example.com?']},
+      {title:'Look-up 3: A site that doesn\'t exist', cmd:'nslookup this-site-does-not-exist-csp.com', shot:true,
+       intro:'Now ask about a name nobody has registered. Then take one screenshot of your terminal showing all three look-ups.',
+       qs:['What did nslookup say? What do you think your browser would show if you typed this name into the address bar? (Try it!)']}
+    ],
+    httpTasks: [
+      {title:'Request 1: example.com', url:'https://example.com', shot:true,
+       intro:'A very simple page, so it takes just one request. Click its row and take a screenshot of the details.',
+       qs:['What was the request method? (Hint: it\'s the same word your browser used in the HTTP video.) What was the status code?',
+           'What remote address did the request go to? Does it match one of the addresses nslookup gave you for example.com? If not, why might a website have more than one address?']},
+      {title:'Request 2: Wikipedia', url:'https://www.wikipedia.org', shot:true,
+       intro:'Clear the list first (the circle-with-a-line or trash-can button at the top of the panel), then load Wikipedia. Look at the bottom of the panel for the number of requests, and take a screenshot.',
+       qs:['How many requests did it take to load this one page? Look at a few of the rows. What kinds of things was your browser asking for?']},
+      {title:'Request 3: A page that doesn\'t exist', url:'https://en.wikipedia.org/wiki/This_page_does_not_exist_CSP', shot:true,
+       intro:'Load a Wikipedia page that doesn\'t exist. Click the first row and take a screenshot of its status.',
+       qs:['What status code did you get this time? What do you think it means? Did the server still send a page back?']}
+    ],
+    wrapTasks: [
+      {title:'The lock', shot:false,
+       intro:'Go to wikipedia.org and click the icon just to the left of the web address. Find the information about the connection or certificate.',
+       qs:['Does your browser say the connection is secure? Which organization verified Wikipedia\'s certificate (who issued it)? Why does your browser need a trusted certificate authority?']},
+      {title:'The whole trip', shot:false,
+       intro:'Think back to everything you saw, plus Packet Puzzle and Trace the Internet.',
+       qs:['When you loaded wikipedia.org, which happened first: DNS or HTTP? Why does it have to be in that order?',
+           'Without DNS, what would you have to do to visit a website? Why would that be a problem as the Internet grows? Use the word scalability.']}
+    ]
+  };
+
+  const KEY = 'csp-behind-the-address-bar-v1';
+  let state = {os: /Win/i.test(navigator.platform || navigator.userAgent) ? 'win' : 'mac',
+               br: /Firefox/i.test(navigator.userAgent) ? 'firefox' : (/Safari/i.test(navigator.userAgent) && !/Chrome|Edg/i.test(navigator.userAgent) ? 'safari' : 'chrome'),
+               answers:{}, name:''};
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) state = Object.assign(state, s); } catch(e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {} };
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  function apply(){
+    ['mac','win'].forEach(o => document.body.classList.toggle(o, state.os === o));
+    ['chrome','firefox','safari'].forEach(b => document.body.classList.toggle(b, state.br === b));
+    document.querySelectorAll('#osPick button').forEach(b => b.classList.toggle('on', b.dataset.pick === state.os));
+    document.querySelectorAll('#brPick button').forEach(b => b.classList.toggle('on', b.dataset.pick === state.br));
+  }
+  $('osPick').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ state.os = b.dataset.pick; save(); apply(); } });
+  $('brPick').addEventListener('click', e => { const b = e.target.closest('button'); if (b){ state.br = b.dataset.pick; save(); apply(); } });
+
+  let n = 0;
+  Object.entries(GROUPS).forEach(([gid, tasks]) => {
+    $(gid).innerHTML = tasks.map((t, ti) => {
+      let extra = '';
+      if (t.cmd) extra = `
+        <div class="cmd" data-os="mac"><span class="p">%</span><span class="t">${t.cmd}</span><button data-copy="${t.cmd}">Copy</button></div>
+        <div class="cmd" data-os="win"><span class="p">&gt;</span><span class="t">${t.cmd}</span><button data-copy="${t.cmd}">Copy</button></div>`;
+      if (t.url) extra = `<div class="cmd"><span class="p">🔗</span><span class="t">${t.url}</span><button data-copy="${t.url}">Copy</button></div>`;
+      const qs = t.qs.map((q, qi) => { n++; const id = `${gid}_${ti}_${qi}`; return `<label class="q" for="${id}">${n}. ${q}</label><textarea id="${id}" data-a="${id}">${esc(state.answers[id] || '')}</textarea>`; }).join('');
+      return `<div class="task"><h3>${t.title} ${t.shot ? '<span class="shot">📸 screenshot</span>' : ''}</h3><p class="help">${t.intro}</p>${extra}${qs}</div>`;
+    }).join('');
+  });
+
+  document.addEventListener('input', e => { const a = e.target.dataset && e.target.dataset.a; if (a){ state.answers[a] = e.target.value; save(); } });
+  document.addEventListener('click', async e => {
+    const b = e.target.closest('[data-copy]'); if (!b) return;
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied!'; }
+    catch(err){ b.textContent = 'Type it'; }
+    setTimeout(() => { b.textContent = 'Copy'; }, 1500);
+  });
+  $('name').value = state.name || '';
+  $('name').addEventListener('input', e => { state.name = e.target.value; save(); });
+
+  $('copy').onclick = async () => {
+    const brName = {chrome:'Chrome/Edge', firefox:'Firefox', safari:'Safari'}[state.br];
+    const lines = ['Behind the Address Bar (CSP Unit 2 Lesson 6)', 'Name: ' + (state.name || '(no name)'),
+                   'Computer: ' + (state.os === 'win' ? 'Windows' : 'Mac') + ' · Browser: ' + brName, ''];
+    let k = 0;
+    Object.entries(GROUPS).forEach(([gid, tasks]) => tasks.forEach((t, ti) => {
+      lines.push('— ' + t.title + ' —');
+      t.qs.forEach((q, qi) => { k++; lines.push(`${k}. ${q}`); lines.push(state.answers[`${gid}_${ti}_${qi}`] || '(no answer)'); lines.push(''); });
+    }));
+    const text = lines.join('\n');
+    try { await navigator.clipboard.writeText(text); $('copyMsg').textContent = 'Copied! Paste it into a document and attach it to the Teams assignment with your screenshots.'; $('fallback').hidden = true; }
+    catch(e){ const f = $('fallback'); f.hidden = false; f.value = text; f.focus(); f.select(); $('copyMsg').textContent = 'Copy the text in the box above (Ctrl+C or ⌘+C), then paste it into a document and attach it to the Teams assignment.'; }
+  };
+
+  apply();
+})();
+</script>
+</body>
+</html>
