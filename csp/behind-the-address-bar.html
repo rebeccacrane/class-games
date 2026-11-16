@@ -202,12 +202,7 @@ Addresses:  2620:0:863:ed1a::1
 
   <section class="card">
     <h2><span class="step">Step 5</span>Turn it in</h2>
-    <p style="margin-top:0">Attach your <b>4 screenshots</b> to the Teams assignment. Then turn in your answers <b>one</b> of these ways:</p>
-    <ul style="margin:4px 0">
-      <li>Take a screenshot of your answers and attach it to the Teams assignment.</li>
-      <li>Click <b>Copy my answers</b> and paste them into the blank document in the Teams assignment.</li>
-      <li>Paste them into your own document and upload it to the Teams assignment.</li>
-    </ul>
+    <p style="margin-top:0">Turn in your <b>4 screenshots</b> and your answers on Teams.</p>
     <label class="q" for="name">Your name</label>
     <input type="text" id="name" autocomplete="name">
     <div class="row"><button class="btn primary" id="copy">Copy my answers</button></div>
@@ -306,8 +301,8 @@ Addresses:  2620:0:863:ed1a::1
       t.qs.forEach((q, qi) => { k++; lines.push(`${k}. ${q}`); lines.push(state.answers[`${gid}_${ti}_${qi}`] || '(no answer)'); lines.push(''); });
     }));
     const text = lines.join('\n');
-    try { await navigator.clipboard.writeText(text); $('copyMsg').textContent = 'Copied! Paste it into the blank document in the Teams assignment, or into your own document.'; $('fallback').hidden = true; }
-    catch(e){ const f = $('fallback'); f.hidden = false; f.value = text; f.focus(); f.select(); $('copyMsg').textContent = 'Copy the text in the box above (Ctrl+C or ⌘+C), then paste it into the blank document in the Teams assignment, or into your own document.'; }
+    try { await navigator.clipboard.writeText(text); $('copyMsg').textContent = 'Copied!'; $('fallback').hidden = true; }
+    catch(e){ const f = $('fallback'); f.hidden = false; f.value = text; f.focus(); f.select(); $('copyMsg').textContent = 'Copy the text in the box above (Ctrl+C or ⌘+C).'; }
   };
 
   apply();
