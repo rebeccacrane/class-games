@@ -170,7 +170,7 @@ Addresses:  2620:0:863:ed1a::1
         <li>Press <span data-os="mac"><kbd>⌘ Command</kbd> + <kbd>Option</kbd> + <kbd>I</kbd></span><span data-os="win"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd> (or <kbd>F12</kbd>)</span>. A panel opens.</li>
         <li>Click the <b>Network</b> tab at the top of the panel. (If you don't see it, click <b>»</b> to find it.)</li>
         <li>Keep the panel open, then type the address into the tab's address bar. Each row that appears is one HTTP request.</li>
-        <li>To see details, click the <b>first row</b> (the page's name), then look at the <b>Headers</b> section. <b>General</b> at the top shows the Request Method, Status Code and Remote Address.</li>
+        <li>To see details, click the <b>first row</b> (the page's name), then look at the <b>Headers</b> section. <b>General</b> at the top shows the Request Method, Status Code and Remote Address (the server's IP address).</li>
       </ol>
     </div>
     <div data-br="firefox">
@@ -178,7 +178,7 @@ Addresses:  2620:0:863:ed1a::1
         <li>Open a new tab in Firefox.</li>
         <li>Press <span data-os="mac"><kbd>⌘ Command</kbd> + <kbd>Option</kbd> + <kbd>E</kbd></span><span data-os="win"><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd></span>. The Network panel opens.</li>
         <li>Keep the panel open, then type the address into the tab's address bar. Each row that appears is one HTTP request.</li>
-        <li>To see details, click the <b>first row</b>. The <b>Headers</b> tab shows the method (GET), Status and the server's Address.</li>
+        <li>To see details, click the <b>first row</b>. The <b>Headers</b> tab shows the method (GET), the Status, and the Address (the server's IP address).</li>
       </ol>
     </div>
     <div data-br="safari">
@@ -234,7 +234,7 @@ Addresses:  2620:0:863:ed1a::1
       {title:'Request 1: example.com', url:'https://example.com', shot:true,
        intro:'A very simple page, so it takes just one request. Click its row and take a screenshot of the details.',
        qs:['What was the request method? (Hint: it\'s the same word your browser used in the HTTP video.) What was the status code?',
-           'What remote address did the request go to? Does it match one of the addresses nslookup gave you for example.com? If not, why might a website have more than one address?']},
+           'What is the server\'s IP address? (Chrome and Edge call it Remote Address. Firefox and Safari call it Address. Ignore the :443 on the end. That\'s the port number HTTPS uses.) Does it match one of the addresses nslookup gave you for example.com? If not, why might a website have more than one address?']},
       {title:'Request 2: Wikipedia', url:'https://www.wikipedia.org', shot:true,
        intro:'Clear the list first (the circle-with-a-line or trash-can button at the top of the panel), then load Wikipedia. Look at the bottom of the panel for the number of requests, and take a screenshot.',
        qs:['How many requests did it take to load this one page? Look at a few of the rows. What kinds of things was your browser asking for?']},
@@ -244,7 +244,11 @@ Addresses:  2620:0:863:ed1a::1
     ],
     wrapTasks: [
       {title:'The lock', shot:false,
-       intro:'Go to wikipedia.org and click the icon just to the left of the web address. Find the information about the connection or certificate.',
+       intro:'Go to wikipedia.org. Then find who issued its security certificate:'
+         + '<span data-br="chrome"> Click the icon just to the left of the web address, then click <b>Connection is secure</b>. In Chrome, click <b>Certificate is valid</b>. In Edge, click the certificate icon at the top of the panel. Look for <b>Issued By</b>.</span>'
+         + '<span data-br="firefox"> Click the lock to the left of the web address, then <b>Connection secure</b>, then <b>More information</b>, then <b>View Certificate</b>. Look for <b>Issuer Name</b>.</span>'
+         + '<span data-br="safari"> Click the lock in the address bar, then <b>Show Certificate</b>. The line under the site name says who issued it.</span>'
+         + ' (Menus change often. If yours looks different, poke around until you find the certificate.)',
        qs:['Does your browser say the connection is secure? Which organization verified Wikipedia\'s certificate (who issued it)? Why does your browser need a trusted certificate authority?']},
       {title:'The whole trip', shot:false,
        intro:'Think back to everything you saw, plus Packet Puzzle and Trace the Internet.',
