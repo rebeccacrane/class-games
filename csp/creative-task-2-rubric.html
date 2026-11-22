@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creative Task 2 Rubric</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f7fa;
+    --text: #1d232b;
+    --muted: #5a6572;
+    --border: #d6dce3;
+    --accent: #2f5f8f;
+    --accent-soft: #e6eef7;
+    --strong: #e8f3ea;
+    --mid: #fbf4e2;
+    --weak: #f8e9e7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #15191e;
+      --surface: #1e242b;
+      --text: #e4e8ed;
+      --muted: #9aa5b1;
+      --border: #333c46;
+      --accent: #8ab4e0;
+      --accent-soft: #1f2d3c;
+      --strong: #1c2c21;
+      --mid: #2f2a1b;
+      --weak: #31201e;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  h2 {
+    font-size: 1.25rem; margin: 40px 0 12px; padding-bottom: 6px;
+    border-bottom: 2px solid var(--accent);
+  }
+  h3 { font-size: 1.05rem; margin: 20px 0 6px; }
+  p, li { max-width: 72ch; }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 4px; padding: 0 4px;
+  }
+  .callout {
+    background: var(--accent-soft); border-left: 4px solid var(--accent);
+    padding: 12px 16px; border-radius: 4px; margin: 16px 0;
+  }
+  .callout p { margin: 4px 0; }
+  .toolbox {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px;
+  }
+  .card h3 { margin-top: 0; }
+  .card ul { margin: 0; padding-left: 20px; }
+  ul.check { list-style: none; padding-left: 0; }
+  ul.check li { padding-left: 30px; position: relative; margin: 8px 0; }
+  ul.check li::before {
+    content: ""; position: absolute; left: 0; top: 3px; width: 16px; height: 16px;
+    border: 2px solid var(--accent); border-radius: 3px;
+  }
+  ol.prompts > li { margin: 16px 0; }
+  .tag {
+    display: inline-block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em;
+    color: var(--accent); border: 1px solid var(--accent); border-radius: 999px;
+    padding: 0 8px; margin-left: 6px; vertical-align: 2px; white-space: nowrap;
+  }
+  .table-wrap { overflow-x: auto; margin: 12px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.95rem; }
+  th, td { border: 1px solid var(--border); padding: 10px; vertical-align: top; text-align: left; }
+  thead th { background: var(--surface); }
+  th.row { background: var(--surface); width: 17%; }
+  th.row span { display: block; font-weight: normal; color: var(--muted); font-size: 0.85rem; }
+  td.s { background: var(--strong); }
+  td.m { background: var(--mid); }
+  td.w { background: var(--weak); }
+  .pts { display: block; margin-top: 8px; font-weight: 600; font-size: 0.85rem; }
+  td.score { width: 9%; white-space: nowrap; }
+  .muted { color: var(--muted); font-size: 0.9rem; }
+  .map td, .map th { font-size: 0.92rem; }
+  .map table { min-width: 520px; }
+  footer { margin-top: 48px; color: var(--muted); font-size: 0.85rem; }
+  .namebar { display: none; }
+  @media print {
+    :root { --bg:#fff; --surface:#f3f3f3; --text:#000; --muted:#444; --border:#999; --accent:#000; --accent-soft:#f3f3f3; --strong:#fff; --mid:#fff; --weak:#fff; }
+    body { font-size: 11pt; }
+    main { max-width: none; padding: 0; }
+    h2 { break-after: avoid; }
+    .table-wrap, table, .card, .callout { break-inside: avoid; }
+    table { min-width: 0; }
+    .namebar { display: flex; gap: 24px; margin-bottom: 12px; }
+    .namebar span { flex: 1; border-bottom: 1px solid #000; padding-bottom: 2px; }
+    footer { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+
+<div class="namebar"><span>Name:</span><span>Date:</span></div>
+
+<h1>Creative Task 2: Make It Interactive</h1>
+<p class="sub">Computer Science Principles &middot; CMU CS Academy, Unit 2: Functions, Mouse Events and Conditionals</p>
+
+<h2>The task</h2>
+<p>Design and code an interactive program of your choice using what you learned in Units 1 and 2. When the user clicks, drags, or moves the mouse, something in your program should change. It could be a light switch that turns a scene from day to night, a dress-up or build-a-face program, a button game that keeps score, a mood meter that changes color as the mouse moves, or anything else you invent.</p>
+<div class="callout">
+  <p><strong>Your program now responds to the user.</strong> That's the big step up from Creative Task 1. The mouse is your program's <em>input</em>, and what changes on the canvas is its <em>output</em>.</p>
+  <p><strong>Everyone completes every part of this task:</strong> the plan, the program, and the written responses. Your written responses are worth more than half of your grade, so don't skip them.</p>
+</div>
+
+<h2>Your Unit 2 toolbox</h2>
+<p>Use these tools plus everything from the Unit 1 toolbox. Animation (<code>onStep</code>), key presses, groups, loops, and lists come in later units. If you want to use something that isn't on this list, ask Mrs. Crane first.</p>
+<div class="toolbox">
+  <div class="card">
+    <h3>Functions</h3>
+    <ul>
+      <li>Defining a function with <code>def</code></li>
+      <li>One or more <strong>parameters</strong></li>
+      <li>Calling a function with different <strong>arguments</strong></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Mouse events</h3>
+    <ul>
+      <li><code>onMousePress(mouseX, mouseY)</code></li>
+      <li><code>onMouseRelease</code>, <code>onMouseMove</code>, <code>onMouseDrag</code></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Variables and properties</h3>
+    <ul>
+      <li>Storing a shape in a variable</li>
+      <li>Reading and changing properties: <code>centerX</code>, <code>centerY</code>, <code>left</code>, <code>top</code>, <code>width</code>, <code>fill</code>, <code>opacity</code>, <code>visible</code>, <code>rotateAngle</code>, and others</li>
+      <li>Custom properties, like <code>app.score</code></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Math</h3>
+    <ul>
+      <li><code>+ - * / // % **</code></li>
+      <li>Math functions from class, such as <code>abs</code>, <code>round</code>, <code>min</code>, <code>max</code></li>
+    </ul>
+  </div>
+  <div class="card">
+    <h3>Conditionals</h3>
+    <ul>
+      <li><code>if</code>, <code>if-else</code>, <code>if-elif-else</code></li>
+      <li>Comparisons: <code>==  !=  &lt;  &gt;  &lt;=  &gt;=</code></li>
+      <li>Shape methods: <code>hits(x, y)</code>, <code>contains(x, y)</code>, <code>hitsShape(shape)</code></li>
+    </ul>
+  </div>
+</div>
+
+<h2>Program requirements</h2>
+<p>Check each one off before you turn in your project.</p>
+<ul class="check">
+  <li>The program runs with no errors in the console.</li>
+  <li>It responds to the user through <strong>at least one mouse event</strong> (<code>onMousePress</code>, <code>onMouseRelease</code>, <code>onMouseMove</code>, or <code>onMouseDrag</code>).</li>
+  <li>It includes <strong>at least one function you wrote yourself</strong> (not a mouse event) that has <strong>at least one parameter</strong>. The parameter must change what the function does.</li>
+  <li>Your function contains <strong>an <code>if</code> statement</strong> (<code>if-else</code> or <code>if-elif-else</code> is even better).</li>
+  <li>Your program <strong>calls your function at least twice with different arguments</strong>, and the different arguments make different parts of the function run.</li>
+  <li>It <strong>changes at least one shape's properties</strong> after the shape is drawn (for example, its <code>fill</code>, position, size, or <code>visible</code>).</li>
+  <li>The code has <strong>comments</strong> that label each part of the program, plus a comment above each function you wrote that says what it does.</li>
+</ul>
+
+<h2>Plan it first</h2>
+<p>Before you start coding, fill out the <a href="CreativeTask2_DesignGuide.pdf">Design and Development Guide</a>:</p>
+<ol>
+  <li><strong>Description:</strong> What will your program do? What does the user do, and what happens when they do it?</li>
+  <li><strong>Canvas sketch:</strong> Sketch the starting screen on a 400 &times; 400 grid. Then sketch what it looks like after the user interacts with it.</li>
+  <li><strong>Code design:</strong> Name the function you'll write, its parameter(s), and what the <code>if</code> statement inside it will check. Then list which mouse event will call it.</li>
+</ol>
+
+<div class="callout">
+  <p><strong>Working with a partner?</strong> You may build the program with one partner. Each of you must write <strong>your own function</strong> and write your own responses on your own. Put your name in a comment above the parts you wrote.</p>
+</div>
+
+<h2>Written responses</h2>
+<p>Answer these after your program is finished. They help you explain how your program works, which is just as important as writing it.</p>
+<ol class="prompts">
+  <li>
+    <strong>Purpose and user</strong><br>
+    Who is your program for, and what is it for? Describe <em>one</em> way your design fits that person or purpose.
+  </li>
+  <li>
+    <strong>What the user does</strong><br>
+    What does the user do with the mouse, and which mouse event in your code handles it? Describe what changes on the canvas when they do it.
+  </li>
+  <li>
+    <strong>Development</strong><br>
+    Have someone else try your program. Describe one thing you changed because of their feedback, <em>or</em> one difficulty you ran into and how you solved it. How is your finished program different from your original plan?
+  </li>
+  <li>
+    <strong>Your function</strong><br>
+    Give the name and line numbers of the function you wrote. What does its parameter represent? Describe what the function does and why your program needs it.
+  </li>
+  <li>
+    <strong>Your <code>if</code> statement</strong><br>
+    Find the <code>if</code> statement in your function and give its line number. What condition does it check? Describe what happens when the condition is <code>True</code> and what happens when it's <code>False</code>.
+  </li>
+  <li>
+    <strong>Two calls</strong><br>
+    Describe two calls to your function with different arguments that make different parts of the function run. For each call, give the argument(s), say which part of the function runs, and describe the result.
+  </li>
+  <li>
+    <strong>Logic errors</strong><br>
+    Describe a small change to your code that would <em>not</em> cause an error message but would make your program do the wrong thing. Explain why. (Examples: changing <code>&lt;</code> to <code>&gt;</code>, putting the wrong value in a comparison, or calling your function with the wrong argument.)
+  </li>
+  <li>
+    <strong>Future goals</strong><br>
+    What would you add or change if you had more time? Which tool from a later unit (animation, key presses, loops, lists) would help?
+  </li>
+</ol>
+
+<h2>What to turn in</h2>
+<p>Turn in on Teams: your CMU code and your written responses.</p>
+
+<h2>Rubric</h2>
+<p class="muted">Adapted from the CMU CS Academy Creative Task rubric. The task is worth <strong>30 points</strong>: Program Design 9, Program Development 10.5, Reflection 10.5.</p>
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Criteria</th>
+        <th>Strong evidence</th>
+        <th>Inconsistent evidence</th>
+        <th>Weak or no evidence</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th class="row">Program Design<span>30%<br>Requirements, Responses 1&ndash;2</span></th>
+        <td class="s">The program meets <strong>all</strong> requirements and responds to the user as intended. Response 1 names who the program is for and explains how a design choice fits them. Response 2 correctly describes what the user does, the mouse event, and what changes.<span class="pts">9 pts</span></td>
+        <td class="m">One or two requirements are missing, <strong>or</strong> Response 1 or 2 is incomplete.<span class="pts">6 pts</span></td>
+        <td class="w">The program doesn't run, <strong>or</strong> it doesn't respond to the user, <strong>or</strong> most requirements are missing.<span class="pts">3 pts</span></td>
+        <td class="score"></td>
+      </tr>
+      <tr>
+        <th class="row">Program Development<span>35%<br>Responses 3, 7, 8</span></th>
+        <td class="s">Describes a change made from feedback or a difficulty <strong>and</strong> how it was resolved, and how the program changed from the plan. Correctly describes a change that would cause a logic error and explains why. Includes a future goal.<span class="pts">10.5 pts</span></td>
+        <td class="m">Describes feedback or a difficulty but not how it was resolved, <strong>or</strong> the logic error response is missing or doesn't explain why.<span class="pts">7 pts</span></td>
+        <td class="w">Doesn't describe any feedback, difficulty, or change.<span class="pts">3.5 pts</span></td>
+        <td class="score"></td>
+      </tr>
+      <tr>
+        <th class="row">Reflection<span>35%<br>Responses 4&ndash;6</span></th>
+        <td class="s">Explains what the function and its parameter do, with correct line numbers. Correctly explains what happens when the <code>if</code> condition is <code>True</code> and <code>False</code>. Describes two calls with different arguments that run different parts of the function, with the correct result for each.<span class="pts">10.5 pts</span></td>
+        <td class="m">Explains the function <strong>or</strong> the <code>if</code> statement correctly, but one of Responses 4&ndash;6 is missing or incorrect.<span class="pts">7 pts</span></td>
+        <td class="w">Doesn't identify a function with a parameter or an <code>if</code> statement in the program.<span class="pts">3.5 pts</span></td>
+        <td class="score"></td>
+      </tr>
+      <tr>
+        <th class="row">Bonus</th>
+        <td colspan="3">Bonus points may be awarded for high-quality work, including (but not limited to) originality, cleverness, complexity within the Unit 2 toolbox, and a program that's fun or engaging to use.</td>
+        <td class="score"></td>
+      </tr>
+      <tr>
+        <th class="row">Total</th>
+        <td colspan="3"></td>
+        <td class="score"><strong>___ / 30</strong></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>Based on the CMU CS Academy CS1 Creative Task Guide.</footer>
+</main>
+</body>
+</html>
